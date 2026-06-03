@@ -2,18 +2,19 @@ import { router } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/Components/ui/button';
+import { previousUrl } from '@/lib/navHistory';
 
 interface Props {
-    /** Where to go when there's no prior history (direct load / refresh). */
+    /** Where to go when there's no prior in-app page (direct load / refresh). */
     fallback?: string;
     label?: string;
     className?: string;
 }
 
 /**
- * Returns to the previous page the user visited (Inertia history). On a direct
- * load with no in-app history it navigates to `fallback` so Back is never a
- * dead end. Reusable on any detail/edit page.
+ * Returns to the previous page the user visited with a FRESH server fetch
+ * (router.get) rather than window.history.back(), which Inertia restores from
+ * its history cache (stale data). Falls back to `fallback` on a direct load.
  */
 export default function BackButton({
     fallback = '/',
@@ -21,11 +22,9 @@ export default function BackButton({
     className,
 }: Props) {
     const goBack = () => {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            router.visit(fallback);
-        }
+        // Fresh GET to the previous page (or fallback on a direct load). The
+        // navHistory `navigate` handler pops the stack when it sees this visit.
+        router.get(previousUrl() ?? fallback);
     };
 
     return (

@@ -110,9 +110,7 @@ class RoleController extends Controller
             $this->applyMenu($role, $request);
         });
 
-        // Redirect to edit (not show) so the freshly-loaded editor reflects the
-        // saved menu — avoids Inertia restoring a stale cached edit page on back.
-        return redirect()->route('roles.edit', $role)->with('success', 'Role updated.');
+        return redirect()->route('roles.show', $role)->with('success', 'Role updated.');
     }
 
     public function destroy(Role $role): RedirectResponse

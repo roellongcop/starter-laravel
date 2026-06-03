@@ -55,7 +55,8 @@ class ImportController extends Controller
             'status' => UserImportStatus::Pending,
         ]);
 
-        return redirect()->route('imports.preview', $import);
+        return redirect()->route('imports.preview', $import)
+            ->with('success', 'File uploaded — review and confirm.');
     }
 
     public function preview(Request $request, UserImport $import): Response

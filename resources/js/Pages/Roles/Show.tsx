@@ -1,5 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { CalendarDays, KeyRound, Layers, ShieldCheck } from 'lucide-react';
+import {
+    CalendarDays,
+    ExternalLink,
+    Hash,
+    KeyRound,
+    Layers,
+    ShieldCheck,
+} from 'lucide-react';
 
 import BackButton from '@/Components/BackButton';
 import Can from '@/Components/Can';
@@ -8,7 +15,8 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminRole } from '@/types';
+import { NavIcon } from '@/lib/navIcons';
+import { type AdminRole, type NavItem } from '@/types';
 
 /** Group flat permission names ("users.index") by their resource prefix. */
 function groupPermissions(perms: string[]): Record<string, string[]> {
@@ -50,6 +58,40 @@ function Stat({
     );
 }
 
+function MenuRow({ item }: { item: NavItem }) {
+    return (
+        <div className="flex items-center gap-2 py-1 text-sm">
+            <NavIcon
+                name={item.icon}
+                className="h-4 w-4 shrink-0 text-muted-foreground"
+            />
+            <span className="text-foreground">{item.label}</span>
+            {item.external && (
+                <ExternalLink
+                    className="h-3 w-3 text-muted-foreground"
+                    aria-label="External link"
+                />
+            )}
+        </div>
+    );
+}
+
+/** One node in the menu tree: a row, plus an indented branch for its children. */
+function MenuItem({ item }: { item: NavItem }) {
+    return (
+        <li className="relative before:absolute before:-left-4 before:top-[14px] before:h-px before:w-3 before:bg-border">
+            <MenuRow item={item} />
+            {item.children && item.children.length > 0 && (
+                <ul className="ml-1.5 border-l border-border pl-4">
+                    {item.children.map((child, i) => (
+                        <MenuItem key={i} item={child} />
+                    ))}
+                </ul>
+            )}
+        </li>
+    );
+}
+
 export default function Show({ role }: { role: AdminRole }) {
     const groups = groupPermissions(role.permissions ?? []);
     const groupKeys = Object.keys(groups).sort((a, b) =>
@@ -78,7 +120,7 @@ export default function Show({ role }: { role: AdminRole }) {
                 }
             />
 
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <Stat
                     icon={ShieldCheck}
                     label="Type"
@@ -94,6 +136,11 @@ export default function Show({ role }: { role: AdminRole }) {
                     value={role.permissions?.length ?? role.permissions_count}
                 />
                 <Stat icon={Layers} label="Modules" value={groupKeys.length} />
+                <Stat
+                    icon={Hash}
+                    label="Menu priority"
+                    value={role.priority ?? 0}
+                />
                 <Stat
                     icon={CalendarDays}
                     label="Created"
@@ -142,6 +189,26 @@ export default function Show({ role }: { role: AdminRole }) {
                                 </div>
                             ))}
                         </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            <Card className="mt-6">
+                <CardHeader>
+                    <CardTitle>Sidebar menu</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {role.main_navigation && role.main_navigation.length > 0 ? (
+                        <ul className="ml-1.5 border-l border-border pl-4">
+                            {role.main_navigation.map((node, i) => (
+                                <MenuItem key={i} item={node} />
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            Auto — the sidebar is generated from this role's
+                            permissions. Customize it in the role editor.
+                        </p>
                     )}
                 </CardContent>
             </Card>

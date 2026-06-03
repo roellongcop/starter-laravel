@@ -3,6 +3,7 @@ import { FileUp, X } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { type Accept, useDropzone } from 'react-dropzone';
 
+import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface UploadItem {
@@ -86,6 +87,10 @@ export default function FileDropzone({
                 .then((res) => {
                     onUploaded(res.data);
                     remove(key);
+                    toast({
+                        variant: 'success',
+                        description: `Uploaded ${file.name}`,
+                    });
                 })
                 .catch((err) => {
                     update(key, {

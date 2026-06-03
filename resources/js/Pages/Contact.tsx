@@ -3,13 +3,10 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { type PageProps } from '@/types';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 export default function Contact() {
-    const { flash } = usePage<PageProps>().props;
-
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -31,12 +28,6 @@ export default function Contact() {
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
                 Have a question? Send us a message and we'll get back to you.
             </div>
-
-            {flash?.success && (
-                <div className="mb-4 rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-700 dark:bg-green-950 dark:text-green-200">
-                    {flash.success}
-                </div>
-            )}
 
             <form onSubmit={submit} className="space-y-4">
                 <div>

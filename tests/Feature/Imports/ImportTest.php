@@ -27,7 +27,8 @@ it('uploads a file and creates a pending import then previews it', function (): 
 
     $import = UserImport::first();
     expect($import->status)->toBe(UserImportStatus::Pending);
-    $response->assertRedirect(route('imports.preview', $import));
+    $response->assertRedirect(route('imports.preview', $import))
+        ->assertSessionHas('success');
 
     $this->get(route('imports.preview', $import))
         ->assertOk()

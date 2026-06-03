@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
+import BackButton from '@/Components/BackButton';
 import InputError from '@/Components/InputError';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
@@ -26,7 +27,10 @@ export default function Create() {
     return (
         <AuthenticatedLayout>
             <Head title="Upload File" />
-            <PageHeader title="Upload File" />
+            <PageHeader
+                title="Upload File"
+                actions={<BackButton fallback={route('files.index')} />}
+            />
             <Card>
                 <CardContent className="pt-6">
                     <form onSubmit={submit} className="max-w-xl space-y-4">

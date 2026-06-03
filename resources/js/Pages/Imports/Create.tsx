@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
+import BackButton from '@/Components/BackButton';
 import InputError from '@/Components/InputError';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
@@ -36,6 +37,7 @@ export default function Create({ resources }: { resources: string[] }) {
             <PageHeader
                 title="New Import"
                 description="Upload a CSV/XLSX with name + email columns."
+                actions={<BackButton fallback={route('imports.index')} />}
             />
             <Card>
                 <CardContent className="pt-6">

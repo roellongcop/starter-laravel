@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
+import BackButton from '@/Components/BackButton';
 import InputError from '@/Components/InputError';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
@@ -40,7 +41,10 @@ export default function Create({ formats, resources }: Props) {
     return (
         <AuthenticatedLayout>
             <Head title="New Export" />
-            <PageHeader title="New Export" />
+            <PageHeader
+                title="New Export"
+                actions={<BackButton fallback={route('exports.index')} />}
+            />
             <Card>
                 <CardContent className="pt-6">
                     <form onSubmit={submit} className="max-w-md space-y-4">
