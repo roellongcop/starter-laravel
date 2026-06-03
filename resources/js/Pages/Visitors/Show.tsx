@@ -22,7 +22,7 @@ interface Props {
 
 export default function Show({ visitor, logs }: Props) {
     return (
-        <AuthenticatedLayout header="Visitor">
+        <AuthenticatedLayout>
             <Head title="Visitor" />
             <PageHeader
                 title={visitor.ip_address ?? visitor.cookie_id}

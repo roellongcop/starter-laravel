@@ -24,7 +24,7 @@ export default function Create() {
     };
 
     return (
-        <AuthenticatedLayout header="Upload File">
+        <AuthenticatedLayout>
             <Head title="Upload File" />
             <PageHeader title="Upload File" />
             <Card>

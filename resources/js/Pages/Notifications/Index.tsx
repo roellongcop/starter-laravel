@@ -45,7 +45,7 @@ export default function Index({
         );
 
     return (
-        <AuthenticatedLayout header="Notifications">
+        <AuthenticatedLayout>
             <Head title="Notifications" />
 
             <PageHeader

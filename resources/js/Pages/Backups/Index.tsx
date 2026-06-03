@@ -60,7 +60,7 @@ export default function Index({ backups, can }: Props) {
     };
 
     return (
-        <AuthenticatedLayout header="Backups">
+        <AuthenticatedLayout>
             <Head title="Backups" />
 
             <PageHeader

@@ -116,6 +116,8 @@ services:
     ports:
       - "${S3_PORT:-8333}:8333"
       - "${S3_MASTER_PORT:-9333}:9333"
+      # Filer web UI — browse stored objects under /buckets/<bucket>/
+      - "${S3_FILER_PORT:-8888}:8888"
     volumes:
       - seaweedfs-data:/data
     healthcheck:

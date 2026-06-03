@@ -34,7 +34,7 @@ export default function Index({ sessions, can }: Props) {
     };
 
     return (
-        <AuthenticatedLayout header="Sessions">
+        <AuthenticatedLayout>
             <Head title="Sessions" />
             <PageHeader
                 title="Sessions"

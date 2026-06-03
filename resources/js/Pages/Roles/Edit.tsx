@@ -13,7 +13,7 @@ interface Props {
 
 export default function Edit({ role, permissionGroups }: Props) {
     return (
-        <AuthenticatedLayout header={`Edit ${role.name}`}>
+        <AuthenticatedLayout>
             <Head title={`Edit ${role.name}`} />
             <PageHeader title={`Edit ${role.name}`} />
             <Card>

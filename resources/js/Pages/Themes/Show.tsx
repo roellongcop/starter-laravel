@@ -33,7 +33,7 @@ function Swatches({ tokens }: { tokens: Record<string, string> }) {
 
 export default function Show({ theme }: { theme: AdminTheme }) {
     return (
-        <AuthenticatedLayout header={theme.name}>
+        <AuthenticatedLayout>
             <Head title={theme.name} />
 
             <PageHeader

@@ -44,7 +44,7 @@ export default function Index({ stats, pending, failed, can }: Props) {
         router.post(route(name), data, { preserveScroll: true });
 
     return (
-        <AuthenticatedLayout header="Queue">
+        <AuthenticatedLayout>
             <Head title="Queue" />
             <PageHeader
                 title="Queue Monitor"

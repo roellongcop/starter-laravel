@@ -14,7 +14,7 @@ interface Props {
 
 export default function Edit({ user, roleOptions, statusOptions }: Props) {
     return (
-        <AuthenticatedLayout header={`Edit ${user.name}`}>
+        <AuthenticatedLayout>
             <Head title={`Edit ${user.name}`} />
             <PageHeader title={`Edit ${user.name}`} />
             <Card>

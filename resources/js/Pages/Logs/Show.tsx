@@ -29,7 +29,7 @@ function ValueBlock({
 
 export default function Show({ log }: { log: AdminAudit }) {
     return (
-        <AuthenticatedLayout header="Audit Detail">
+        <AuthenticatedLayout>
             <Head title="Audit Detail" />
             <PageHeader
                 title={`${log.event} ${log.auditable_type} #${log.auditable_id}`}

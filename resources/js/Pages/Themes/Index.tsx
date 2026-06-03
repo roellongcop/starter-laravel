@@ -35,7 +35,7 @@ export default function Index({ themes }: Props) {
     };
 
     return (
-        <AuthenticatedLayout header="Themes">
+        <AuthenticatedLayout>
             <Head title="Themes" />
 
             <PageHeader

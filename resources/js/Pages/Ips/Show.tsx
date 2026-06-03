@@ -10,7 +10,7 @@ import { type AdminIp } from '@/types';
 
 export default function Show({ ip }: { ip: AdminIp }) {
     return (
-        <AuthenticatedLayout header={ip.ip_address}>
+        <AuthenticatedLayout>
             <Head title={ip.ip_address} />
 
             <PageHeader

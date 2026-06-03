@@ -59,7 +59,7 @@ export default function Index({ files, filters }: Props) {
     };
 
     return (
-        <AuthenticatedLayout header="Files">
+        <AuthenticatedLayout>
             <Head title="Files" />
 
             <PageHeader

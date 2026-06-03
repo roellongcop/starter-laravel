@@ -8,7 +8,7 @@ import IpForm from './Partials/IpForm';
 
 export default function Create({ listTypes }: { listTypes: SelectOption[] }) {
     return (
-        <AuthenticatedLayout header="New IP Entry">
+        <AuthenticatedLayout>
             <Head title="New IP Entry" />
             <PageHeader title="New IP Entry" />
             <Card>

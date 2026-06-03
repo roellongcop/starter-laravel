@@ -8,7 +8,7 @@ import ThemeForm from './Partials/ThemeForm';
 
 export default function Edit({ theme }: { theme: AdminTheme }) {
     return (
-        <AuthenticatedLayout header={`Edit ${theme.name}`}>
+        <AuthenticatedLayout>
             <Head title={`Edit ${theme.name}`} />
             <PageHeader title={`Edit ${theme.name}`} />
             <Card>

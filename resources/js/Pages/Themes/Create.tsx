@@ -7,7 +7,7 @@ import ThemeForm from './Partials/ThemeForm';
 
 export default function Create() {
     return (
-        <AuthenticatedLayout header="New Theme">
+        <AuthenticatedLayout>
             <Head title="New Theme" />
             <PageHeader title="New Theme" />
             <Card>

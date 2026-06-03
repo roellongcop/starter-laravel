@@ -131,7 +131,11 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
         router.post(route('exports.store'), {
             format,
             resource: 'users',
-            filters: { search, date_from: dateFrom, date_to: dateTo },
+            filters: {
+              search,
+              // date_from: dateFrom,
+              // date_to: dateTo
+            },
         });
 
     const visibleColumnCount = Object.values(columns).filter(Boolean).length;

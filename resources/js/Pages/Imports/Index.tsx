@@ -24,7 +24,7 @@ interface Props {
 
 export default function Index({ imports }: Props) {
     return (
-        <AuthenticatedLayout header="My Imports">
+        <AuthenticatedLayout>
             <Head title="My Imports" />
 
             <PageHeader

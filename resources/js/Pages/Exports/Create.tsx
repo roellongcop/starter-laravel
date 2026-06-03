@@ -38,7 +38,7 @@ export default function Create({ formats, resources }: Props) {
     };
 
     return (
-        <AuthenticatedLayout header="New Export">
+        <AuthenticatedLayout>
             <Head title="New Export" />
             <PageHeader title="New Export" />
             <Card>

@@ -47,7 +47,7 @@ export default function Index({ roles, filters }: Props) {
     };
 
     return (
-        <AuthenticatedLayout header="Roles">
+        <AuthenticatedLayout>
             <Head title="Roles" />
 
             <PageHeader

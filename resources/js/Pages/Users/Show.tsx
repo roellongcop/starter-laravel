@@ -21,7 +21,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default function Show({ user }: { user: AdminUser }) {
     return (
-        <AuthenticatedLayout header={user.name}>
+        <AuthenticatedLayout>
             <Head title={user.name} />
 
             <PageHeader

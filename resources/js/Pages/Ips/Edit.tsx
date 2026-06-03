@@ -13,7 +13,7 @@ interface Props {
 
 export default function Edit({ ip, listTypes }: Props) {
     return (
-        <AuthenticatedLayout header={`Edit ${ip.ip_address}`}>
+        <AuthenticatedLayout>
             <Head title={`Edit ${ip.ip_address}`} />
             <PageHeader title={`Edit ${ip.ip_address}`} />
             <Card>

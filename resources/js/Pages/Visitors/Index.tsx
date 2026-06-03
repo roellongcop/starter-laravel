@@ -38,7 +38,7 @@ export default function Index({ visitors, filters }: Props) {
     };
 
     return (
-        <AuthenticatedLayout header="Visitors">
+        <AuthenticatedLayout>
             <Head title="Visitors" />
             <PageHeader
                 title="Visitors"

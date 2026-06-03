@@ -30,7 +30,7 @@ export default function Preview({
     const process = () => router.post(route('imports.process', imp.id));
 
     return (
-        <AuthenticatedLayout header="Import Preview">
+        <AuthenticatedLayout>
             <Head title="Import Preview" />
             <PageHeader
                 title="Import Preview"

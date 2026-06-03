@@ -31,7 +31,7 @@ export default function Create({ resources }: { resources: string[] }) {
     };
 
     return (
-        <AuthenticatedLayout header="New Import">
+        <AuthenticatedLayout>
             <Head title="New Import" />
             <PageHeader
                 title="New Import"

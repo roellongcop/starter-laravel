@@ -39,7 +39,7 @@ export default function Index({ logs, filters }: Props) {
     };
 
     return (
-        <AuthenticatedLayout header="Visit Logs">
+        <AuthenticatedLayout>
             <Head title="Visit Logs" />
             <PageHeader
                 title="Visit Logs"

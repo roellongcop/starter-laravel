@@ -13,7 +13,7 @@ interface Props {
 
 export default function Create({ roleOptions, statusOptions }: Props) {
     return (
-        <AuthenticatedLayout header="New User">
+        <AuthenticatedLayout>
             <Head title="New User" />
             <PageHeader title="New User" />
             <Card>

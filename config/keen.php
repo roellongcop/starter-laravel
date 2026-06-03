@@ -37,8 +37,8 @@ return [
     |
     */
 
-    'export_sync_threshold' => (int) env('EXPORT_SYNC_THRESHOLD', 1000),
+    'export_sync_threshold' => (int) env('EXPORT_SYNC_THRESHOLD', 100),
 
-    'import_sync_threshold' => (int) env('IMPORT_SYNC_THRESHOLD', 500),
+    'import_sync_threshold' => (int) env('IMPORT_SYNC_THRESHOLD', 100),
 
 ];

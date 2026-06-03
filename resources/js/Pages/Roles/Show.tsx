@@ -10,7 +10,7 @@ import { type AdminRole } from '@/types';
 
 export default function Show({ role }: { role: AdminRole }) {
     return (
-        <AuthenticatedLayout header={role.name}>
+        <AuthenticatedLayout>
             <Head title={role.name} />
 
             <PageHeader

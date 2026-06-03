@@ -11,7 +11,7 @@ interface Props {
 
 export default function Create({ permissionGroups }: Props) {
     return (
-        <AuthenticatedLayout header="New Role">
+        <AuthenticatedLayout>
             <Head title="New Role" />
             <PageHeader title="New Role" />
             <Card>

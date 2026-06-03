@@ -391,7 +391,7 @@ function NotificationTab({ templates }: { templates: Record<string, string> }) {
 
 export default function Index({ settings }: Props) {
     return (
-        <AuthenticatedLayout header="Settings">
+        <AuthenticatedLayout>
             <Head title="Settings" />
             <PageHeader
                 title="Settings"

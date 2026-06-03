@@ -43,7 +43,7 @@ interface Props {
 
 export default function Dashboard({ metrics, recent }: Props) {
     return (
-        <AuthenticatedLayout header="Dashboard">
+        <AuthenticatedLayout>
             <Head title="Dashboard" />
 
             <PageHeader

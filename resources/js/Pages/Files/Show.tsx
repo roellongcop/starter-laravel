@@ -20,7 +20,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default function Show({ file }: { file: AdminFile }) {
     return (
-        <AuthenticatedLayout header={file.original_name}>
+        <AuthenticatedLayout>
             <Head title={file.original_name} />
 
             <PageHeader

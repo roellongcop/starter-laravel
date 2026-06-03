@@ -81,7 +81,7 @@ export default function Index({ ips, filters }: Props) {
     };
 
     return (
-        <AuthenticatedLayout header="IP Lists">
+        <AuthenticatedLayout>
             <Head title="IP Lists" />
 
             <PageHeader
