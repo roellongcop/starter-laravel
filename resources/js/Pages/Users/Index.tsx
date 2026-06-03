@@ -132,9 +132,9 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
             format,
             resource: 'users',
             filters: {
-              search,
-              // date_from: dateFrom,
-              // date_to: dateTo
+                search,
+                // date_from: dateFrom,
+                // date_to: dateTo
             },
         });
 
@@ -392,7 +392,13 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                 </Table>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 flex items-center justify-between">
+                {users.total !== undefined && (
+                    <span className="text-sm text-muted-foreground">
+                        {users.total.toLocaleString()}{' '}
+                        {users.total === 1 ? 'record' : 'records'} found
+                    </span>
+                )}
                 <CursorPager
                     nextCursor={users.next_cursor}
                     prevCursor={users.prev_cursor}

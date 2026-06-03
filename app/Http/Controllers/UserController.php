@@ -26,21 +26,25 @@ class UserController extends Controller
         $inactive = $request->boolean('inactive')
             && $request->user()->can(BasePolicy::VIEW_INACTIVE);
 
-        $users = User::query()
+        $query = User::query()
             ->when($inactive, fn ($q) => $q->onlyInactive())
             ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
                 ->where('name', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%")
                 ->orWhere('username', 'like', "%{$search}%")))
             ->when($dateFrom !== '', fn ($q) => $q->whereDate('users.created_at', '>=', $dateFrom))
-            ->when($dateTo !== '', fn ($q) => $q->whereDate('users.created_at', '<=', $dateTo))
+            ->when($dateTo !== '', fn ($q) => $q->whereDate('users.created_at', '<=', $dateTo));
+
+        $total = (clone $query)->count();
+
+        $users = $query
             ->with('roles:id,name')
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
 
         return Inertia::render('Users/Index', [
-            'users' => cursorResponse($users, fn (User $u) => $this->row($u)),
+            'users' => cursorResponse($users, fn (User $u) => $this->row($u), $total),
             'filters' => ['search' => $search, 'inactive' => $inactive, 'date_from' => $dateFrom, 'date_to' => $dateTo],
             'can' => [
                 'create' => $request->user()->can('users.create'),

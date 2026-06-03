@@ -15,6 +15,8 @@ export interface CursorResponse<T> {
     next_cursor: string | null;
     prev_cursor: string | null;
     has_more: boolean;
+    /** Exact result count — only present when the endpoint opts in. */
+    total?: number;
 }
 
 export interface UserMetaRow {
