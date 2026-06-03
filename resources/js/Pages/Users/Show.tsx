@@ -1,7 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 
 import Avatar from '@/Components/Avatar';
+import BackButton from '@/Components/BackButton';
 import Can from '@/Components/Can';
+import ConfirmDialog from '@/Components/ConfirmDialog';
 import DocumentList from '@/Components/DocumentList';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
@@ -32,6 +35,13 @@ export default function Show({
     user: AdminUser;
     documents: CursorResponse<AdminDocument>;
 }) {
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+    const destroy = () =>
+        router.delete(route('users.destroy', user.id), {
+            onFinish: () => setConfirmingDelete(false),
+        });
+
     return (
         <AuthenticatedLayout>
             <Head title={user.name} />
@@ -41,9 +51,7 @@ export default function Show({
                 description={user.email}
                 actions={
                     <>
-                        <Button variant="outline" asChild>
-                            <Link href={route('users.index')}>Back</Link>
-                        </Button>
+                        <BackButton fallback={route('users.index')} />
                         <Can ability="users.update">
                             <Button asChild>
                                 <Link href={route('users.edit', user.id)}>
@@ -51,8 +59,26 @@ export default function Show({
                                 </Link>
                             </Button>
                         </Can>
+                        <Can ability="users.delete">
+                            <Button
+                                variant="destructive"
+                                onClick={() => setConfirmingDelete(true)}
+                            >
+                                Delete
+                            </Button>
+                        </Can>
                     </>
                 }
+            />
+
+            <ConfirmDialog
+                open={confirmingDelete}
+                onOpenChange={setConfirmingDelete}
+                title={`Delete ${user.name}?`}
+                description="This permanently removes the user."
+                confirmLabel="Delete"
+                destructive
+                onConfirm={destroy}
             />
 
             <div className="mb-6 flex items-center gap-4">

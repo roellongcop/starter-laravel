@@ -31,6 +31,23 @@ trait HasRecordStatus
         return $query->withoutGlobalScope('active');
     }
 
+    /**
+     * Resolve route-model bindings without the Active scope, so admin CRUD on an
+     * inactive (record_status = 0) row works — otherwise show/edit/update/destroy
+     * would 404 on a row the list surfaced via onlyInactive(). Access stays gated
+     * by the resource policies + the index's view-inactive permission.
+     *
+     * @param  Builder<covariant static>  $query
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return Builder<covariant static>
+     */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return parent::resolveRouteBindingQuery($query, $value, $field)
+            ->withoutGlobalScope('active');
+    }
+
     public function scopeOnlyInactive(Builder $query): Builder
     {
         return $query->withoutGlobalScope('active')->where(

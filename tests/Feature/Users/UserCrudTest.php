@@ -68,13 +68,45 @@ it('searches users by name/email', function (): void {
         ->assertInertia(fn ($page) => $page->has('users.data', 1));
 });
 
-it('deletes a user', function (): void {
+it('deletes a user and returns to the filtered list', function (): void {
     $user = User::factory()->create();
+    $from = route('users.index', ['inactive' => 1, 'search' => 'foo']);
 
-    $this->delete(route('users.destroy', $user))
-        ->assertRedirect(route('users.index'));
+    $this->from($from)
+        ->delete(route('users.destroy', $user))
+        ->assertRedirect($from); // filters preserved, not a bare /users
 
     expect(User::withInactive()->find($user->id))->toBeNull();
+});
+
+it('can view, edit and delete an inactive user (binding lifts the active scope)', function (): void {
+    $user = User::factory()->create();
+    $user->inactivate();
+
+    // The active global scope still hides it from default queries…
+    expect(User::find($user->id))->toBeNull();
+
+    // …but route-model binding resolves it for admin CRUD.
+    $this->get(route('users.show', $user))->assertOk();
+    $this->get(route('users.edit', $user))->assertOk();
+
+    $this->patch(route('users.update', $user), [
+        'name' => 'Reactivated',
+        'email' => $user->email,
+        'user_status' => 'Active',
+        'roles' => [],
+    ])->assertRedirect(route('users.show', $user));
+
+    $this->delete(route('users.destroy', $user))->assertRedirect();
+    expect(User::withInactive()->find($user->id))->toBeNull();
+});
+
+it('deletes from the show page and returns to the index (not the gone page)', function (): void {
+    $user = User::factory()->create();
+
+    $this->from(route('users.show', $user))
+        ->delete(route('users.destroy', $user))
+        ->assertRedirect(route('users.index'));
 });
 
 it('runs bulk inactivate which hides rows from the default scope', function (): void {

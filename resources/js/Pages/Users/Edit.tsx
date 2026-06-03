@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
 
+import BackButton from '@/Components/BackButton';
 import PageHeader from '@/Components/PageHeader';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -27,7 +28,10 @@ export default function Edit({
     return (
         <AuthenticatedLayout>
             <Head title={`Edit ${user.name}`} />
-            <PageHeader title={`Edit ${user.name}`} />
+            <PageHeader
+                title={`Edit ${user.name}`}
+                actions={<BackButton fallback={route('users.show', user.id)} />}
+            />
             <Card>
                 <CardContent className="pt-6">
                     <UserForm

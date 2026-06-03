@@ -162,7 +162,13 @@ class UserController extends Controller
 
         $user->delete();
 
-        return redirect()->route('users.index')
+        // If the delete came from the list, return there with its filters
+        // (search, ?inactive=1) intact. From the (now-gone) show page, fall back
+        // to the bare index so we don't redirect to a 404.
+        $previous = url()->previous();
+        $cameFromList = parse_url($previous, PHP_URL_PATH) === parse_url(route('users.index'), PHP_URL_PATH);
+
+        return redirect()->to($cameFromList ? $previous : route('users.index'))
             ->with('success', 'User deleted.');
     }
 

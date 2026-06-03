@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Columns3, Download, Pencil, Plus, Trash2 } from 'lucide-react';
-import { FormEventHandler, useEffect, useState } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 import Avatar from '@/Components/Avatar';
 import Can from '@/Components/Can';
@@ -60,16 +60,22 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
     const [selected, setSelected] = useState<number[]>([]);
     const [bulk, setBulk] = useState<BulkProcess | null>(null);
     const [deleting, setDeleting] = useState<AdminUser | null>(null);
-    const [columns, setColumns] = useState<Record<Column, boolean>>({
-        email: true,
-        status: true,
-        roles: true,
+    // Read saved visibility in the initializer (not a useEffect) so the first
+    // paint already reflects the user's choice — otherwise a hidden column
+    // flashes visible for one frame before the effect hides it.
+    const [columns, setColumns] = useState<Record<Column, boolean>>(() => {
+        const base: Record<Column, boolean> = {
+            email: true,
+            status: true,
+            roles: true,
+        };
+        try {
+            const saved = localStorage.getItem(COLUMN_KEY);
+            return saved ? { ...base, ...JSON.parse(saved) } : base;
+        } catch {
+            return base;
+        }
     });
-
-    useEffect(() => {
-        const saved = localStorage.getItem(COLUMN_KEY);
-        if (saved) setColumns((c) => ({ ...c, ...JSON.parse(saved) }));
-    }, []);
 
     const setColumn = (key: Column, value: boolean) =>
         setColumns((c) => {
@@ -159,8 +165,6 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                 }
             />
 
-            {/*<Card>*/}
-            {/*  <CardContent className="pt-6">*/}
             <div className="mb-4 flex flex-wrap gap-3">
                 <form
                     onSubmit={submitSearch}
@@ -187,7 +191,7 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                     {/*    aria-label="Created to"*/}
                     {/*/>*/}
                     <Button type="submit" variant="secondary">
-                        Filter
+                        Search
                     </Button>
                 </form>
 
@@ -414,8 +418,6 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                     prevCursor={users.prev_cursor}
                 />
             </div>
-            {/*</CardContent>*/}
-            {/*</Card>*/}
 
             <ConfirmDialog
                 open={bulk !== null}
