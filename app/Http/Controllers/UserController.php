@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\UserStatus;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\File;
 use App\Models\Role;
 use App\Models\User;
 use App\Policies\BasePolicy;
@@ -92,6 +93,7 @@ class UserController extends Controller
 
         return Inertia::render('Users/Show', [
             'user' => $this->row($user, detailed: true),
+            'documents' => $this->documentsFor($user),
         ]);
     }
 
@@ -103,7 +105,31 @@ class UserController extends Controller
 
         return Inertia::render('Users/Edit', [
             'user' => $this->row($user, detailed: true),
+            'documents' => $this->documentsFor($user),
             ...$this->formOptions(),
+        ]);
+    }
+
+    /**
+     * The target user's documents, in the shape the document UI consumes.
+     *
+     * @return array<string, mixed>
+     */
+    protected function documentsFor(User $user): array
+    {
+        $documents = File::query()
+            ->documents()
+            ->ownedBy($user->id)
+            ->keyset()
+            ->cursorPaginate(config('keen.pagination_size'));
+
+        return cursorResponse($documents, fn (File $f): array => [
+            'id' => $f->id,
+            'name' => $f->original_name,
+            'url' => route('documents.download', $f),
+            'size' => $f->size,
+            'extension' => $f->extension,
+            'created_at' => $f->created_at?->toIso8601String(),
         ]);
     }
 

@@ -41,4 +41,17 @@ return [
 
     'import_sync_threshold' => (int) env('IMPORT_SYNC_THRESHOLD', 100),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Document upload allowlist
+    |--------------------------------------------------------------------------
+    |
+    | Extensions accepted by the user-documents uploader (Profile → My
+    | Documents) and the File::documents() scope. Max size reuses
+    | media-library.max_file_size.
+    |
+    */
+
+    'document_extensions' => ['pdf', 'doc', 'docx'],
+
 ];

@@ -62,4 +62,12 @@ class File extends BaseModel implements HasMedia
     {
         $query->where('owner_id', $ownerId);
     }
+
+    /**
+     * @param  Builder<File>  $query
+     */
+    public function scopeDocuments(Builder $query): void
+    {
+        $query->whereIn('extension', config('keen.document_extensions', ['pdf', 'doc', 'docx']));
+    }
 }

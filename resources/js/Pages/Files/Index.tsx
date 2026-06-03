@@ -1,10 +1,11 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Download, Plus, Trash2 } from 'lucide-react';
+import { Download, Eye, Plus, Trash2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import CursorPager from '@/Components/CursorPager';
+import FileViewer, { type ViewerFile } from '@/Components/FileViewer';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -17,6 +18,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { humanSize } from '@/lib/format';
 import { type AdminFile, type CursorResponse } from '@/types';
 
 interface Props {
@@ -25,21 +27,19 @@ interface Props {
     can: { create: boolean; delete: boolean };
 }
 
-function humanSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    const units = ['KB', 'MB', 'GB'];
-    let n = bytes / 1024;
-    let i = 0;
-    while (n >= 1024 && i < units.length - 1) {
-        n /= 1024;
-        i++;
-    }
-    return `${n.toFixed(1)} ${units[i]}`;
-}
-
 export default function Index({ files, filters }: Props) {
     const [search, setSearch] = useState(filters.search);
     const [deleting, setDeleting] = useState<AdminFile | null>(null);
+    const [viewing, setViewing] = useState<ViewerFile | null>(null);
+
+    const preview = (file: AdminFile) =>
+        setViewing({
+            name: file.original_name,
+            extension: file.extension,
+            mime: file.mime,
+            url: route('files.preview', file.id),
+            downloadUrl: route('files.download', file.id),
+        });
 
     const submitSearch: FormEventHandler = (e) => {
         e.preventDefault();
@@ -138,6 +138,14 @@ export default function Index({ files, filters }: Props) {
                                         <Button
                                             size="icon"
                                             variant="ghost"
+                                            onClick={() => preview(file)}
+                                            title="Preview"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
                                             asChild
                                         >
                                             <a
@@ -184,6 +192,8 @@ export default function Index({ files, filters }: Props) {
                 destructive
                 onConfirm={destroy}
             />
+
+            <FileViewer file={viewing} onClose={() => setViewing(null)} />
         </AuthenticatedLayout>
     );
 }

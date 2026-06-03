@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\File;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,10 +19,24 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $documents = File::query()
+            ->documents()
+            ->ownedBy($request->user()->id)
+            ->keyset()
+            ->cursorPaginate(config('keen.pagination_size'));
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
             'passwordHint' => $request->user()->password_hint,
+            'documents' => cursorResponse($documents, fn (File $f): array => [
+                'id' => $f->id,
+                'name' => $f->original_name,
+                'url' => route('documents.download', $f),
+                'size' => $f->size,
+                'extension' => $f->extension,
+                'created_at' => $f->created_at?->toIso8601String(),
+            ]),
         ]);
     }
 

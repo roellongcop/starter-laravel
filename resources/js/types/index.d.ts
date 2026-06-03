@@ -7,6 +7,16 @@ export interface User {
     roles?: string[];
 }
 
+/** A user document as serialized by DocumentController/ProfileController. */
+export interface AdminDocument {
+    id: number;
+    name: string;
+    url: string;
+    size: number;
+    extension: string | null;
+    created_at: string | null;
+}
+
 /**
  * Shape returned by the PHP `cursorResponse()` helper and consumed by
  * <CursorPager>. Keyset pagination: opaque cursors, Prev/Next only.

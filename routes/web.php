@@ -4,6 +4,7 @@ use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\ImportController;
@@ -50,6 +51,13 @@ Route::middleware('auth')->group(function () {
     // cached copies on demand. Reusable by any page via <ImagePicker>.
     Route::post('/media', [MediaController::class, 'store'])->name('media.store');
     Route::get('/media/{file}/img', [MediaController::class, 'img'])->name('media.img');
+
+    // User documents (pdf/doc/docx): self-service, owner-scoped. Uploaded via
+    // the reusable <FileDropzone>; streamed as gated attachments.
+    Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    Route::get('/documents/{file}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::get('/documents/{file}/view', [DocumentController::class, 'view'])->name('documents.view');
+    Route::delete('/documents/{file}', [DocumentController::class, 'destroy'])->name('documents.destroy');
 
     // Profile photo: pick existing / upload / camera. Stored via /media; the
     // avatar references a file id and is streamed (resized) per user.

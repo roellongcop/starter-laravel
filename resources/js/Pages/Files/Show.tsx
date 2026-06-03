@@ -1,6 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
-import { Download } from 'lucide-react';
+import { Download, Eye } from 'lucide-react';
+import { useState } from 'react';
 
+import FileViewer, { type ViewerFile } from '@/Components/FileViewer';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -19,6 +21,17 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export default function Show({ file }: { file: AdminFile }) {
+    const [viewing, setViewing] = useState<ViewerFile | null>(null);
+
+    const openPreview = () =>
+        setViewing({
+            name: file.original_name,
+            extension: file.extension,
+            mime: file.mime,
+            url: route('files.preview', file.id),
+            downloadUrl: route('files.download', file.id),
+        });
+
     return (
         <AuthenticatedLayout>
             <Head title={file.original_name} />
@@ -30,6 +43,9 @@ export default function Show({ file }: { file: AdminFile }) {
                     <>
                         <Button variant="outline" asChild>
                             <Link href={route('files.index')}>Back</Link>
+                        </Button>
+                        <Button variant="outline" onClick={openPreview}>
+                            <Eye className="h-4 w-4" /> Preview
                         </Button>
                         <Button asChild>
                             <a href={route('files.download', file.id)}>
@@ -71,6 +87,8 @@ export default function Show({ file }: { file: AdminFile }) {
                     </Card>
                 )}
             </div>
+
+            <FileViewer file={viewing} onClose={() => setViewing(null)} />
         </AuthenticatedLayout>
     );
 }

@@ -2,12 +2,17 @@ import { Head, Link } from '@inertiajs/react';
 
 import Avatar from '@/Components/Avatar';
 import Can from '@/Components/Can';
+import DocumentList from '@/Components/DocumentList';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminUser } from '@/types';
+import {
+    type AdminDocument,
+    type AdminUser,
+    type CursorResponse,
+} from '@/types';
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
     return (
@@ -20,7 +25,13 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
     );
 }
 
-export default function Show({ user }: { user: AdminUser }) {
+export default function Show({
+    user,
+    documents,
+}: {
+    user: AdminUser;
+    documents: CursorResponse<AdminDocument>;
+}) {
     return (
         <AuthenticatedLayout>
             <Head title={user.name} />
@@ -111,6 +122,18 @@ export default function Show({ user }: { user: AdminUser }) {
                     </CardContent>
                 </Card>
             </div>
+
+            <Card className="mt-6">
+                <CardHeader>
+                    <CardTitle>Documents</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <DocumentList
+                        documents={documents}
+                        emptyText="No documents for this user."
+                    />
+                </CardContent>
+            </Card>
         </AuthenticatedLayout>
     );
 }

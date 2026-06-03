@@ -83,7 +83,7 @@ class Navigation
             [
                 'label' => 'Access', 'icon' => 'ShieldCheck', 'children' => [
                     ['key' => 'users', 'label' => 'Users', 'icon' => 'Users', 'href' => '/users'],
-                    ['key' => 'user-meta', 'label' => 'User Meta', 'icon' => 'Tags', 'href' => '/user-meta'],
+                    // ['key' => 'user-meta', 'label' => 'User Meta', 'icon' => 'Tags', 'href' => '/user-meta'],
                     ['key' => 'roles', 'label' => 'Roles', 'icon' => 'KeyRound', 'href' => '/roles'],
                 ],
             ],
