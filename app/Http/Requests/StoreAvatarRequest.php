@@ -22,7 +22,7 @@ class StoreAvatarRequest extends BaseFormRequest
             'file_id' => [
                 'required',
                 'integer',
-                'exists:tbl_files,id',
+                'exists:files,id',
                 function (string $attribute, mixed $value, Closure $fail): void {
                     $file = File::find($value);
 

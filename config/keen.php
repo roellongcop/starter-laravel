@@ -4,19 +4,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Domain table prefix
-    |--------------------------------------------------------------------------
-    |
-    | Applied by App\Models\BaseModel to domain tables (e.g. tbl_widgets).
-    | Framework/package tables (users, sessions, jobs, permission tables, …)
-    | are NOT prefixed — a model opts out by declaring its own $table.
-    |
-    */
-
-    'table_prefix' => env('DB_TABLE_PREFIX', 'tbl_'),
-
-    /*
-    |--------------------------------------------------------------------------
     | Default pagination size
     |--------------------------------------------------------------------------
     |

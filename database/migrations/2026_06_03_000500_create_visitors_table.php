@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tbl_visitors', function (Blueprint $table): void {
+        Schema::create('visitors', function (Blueprint $table): void {
             $table->id();
             $table->string('cookie_id')->unique();
             $table->string('ip_address', 45)->nullable();
@@ -25,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tbl_visitors');
+        Schema::dropIfExists('visitors');
     }
 };

@@ -1,31 +1,52 @@
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useMemo } from 'react';
 
 import InputError from '@/Components/InputError';
+import MenuBuilder from '@/Components/MenuBuilder';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { type AdminRole } from '@/types';
+import { type AdminRole, type MenuCatalogItem, type NavItem } from '@/types';
 
 interface Props {
     role?: AdminRole;
     /** { resourceKey: ["users.index", ...], "*": ["view-inactive"] } */
     permissionGroups: Record<string, string[]>;
+    menuCatalog: MenuCatalogItem[];
 }
 
-export default function RoleForm({ role, permissionGroups }: Props) {
+export default function RoleForm({
+    role,
+    permissionGroups,
+    menuCatalog,
+}: Props) {
     const editing = Boolean(role);
 
     const { data, setData, post, patch, processing, errors } = useForm<{
         name: string;
         description: string;
         permissions: string[];
+        main_navigation: NavItem[];
+        priority: number;
     }>({
         name: role?.name ?? '',
         description: role?.description ?? '',
         permissions: role?.permissions ?? [],
+        main_navigation: role?.main_navigation ?? [],
+        priority: role?.priority ?? 0,
     });
+
+    // Module keys the role can access (any selected ability) — the builder only
+    // offers these as addable modules.
+    const accessibleKeys = useMemo(() => {
+        const keys = new Set<string>();
+        for (const p of data.permissions) {
+            const i = p.indexOf('.');
+            if (i > 0) keys.add(p.slice(0, i));
+        }
+        return [...keys];
+    }, [data.permissions]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -50,6 +71,19 @@ export default function RoleForm({ role, permissionGroups }: Props) {
             all
                 ? data.permissions.filter((p) => !names.includes(p))
                 : Array.from(new Set([...data.permissions, ...names])),
+        );
+
+    const allNames = Object.values(permissionGroups).flat();
+    const allChecked =
+        allNames.length > 0 &&
+        allNames.every((n) => data.permissions.includes(n));
+
+    const toggleAll = (all: boolean) =>
+        setData(
+            'permissions',
+            all
+                ? data.permissions.filter((p) => !allNames.includes(p))
+                : Array.from(new Set([...data.permissions, ...allNames])),
         );
 
     return (
@@ -84,7 +118,16 @@ export default function RoleForm({ role, permissionGroups }: Props) {
             </div>
 
             <div>
-                <Label>Permissions</Label>
+                <div className="flex items-center justify-between">
+                    <Label>Permissions</Label>
+                    <label className="flex items-center gap-2 text-sm font-medium">
+                        <Checkbox
+                            checked={allChecked}
+                            onCheckedChange={() => toggleAll(allChecked)}
+                        />
+                        Select all
+                    </label>
+                </div>
                 <div className="mt-2 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {Object.entries(permissionGroups).map(([key, names]) => {
                         const all = names.every((n) =>
@@ -92,13 +135,15 @@ export default function RoleForm({ role, permissionGroups }: Props) {
                         );
                         return (
                             <div key={key} className="rounded-md border p-3">
-                                <button
-                                    type="button"
-                                    onClick={() => toggleGroup(names, all)}
-                                    className="mb-2 text-sm font-semibold capitalize text-foreground hover:underline"
-                                >
+                                <label className="mb-2 flex items-center gap-2 text-sm font-semibold capitalize text-foreground">
+                                    <Checkbox
+                                        checked={all}
+                                        onCheckedChange={() =>
+                                            toggleGroup(names, all)
+                                        }
+                                    />
                                     {key === '*' ? 'General' : key}
-                                </button>
+                                </label>
                                 <div className="space-y-1.5">
                                     {names.map((name) => (
                                         <label
@@ -124,6 +169,43 @@ export default function RoleForm({ role, permissionGroups }: Props) {
                     })}
                 </div>
                 <InputError message={errors.permissions} className="mt-1" />
+            </div>
+
+            <div>
+                <div className="flex items-center justify-between">
+                    <Label>Sidebar menu</Label>
+                    <div className="flex items-center gap-2">
+                        <Label
+                            htmlFor="priority"
+                            className="text-xs text-muted-foreground"
+                        >
+                            Priority
+                        </Label>
+                        <Input
+                            id="priority"
+                            type="number"
+                            min={0}
+                            value={data.priority}
+                            onChange={(e) =>
+                                setData('priority', Number(e.target.value))
+                            }
+                            className="h-8 w-20"
+                        />
+                    </div>
+                </div>
+                <p className="mb-2 mt-1 text-xs text-muted-foreground">
+                    Leave empty to auto-build the menu from the permissions
+                    above. Customize to control order, grouping, labels and
+                    external links. Higher priority wins when a user has
+                    multiple roles.
+                </p>
+                <MenuBuilder
+                    value={data.main_navigation}
+                    onChange={(next) => setData('main_navigation', next)}
+                    catalog={menuCatalog}
+                    accessibleKeys={accessibleKeys}
+                />
+                <InputError message={errors.main_navigation} className="mt-1" />
             </div>
 
             <Button type="submit" disabled={processing}>

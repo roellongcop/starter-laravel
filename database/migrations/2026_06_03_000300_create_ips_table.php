@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tbl_ips', function (Blueprint $table): void {
+        Schema::create('ips', function (Blueprint $table): void {
             $table->id();
             $table->string('ip_address', 45);
             $table->string('list_type')->default(IpListType::Blacklist->value);
@@ -22,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tbl_ips');
+        Schema::dropIfExists('ips');
     }
 };

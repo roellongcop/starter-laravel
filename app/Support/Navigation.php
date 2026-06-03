@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use App\Models\Role;
+use App\Models\User;
+
 /**
  * Derives the two role JSON blobs the frontend consumes:
  *
@@ -113,5 +116,194 @@ class Navigation
                 ],
             ],
         ];
+    }
+
+    /**
+     * Flat palette of the known module items (template leaves) for the menu
+     * builder: { key, label, icon, href }.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function catalog(): array
+    {
+        $leaves = [];
+
+        foreach (self::template() as $item) {
+            if (isset($item['children'])) {
+                foreach ($item['children'] as $child) {
+                    $leaves[] = $child;
+                }
+            } elseif (isset($item['key'])) {
+                $leaves[] = $item;
+            }
+        }
+
+        return $leaves;
+    }
+
+    /**
+     * The sidebar tree for a user: the merge of their roles' custom menus (or the
+     * permission-derived default for roles without one), intersected with the
+     * user's accessible modules so nothing inaccessible ever renders.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public static function forUser(User $user): array
+    {
+        $modules = self::modulesFor($user->getAllPermissions()->pluck('name')->all());
+
+        /** @var array<int, array<string, mixed>> $merged */
+        $merged = [];
+
+        // Highest priority first so it wins label/icon/position on conflicts.
+        /** @var Role $role */
+        foreach ($user->roles()->orderByDesc('priority')->orderBy('id')->get() as $role) {
+            $menu = is_array($role->main_navigation) && $role->main_navigation !== []
+                ? $role->main_navigation
+                : self::navigationFor(self::modulesFor($role->permissions->pluck('name')->all()));
+
+            $merged = self::mergeTrees($merged, $menu);
+        }
+
+        if ($merged === []) {
+            $merged = self::navigationFor($modules);
+        }
+
+        return self::intersect($merged, $modules);
+    }
+
+    /**
+     * Merge $incoming nav nodes into $acc, deduping leaves by key|href across the
+     * whole tree and merging groups by label. $acc (higher priority) is built
+     * first, so it wins; only not-yet-seen items are appended.
+     *
+     * @param  array<int, array<string, mixed>>  $acc
+     * @param  array<int, array<string, mixed>>  $incoming
+     * @return array<int, array<string, mixed>>
+     */
+    protected static function mergeTrees(array $acc, array $incoming): array
+    {
+        $seen = self::collectLeafIds($acc);
+
+        foreach ($incoming as $node) {
+            if (isset($node['children'])) {
+                $fresh = [];
+                foreach ($node['children'] as $child) {
+                    $id = self::leafId($child);
+                    if ($id !== null && ! in_array($id, $seen, true)) {
+                        $fresh[] = $child;
+                        $seen[] = $id;
+                    }
+                }
+
+                if ($fresh === []) {
+                    continue;
+                }
+
+                $existing = null;
+                foreach ($acc as $i => $a) {
+                    if (isset($a['children']) && ($a['label'] ?? null) === ($node['label'] ?? null)) {
+                        $existing = $i;
+                        break;
+                    }
+                }
+
+                if ($existing !== null) {
+                    $acc[$existing]['children'] = array_merge($acc[$existing]['children'], $fresh);
+                } else {
+                    $acc[] = [...$node, 'children' => $fresh];
+                }
+
+                continue;
+            }
+
+            $id = self::leafId($node);
+            if ($id !== null && ! in_array($id, $seen, true)) {
+                $acc[] = $node;
+                $seen[] = $id;
+            }
+        }
+
+        return $acc;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $tree
+     * @return array<int, string>
+     */
+    protected static function collectLeafIds(array $tree): array
+    {
+        $ids = [];
+
+        foreach ($tree as $node) {
+            if (isset($node['children'])) {
+                foreach ($node['children'] as $child) {
+                    if (($id = self::leafId($child)) !== null) {
+                        $ids[] = $id;
+                    }
+                }
+            } elseif (($id = self::leafId($node)) !== null) {
+                $ids[] = $id;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param  array<string, mixed>  $leaf
+     */
+    protected static function leafId(array $leaf): ?string
+    {
+        $id = $leaf['key'] ?? $leaf['href'] ?? null;
+
+        return is_string($id) ? $id : null;
+    }
+
+    /**
+     * Drop module leaves (those with a `key`) the user can't access, and any
+     * group left empty. Link leaves (no key) always survive.
+     *
+     * @param  array<int, array<string, mixed>>  $tree
+     * @param  array<string, array<int, string>>  $modules
+     * @return array<int, array<string, mixed>>
+     */
+    protected static function intersect(array $tree, array $modules): array
+    {
+        $result = [];
+
+        foreach ($tree as $node) {
+            if (isset($node['children'])) {
+                $children = array_values(array_filter(
+                    $node['children'],
+                    fn (array $child) => self::leafVisible($child, $modules),
+                ));
+
+                if ($children !== []) {
+                    $result[] = [...$node, 'children' => $children];
+                }
+
+                continue;
+            }
+
+            if (self::leafVisible($node, $modules)) {
+                $result[] = $node;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $leaf
+     * @param  array<string, array<int, string>>  $modules
+     */
+    protected static function leafVisible(array $leaf, array $modules): bool
+    {
+        if (! isset($leaf['key'])) {
+            return true; // custom/external link — no permission tie
+        }
+
+        return isset($modules[$leaf['key']]);
     }
 }

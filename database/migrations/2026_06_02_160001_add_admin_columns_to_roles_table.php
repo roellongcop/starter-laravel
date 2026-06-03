@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('description')->nullable()->after('role_type');
             $table->json('module_access')->nullable()->after('description');
             $table->json('main_navigation')->nullable()->after('module_access');
+            // Higher priority wins when merging a multi-role user's custom menus.
+            $table->unsignedSmallInteger('priority')->default(0)->after('main_navigation');
 
             $table->unsignedTinyInteger('record_status')->default(RecordStatus::Active->value);
             $table->unsignedBigInteger('created_by')->nullable();
@@ -38,6 +40,7 @@ return new class extends Migration
                 'description',
                 'module_access',
                 'main_navigation',
+                'priority',
                 'record_status',
                 'created_by',
                 'updated_by',

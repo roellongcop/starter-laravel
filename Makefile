@@ -14,9 +14,9 @@ export UID := $(shell id -u)
 export GID := $(shell id -g)
 
 .DEFAULT_GOAL := help
-.PHONY: help build up down restart install setup shell migrate fresh seed \
-        queue dev assets test pint stan lint logs ps tinker ide-helper \
-        wait-db key storage-link
+.PHONY: help build up down down-v refresh restart install setup shell migrate \
+        fresh seed queue dev assets test pint stan lint logs ps tinker \
+        ide-helper wait-db key storage-link clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -31,6 +31,26 @@ up: ## Start the stack (waits for a healthy database)
 
 down: ## Stop and remove containers
 	$(DC) down
+
+down-v: ## Stop and remove containers + named volumes (db, seaweedfs)
+	$(DC) down -v --remove-orphans
+
+# Build assets are written by the node container (root), so host `rm` hits
+# permission errors. Delete inside a one-off root container — the project is
+# bind-mounted, so root can remove files of any owner. Needs the app image built.
+clean: ## Delete generated/uploaded local files (assets, hot file, local disk files)
+	$(DC) run --rm --no-deps -T --user root app sh -lc 'rm -rf \
+		public/build public/hot \
+		storage/app/private/uploads storage/app/private/exports \
+		storage/app/private/imports storage/app/private/backups \
+		storage/app/private/image-cache; \
+		find storage/app/public -mindepth 1 -not -name .gitignore -delete 2>/dev/null || true'
+
+refresh: ## Wipe EVERYTHING (containers, volumes, local files) and rebuild fresh
+	$(DC) down -v --remove-orphans
+	$(DC) build
+	@$(MAKE) clean
+	@$(MAKE) setup
 
 restart: down up ## Restart the stack
 
@@ -65,7 +85,7 @@ shell: ## Bash shell in the app container
 migrate: ## Run database migrations
 	$(APP) php artisan migrate
 
-fresh: ## Drop everything and re-migrate + seed
+fresh: ## DB only: drop all tables and re-migrate + seed (use `refresh` for a full wipe)
 	$(APP) php artisan migrate:fresh --seed
 
 seed: ## Run database seeders

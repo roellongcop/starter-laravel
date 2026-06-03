@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * The audit footer every domain table carries. Call after $table->id():
      *
-     *     Schema::create('tbl_things', function (Blueprint $table) {
+     *     Schema::create('things', function (Blueprint $table) {
      *         $table->id();
      *         $table->string('name');
      *         $table->auditColumns();

@@ -16,6 +16,7 @@ class StoreRoleRequest extends BaseFormRequest
             'description' => ['nullable', 'string', 'max:1000'],
             'permissions' => ['array'],
             'permissions.*' => [Rule::exists('permissions', 'name')],
+            ...$this->navigationRules(),
         ];
     }
 }

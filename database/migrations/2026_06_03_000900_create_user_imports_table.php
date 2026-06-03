@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tbl_user_imports', function (Blueprint $table): void {
+        Schema::create('user_imports', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('token', 64)->unique();
@@ -28,6 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tbl_user_imports');
+        Schema::dropIfExists('user_imports');
     }
 };

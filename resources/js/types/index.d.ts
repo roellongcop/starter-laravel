@@ -63,6 +63,16 @@ export interface AdminRole {
     // detailed-only
     permissions?: string[];
     module_access?: Record<string, string[]>;
+    main_navigation?: NavItem[] | null;
+    priority?: number;
+}
+
+/** A module from the menu builder's palette (Navigation::catalog()). */
+export interface MenuCatalogItem {
+    key: string;
+    label: string;
+    icon?: string;
+    href: string;
 }
 
 export interface SelectOption {
@@ -120,6 +130,7 @@ export interface NavItem {
     label: string;
     icon?: string;
     href?: string;
+    external?: boolean;
     children?: NavItem[];
 }
 

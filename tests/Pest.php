@@ -62,14 +62,14 @@ function actingAsRole(string $role): User
 }
 
 /**
- * Create the test-only tbl_widgets table using the auditColumns() macro, so the
+ * Create the test-only widgets table using the auditColumns() macro, so the
  * foundation tests can exercise BaseModel without a real domain migration.
  */
 function createWidgetsTable(): void
 {
-    Schema::dropIfExists('tbl_widgets');
+    Schema::dropIfExists('widgets');
 
-    Schema::create('tbl_widgets', function (Blueprint $table): void {
+    Schema::create('widgets', function (Blueprint $table): void {
         $table->id();
         $table->string('name');
         $table->auditColumns();

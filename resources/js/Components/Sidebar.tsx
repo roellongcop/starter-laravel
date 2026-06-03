@@ -1,78 +1,47 @@
 import { Link, usePage } from '@inertiajs/react';
-import {
-    Archive,
-    Bell,
-    Circle,
-    Database,
-    Download,
-    Files,
-    FolderOpen,
-    Footprints,
-    KeyRound,
-    LayoutDashboard,
-    ListChecks,
-    type LucideIcon,
-    MonitorSmartphone,
-    Network,
-    Palette,
-    Route as RouteIcon,
-    ScrollText,
-    Settings,
-    ShieldCheck,
-    Tags,
-    Upload,
-    Users,
-} from 'lucide-react';
 
+import { NavIcon } from '@/lib/navIcons';
 import { cn } from '@/lib/utils';
 import { type NavItem, type PageProps } from '@/types';
 
-const ICONS: Record<string, LucideIcon> = {
-    LayoutDashboard,
-    ShieldCheck,
-    Users,
-    Tags,
-    KeyRound,
-    FolderOpen,
-    Files,
-    Palette,
-    Bell,
-    Database,
-    Download,
-    Upload,
-    Archive,
-    Settings,
-    Network,
-    MonitorSmartphone,
-    ScrollText,
-    Footprints,
-    Route: RouteIcon,
-    ListChecks,
-};
-
-function Icon({ name, className }: { name?: string; className?: string }) {
-    const Component = (name && ICONS[name]) || Circle;
-    return <Component className={className} />;
-}
-
 function NavLeaf({ item }: { item: NavItem }) {
     const active =
+        !item.external &&
         item.href != null &&
         typeof window !== 'undefined' &&
         window.location.pathname.startsWith(item.href);
 
-    return (
-        <Link
-            href={item.href ?? '#'}
-            className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                active
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-            )}
-        >
-            <Icon name={item.icon} className="h-4 w-4 shrink-0" />
+    const className = cn(
+        'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+        active
+            ? 'bg-accent text-accent-foreground'
+            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+    );
+
+    const inner = (
+        <>
+            <NavIcon name={item.icon} className="h-4 w-4 shrink-0" />
             <span>{item.label}</span>
+        </>
+    );
+
+    // External links open in a new tab; internal links use Inertia navigation.
+    if (item.external) {
+        return (
+            <a
+                href={item.href ?? '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={className}
+            >
+                {inner}
+            </a>
+        );
+    }
+
+    return (
+        <Link href={item.href ?? '#'} className={className}>
+            {inner}
         </Link>
     );
 }

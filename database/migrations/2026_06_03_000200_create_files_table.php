@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tbl_files', function (Blueprint $table): void {
+        Schema::create('files', function (Blueprint $table): void {
             $table->id();
             $table->string('original_name');
             $table->string('extension', 32)->nullable();
@@ -27,6 +27,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tbl_files');
+        Schema::dropIfExists('files');
     }
 };

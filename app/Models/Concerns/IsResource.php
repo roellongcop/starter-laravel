@@ -6,23 +6,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 /**
- * Shared resource plumbing for domain models: the `tbl_` table prefix, keyset
- * (cursor) ordering, and the routing/url config() descriptor. Lives in a trait
- * so both BaseModel and User (which must extend Authenticatable, not BaseModel)
- * behave identically.
+ * Shared resource plumbing for domain models: keyset (cursor) ordering and the
+ * routing/url config() descriptor. Lives in a trait so both BaseModel and User
+ * (which must extend Authenticatable, not BaseModel) behave identically.
+ *
+ * Table names follow the Laravel convention (snake_case plural of the class);
+ * a model sets $table only to override that (e.g. uncountable nouns).
  */
 trait IsResource
 {
-    /**
-     * Prefix the configured domain prefix onto the snake-plural class name
-     * unless an explicit $table is set (framework tables like `users` opt out).
-     */
-    public function getTable(): string
-    {
-        return $this->table ??= config('keen.table_prefix', 'tbl_')
-            .Str::snake(Str::pluralStudly(class_basename($this)));
-    }
-
     /**
      * Order newest-first for cursor pagination: created_at DESC, id DESC.
      */

@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tbl_backups', function (Blueprint $table): void {
+        Schema::create('backups', function (Blueprint $table): void {
             $table->id();
             $table->string('filename')->nullable();
             $table->string('disk')->default('backups');
@@ -23,6 +23,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tbl_backups');
+        Schema::dropIfExists('backups');
     }
 };

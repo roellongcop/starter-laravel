@@ -51,7 +51,7 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => $permissions,
                 'modules' => $modules,
             ],
-            'navigation' => $user ? Navigation::navigationFor($modules) : [],
+            'navigation' => $user ? Navigation::forUser($user) : [],
             // Bell: unread count + recent notifications. Named `bell` (not
             // `notifications`) to avoid colliding with the Notifications index
             // page's own `notifications` list prop.

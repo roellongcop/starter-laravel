@@ -18,6 +18,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * @property string|null $description
  * @property array<string, array<int, string>>|null $module_access
  * @property array<int, mixed>|null $main_navigation
+ * @property int $priority
  */
 class Role extends SpatieRole
 {
@@ -28,6 +29,7 @@ class Role extends SpatieRole
         'description',
         'module_access',
         'main_navigation',
+        'priority',
         'record_status',
         'created_by',
         'updated_by',
@@ -39,6 +41,7 @@ class Role extends SpatieRole
             'role_type' => RoleType::class,
             'module_access' => 'array',
             'main_navigation' => 'array',
+            'priority' => 'integer',
         ];
     }
 }

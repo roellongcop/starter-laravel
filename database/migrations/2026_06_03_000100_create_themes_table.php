@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('tbl_themes', function (Blueprint $table): void {
+        Schema::create('themes', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
@@ -23,6 +23,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tbl_themes');
+        Schema::dropIfExists('themes');
     }
 };

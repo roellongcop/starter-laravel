@@ -21,7 +21,8 @@ it('creates a role and derives module_access from permissions', function (): voi
 
     expect($role->hasPermissionTo('files.update'))->toBeTrue()
         ->and($role->module_access['files'])->toEqualCanonicalizing(['index', 'update'])
-        ->and($role->main_navigation)->not->toBeEmpty();
+        // No custom menu posted → main_navigation stays null (derived at render).
+        ->and($role->main_navigation)->toBeNull();
 });
 
 it('re-derives module_access when permissions change', function (): void {

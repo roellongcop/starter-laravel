@@ -63,6 +63,7 @@ class RoleController extends Controller
             ]);
 
             $this->applyPermissions($role, $request->array('permissions'));
+            $this->applyMenu($role, $request);
 
             return $role;
         });
@@ -106,9 +107,12 @@ class RoleController extends Controller
             ]);
 
             $this->applyPermissions($role, $request->array('permissions'));
+            $this->applyMenu($role, $request);
         });
 
-        return redirect()->route('roles.show', $role)->with('success', 'Role updated.');
+        // Redirect to edit (not show) so the freshly-loaded editor reflects the
+        // saved menu — avoids Inertia restoring a stale cached edit page on back.
+        return redirect()->route('roles.edit', $role)->with('success', 'Role updated.');
     }
 
     public function destroy(Role $role): RedirectResponse
@@ -125,8 +129,9 @@ class RoleController extends Controller
     }
 
     /**
-     * Sync permissions and re-derive the module_access + main_navigation JSON so
-     * the sidebar/button visibility stays in lockstep with grants.
+     * Sync permissions and re-derive module_access (drives <Can> button
+     * visibility). The sidebar tree (main_navigation) is admin-managed and set
+     * separately in applyMenu().
      *
      * @param  array<int, string>  $permissions
      */
@@ -134,10 +139,22 @@ class RoleController extends Controller
     {
         $role->syncPermissions($permissions);
 
-        $modules = Navigation::modulesFor($permissions);
         $role->forceFill([
-            'module_access' => $modules,
-            'main_navigation' => Navigation::navigationFor($modules),
+            'module_access' => Navigation::modulesFor($permissions),
+        ])->save();
+    }
+
+    /**
+     * Persist the admin-defined menu + priority. An empty/omitted menu is stored
+     * as null so the role falls back to the permission-derived default.
+     */
+    protected function applyMenu(Role $role, Request $request): void
+    {
+        $menu = $request->input('main_navigation');
+
+        $role->forceFill([
+            'priority' => $request->integer('priority'),
+            'main_navigation' => is_array($menu) && $menu !== [] ? $menu : null,
         ])->save();
     }
 
@@ -158,6 +175,8 @@ class RoleController extends Controller
         if ($detailed) {
             $data['permissions'] = $role->permissions->pluck('name');
             $data['module_access'] = $role->module_access;
+            $data['main_navigation'] = $role->main_navigation;
+            $data['priority'] = $role->priority;
         }
 
         return $data;
@@ -179,6 +198,9 @@ class RoleController extends Controller
             );
         }
 
-        return ['permissionGroups' => $groups];
+        return [
+            'permissionGroups' => $groups,
+            'menuCatalog' => Navigation::catalog(),
+        ];
     }
 }

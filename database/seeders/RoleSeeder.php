@@ -18,27 +18,28 @@ class RoleSeeder extends Seeder
         // gates via Gate::before, but we grant explicitly too for clarity.)
         $all = Permissions::all();
 
-        $this->makeRole('developer', 'Full system access (god mode).', $all, $guard);
-        $this->makeRole('superadmin', 'Manages the entire application.', $all, $guard);
-        $this->makeRole('admin', 'Day-to-day administration.', $this->adminPermissions(), $guard);
+        $this->makeRole('developer', 'Full system access (god mode).', $all, $guard, 30);
+        $this->makeRole('superadmin', 'Manages the entire application.', $all, $guard, 20);
+        $this->makeRole('admin', 'Day-to-day administration.', $this->adminPermissions(), $guard, 10);
     }
 
     /**
      * @param  array<int, string>  $permissions
      */
-    protected function makeRole(string $name, string $description, array $permissions, string $guard): void
+    protected function makeRole(string $name, string $description, array $permissions, string $guard, int $priority = 0): void
     {
         /** @var Role $role */
         $role = Role::findOrCreate($name, $guard);
         $role->syncPermissions($permissions);
 
-        $modules = Navigation::modulesFor($permissions);
-
+        // main_navigation left null → the sidebar is derived from permissions
+        // (the default). Admins opt into a custom menu via the role builder.
         $role->forceFill([
             'role_type' => RoleType::System,
             'description' => $description,
-            'module_access' => $modules,
-            'main_navigation' => Navigation::navigationFor($modules),
+            'module_access' => Navigation::modulesFor($permissions),
+            'main_navigation' => null,
+            'priority' => $priority,
         ])->save();
     }
 

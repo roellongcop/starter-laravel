@@ -6,14 +6,23 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Admin/domain columns on the framework users table. Runs after files so the
+ * avatar_file_id foreign key resolves.
+ */
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table): void {
+            $table->string('password_hint')->nullable()->after('password');
             $table->string('username')->nullable()->unique()->after('email');
             $table->string('user_status')->default(UserStatus::Active->value)->after('password_hint');
             $table->string('avatar')->nullable()->after('user_status');
+            // Avatar image: references the backing File (a URL fallback lives in
+            // `avatar`). Nulled if that file is deleted.
+            $table->foreignId('avatar_file_id')->nullable()->after('avatar')
+                ->constrained('files')->nullOnDelete();
 
             // Audit footer (users already has created_at/updated_at).
             $table->unsignedTinyInteger('record_status')->default(RecordStatus::Active->value);
@@ -26,8 +35,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table): void {
+            $table->dropConstrainedForeignId('avatar_file_id');
             $table->dropIndex(['record_status']);
             $table->dropColumn([
+                'password_hint',
                 'username',
                 'user_status',
                 'avatar',

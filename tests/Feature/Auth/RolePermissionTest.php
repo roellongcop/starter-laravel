@@ -18,7 +18,8 @@ it('seeds the three system roles with derived module access', function (): void 
 
     expect($admin->role_type->value)->toBe('System')
         ->and($admin->module_access['users'])->toBe(['index', 'show'])
-        ->and($admin->main_navigation)->not->toBeEmpty();
+        // Seeded roles use the permission-derived menu (main_navigation null).
+        ->and($admin->main_navigation)->toBeNull();
 });
 
 it('lets the developer bypass every gate', function (): void {

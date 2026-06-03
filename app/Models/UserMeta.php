@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Arbitrary per-user custom fields (key/value). Managed inline through the user
- * form. Table: tbl_user_meta.
+ * form. Table: user_meta.
  */
 class UserMeta extends BaseModel
 {
     // "meta" reads as a mass noun; pin the table rather than auto-pluralizing to
-    // tbl_user_metas.
-    protected $table = 'tbl_user_meta';
+    // user_metas.
+    protected $table = 'user_meta';
 
     protected $fillable = ['user_id', 'key', 'value'];
 

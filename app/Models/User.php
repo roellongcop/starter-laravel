@@ -34,8 +34,7 @@ class User extends Authenticatable implements Auditable
     use AuditableTrait, Blameable, HasApiTokens, HasFactory, HasRecordStatus, HasRoles, IsResource, Notifiable;
 
     /**
-     * Framework/sanctum/permission tables reference `users`, so this model opts
-     * out of the tbl_ prefix.
+     * Explicit table name (the model lives outside the BaseModel hierarchy).
      */
     protected $table = 'users';
 
