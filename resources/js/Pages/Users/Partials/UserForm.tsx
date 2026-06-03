@@ -1,7 +1,9 @@
 import { useForm } from '@inertiajs/react';
 import { Plus, X } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 
+import Avatar from '@/Components/Avatar';
+import ImagePicker, { type PickedImage } from '@/Components/ImagePicker';
 import InputError from '@/Components/InputError';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -33,7 +35,7 @@ export default function UserForm({ user, roleOptions, statusOptions }: Props) {
         password_confirmation: string;
         password_hint: string;
         user_status: string;
-        avatar: string;
+        avatar_file_id: number | null;
         roles: string[];
         meta: UserMetaRow[];
     }>({
@@ -44,10 +46,20 @@ export default function UserForm({ user, roleOptions, statusOptions }: Props) {
         password_confirmation: '',
         password_hint: user?.password_hint ?? '',
         user_status: user?.user_status ?? 'Active',
-        avatar: user?.avatar ?? '',
+        avatar_file_id: null,
         roles: user?.roles ?? [],
         meta: user?.meta ?? [],
     });
+
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const [preview, setPreview] = useState<string | null>(
+        user?.avatar_url ?? null,
+    );
+
+    const onPicked = (image: PickedImage) => {
+        setData('avatar_file_id', image.id);
+        setPreview(image.url);
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -76,6 +88,35 @@ export default function UserForm({ user, roleOptions, statusOptions }: Props) {
 
     return (
         <form onSubmit={submit} className="max-w-2xl space-y-6">
+            <div className="flex items-center gap-4">
+                <Avatar
+                    name={data.name || user?.name || '?'}
+                    src={preview}
+                    size={64}
+                />
+                <div>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setPickerOpen(true)}
+                    >
+                        Choose photo
+                    </Button>
+                    <InputError
+                        message={errors.avatar_file_id}
+                        className="mt-1"
+                    />
+                </div>
+            </div>
+
+            <ImagePicker
+                open={pickerOpen}
+                onOpenChange={setPickerOpen}
+                onPicked={onPicked}
+                aspectRatio={1}
+                title="User photo"
+            />
+
             <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                     <Label htmlFor="name">Name</Label>

@@ -49,7 +49,7 @@ export default function Index({ imports }: Props) {
                 }
             />
 
-            <div className="rounded-lg border">
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>

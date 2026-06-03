@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Columns3, Download, Pencil, Plus, Trash2 } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
 
+import Avatar from '@/Components/Avatar';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import CursorPager from '@/Components/CursorPager';
@@ -158,6 +159,8 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                 }
             />
 
+            {/*<Card>*/}
+            {/*  <CardContent className="pt-6">*/}
             <div className="mb-4 flex flex-wrap gap-3">
                 <form
                     onSubmit={submitSearch}
@@ -283,7 +286,7 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                 </div>
             )}
 
-            <div className="rounded-lg border">
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -319,17 +322,24 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                                     />
                                 </TableCell>
                                 <TableCell className="font-medium">
-                                    <Link
-                                        href={route('users.show', user.id)}
-                                        className="hover:underline"
-                                    >
-                                        {user.name}
-                                    </Link>
-                                    {user.username && (
-                                        <span className="ml-2 text-xs text-muted-foreground">
-                                            @{user.username}
-                                        </span>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <Avatar
+                                            name={user.name}
+                                            src={user.avatar_url}
+                                            size={28}
+                                        />
+                                        <Link
+                                            href={route('users.show', user.id)}
+                                            className="hover:underline"
+                                        >
+                                            {user.name}
+                                        </Link>
+                                        {user.username && (
+                                            <span className="text-xs text-muted-foreground">
+                                                @{user.username}
+                                            </span>
+                                        )}
+                                    </div>
                                 </TableCell>
                                 {columns.email && (
                                     <TableCell>{user.email}</TableCell>
@@ -396,7 +406,7 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                 {users.total !== undefined && (
                     <span className="text-sm text-muted-foreground">
                         {users.total.toLocaleString()}{' '}
-                        {users.total === 1 ? 'record' : 'records'} found
+                        {users.total <= 1 ? 'record' : 'records'} found
                     </span>
                 )}
                 <CursorPager
@@ -404,6 +414,8 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                     prevCursor={users.prev_cursor}
                 />
             </div>
+            {/*</CardContent>*/}
+            {/*</Card>*/}
 
             <ConfirmDialog
                 open={bulk !== null}

@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
+import Avatar from '@/Components/Avatar';
 import Can from '@/Components/Can';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
@@ -42,6 +43,16 @@ export default function Show({ user }: { user: AdminUser }) {
                     </>
                 }
             />
+
+            <div className="mb-6 flex items-center gap-4">
+                <Avatar name={user.name} src={user.avatar_url} size={72} />
+                <div>
+                    <p className="text-lg font-medium">{user.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                        {user.email}
+                    </p>
+                </div>
+            </div>
 
             <div className="grid gap-6 md:grid-cols-2">
                 <Card>

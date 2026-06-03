@@ -43,6 +43,7 @@ class HandleInertiaRequests extends Middleware
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'avatar_url' => $user->avatar_url,
                     'roles' => $user->getRoleNames()->all(),
                 ] : null,
                 // Flat permission names for <Can> checks, and the module_access

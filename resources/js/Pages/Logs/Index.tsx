@@ -64,7 +64,7 @@ export default function Index({ logs, filters }: Props) {
                 </Button>
             </form>
 
-            <div className="rounded-lg border">
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>

@@ -3,6 +3,7 @@ export interface User {
     name: string;
     email: string;
     email_verified_at?: string;
+    avatar_url?: string | null;
     roles?: string[];
 }
 
@@ -33,10 +34,11 @@ export interface AdminUser {
     user_status: string;
     record_status: number;
     roles: string[];
+    avatar_url?: string | null;
     created_at: string | null;
     // detailed-only
     password_hint?: string | null;
-    avatar?: string | null;
+    avatar_file_id?: number | null;
     meta?: UserMetaRow[];
 }
 

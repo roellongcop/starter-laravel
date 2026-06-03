@@ -41,7 +41,7 @@ export default function Index({ sessions, can }: Props) {
                 description="Active database sessions."
             />
 
-            <div className="rounded-lg border">
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>
                     <TableHeader>
                         <TableRow>

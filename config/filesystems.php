@@ -126,6 +126,19 @@ return [
             'report' => false,
         ],
 
+        /*
+        | Local cache of Glide-generated image derivatives (resized thumbnails).
+        | Always local — derivatives are cheap to regenerate from the source, so
+        | there's no need to pay S3 round-trips for them. Served only through the
+        | gated media.img controller action, never a public URL.
+        */
+        'image-cache' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/image-cache'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
     ],
 
     /*

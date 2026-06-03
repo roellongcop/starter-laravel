@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\StoreUploadedFile;
 use App\Http\Requests\StoreFileRequest;
 use App\Models\File;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -47,28 +48,11 @@ class FileController extends Controller
         return Inertia::render('Files/Create');
     }
 
-    public function store(StoreFileRequest $request): RedirectResponse
+    public function store(StoreFileRequest $request, StoreUploadedFile $store): RedirectResponse
     {
         $this->authorize('create', File::class);
 
-        $upload = $request->file('file');
-
-        $file = File::create([
-            'original_name' => $upload->getClientOriginalName(),
-            'tag' => $request->input('tag'),
-            'owner_id' => $request->user()->id,
-        ]);
-
-        // Store on the private `uploads` disk — never the medialibrary default.
-        $media = $file->addMedia($upload)->toMediaCollection(File::COLLECTION, 'uploads');
-
-        $file->update([
-            'extension' => $media->extension,
-            'mime' => $media->mime_type,
-            'size' => $media->size,
-            'disk' => $media->disk,
-            'path' => $media->getPathRelativeToRoot(),
-        ]);
+        $file = $store($request->file('file'), $request->user()->id, $request->input('tag'));
 
         return redirect()->route('files.show', $file)->with('success', 'File uploaded.');
     }

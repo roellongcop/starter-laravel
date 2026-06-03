@@ -8,7 +8,9 @@ use App\Models\Concerns\Blameable;
 use App\Models\Concerns\HasRecordStatus;
 use App\Models\Concerns\IsResource;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -23,6 +25,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $username
  * @property string|null $password_hint
  * @property string|null $avatar
+ * @property int|null $avatar_file_id
+ * @property-read string|null $avatar_url
  */
 class User extends Authenticatable implements Auditable
 {
@@ -46,6 +50,14 @@ class User extends Authenticatable implements Auditable
         'username',
         'user_status',
         'avatar',
+        'avatar_file_id',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    protected $appends = [
+        'avatar_url',
     ];
 
     /**
@@ -77,5 +89,37 @@ class User extends Authenticatable implements Auditable
     public function meta(): HasMany
     {
         return $this->hasMany(UserMeta::class);
+    }
+
+    /**
+     * The File whose media backs this user's avatar.
+     *
+     * @return BelongsTo<File, $this>
+     */
+    public function avatarFile(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'avatar_file_id');
+    }
+
+    /**
+     * Resolved avatar URL for the frontend: the gated stream route when an
+     * avatar file is set, else the legacy `avatar` string if it's a URL, else
+     * null (the UI falls back to initials).
+     */
+    protected function avatarUrl(): Attribute
+    {
+        return Attribute::get(function (): ?string {
+            if ($this->avatar_file_id !== null) {
+                // The `v` (= avatar file id) busts the browser + Glide cache
+                // whenever the photo changes, so a new avatar shows immediately.
+                return route('profile.avatar', ['user' => $this, 'v' => $this->avatar_file_id]);
+            }
+
+            if (is_string($this->avatar) && str_starts_with($this->avatar, 'http')) {
+                return $this->avatar;
+            }
+
+            return null;
+        });
     }
 }

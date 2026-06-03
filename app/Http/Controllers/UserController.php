@@ -70,11 +70,12 @@ class UserController extends Controller
 
         $user = DB::transaction(function () use ($request) {
             $user = User::create($request->safe()->only([
-                'name', 'email', 'username', 'password', 'password_hint', 'user_status', 'avatar',
+                'name', 'email', 'username', 'password', 'password_hint', 'user_status',
             ]));
 
             $user->syncRoles($request->array('roles'));
             $this->syncMeta($user, $request->array('meta'));
+            $this->syncAvatar($user, $request);
 
             return $user;
         });
@@ -112,7 +113,7 @@ class UserController extends Controller
 
         DB::transaction(function () use ($request, $user) {
             $data = $request->safe()->only([
-                'name', 'email', 'username', 'password_hint', 'user_status', 'avatar',
+                'name', 'email', 'username', 'password_hint', 'user_status',
             ]);
 
             if ($request->filled('password')) {
@@ -122,6 +123,7 @@ class UserController extends Controller
             $user->update($data);
             $user->syncRoles($request->array('roles'));
             $this->syncMeta($user, $request->array('meta'));
+            $this->syncAvatar($user, $request);
         });
 
         return redirect()->route('users.show', $user)
@@ -170,6 +172,17 @@ class UserController extends Controller
     }
 
     /**
+     * Set the user's avatar to an existing file id (uploaded via /media by the
+     * picker). Absent, the avatar is left unchanged.
+     */
+    protected function syncAvatar(User $user, Request $request): void
+    {
+        if ($request->filled('avatar_file_id')) {
+            $user->update(['avatar_file_id' => $request->integer('avatar_file_id')]);
+        }
+    }
+
+    /**
      * @return array<string, mixed>
      */
     protected function row(User $user, bool $detailed = false): array
@@ -182,12 +195,13 @@ class UserController extends Controller
             'user_status' => $user->user_status->value,
             'record_status' => $user->record_status->value,
             'roles' => $user->roles->pluck('name'),
+            'avatar_url' => $user->avatar_url,
             'created_at' => $user->created_at?->toIso8601String(),
         ];
 
         if ($detailed) {
             $data['password_hint'] = $user->password_hint;
-            $data['avatar'] = $user->avatar;
+            $data['avatar_file_id'] = $user->avatar_file_id;
             $data['meta'] = $user->meta->map(fn ($m) => ['key' => $m->key, 'value' => $m->value])->values();
         }
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\FileFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -44,5 +45,21 @@ class File extends BaseModel implements HasMedia
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * @param  Builder<File>  $query
+     */
+    public function scopeImages(Builder $query): void
+    {
+        $query->where('mime', 'like', 'image/%');
+    }
+
+    /**
+     * @param  Builder<File>  $query
+     */
+    public function scopeOwnedBy(Builder $query, int $ownerId): void
+    {
+        $query->where('owner_id', $ownerId);
     }
 }

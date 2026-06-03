@@ -23,7 +23,7 @@ class UpdateUserRequest extends BaseFormRequest
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'password_hint' => ['nullable', 'string', 'max:255'],
             'user_status' => ['required', Rule::enum(UserStatus::class)],
-            'avatar' => ['nullable', 'string', 'max:2048'],
+            'avatar_file_id' => ['nullable', 'integer', 'exists:tbl_files,id'],
 
             'roles' => ['array'],
             'roles.*' => [Rule::exists('roles', 'name')],
