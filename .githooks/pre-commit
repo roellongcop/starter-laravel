@@ -1,0 +1,29 @@
+#!/bin/sh
+# Pre-commit quality gate. Enable once with:
+#   git config core.hooksPath .githooks
+#
+# Runs Pint (check-only) and the frontend format check inside the app/node
+# containers so contributors need nothing installed on the host. Set
+# SKIP_HOOKS=1 to bypass in a pinch.
+set -e
+
+if [ "${SKIP_HOOKS:-0}" = "1" ]; then
+    echo "pre-commit: skipped (SKIP_HOOKS=1)"
+    exit 0
+fi
+
+DC="docker compose"
+
+if ! $DC ps --status running app >/dev/null 2>&1; then
+    echo "pre-commit: app container not running — start it with 'make up'." >&2
+    echo "pre-commit: (or set SKIP_HOOKS=1 to bypass)." >&2
+    exit 1
+fi
+
+echo "pre-commit: Pint (check only)..."
+$DC exec -T app ./vendor/bin/pint --test
+
+echo "pre-commit: Prettier (check only)..."
+$DC exec -T node npm run format:check
+
+echo "pre-commit: ok"

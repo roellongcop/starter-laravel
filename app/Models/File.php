@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Models;
+
+use Database\Factories\FileFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+
+/**
+ * An uploaded file. The binary lives in medialibrary on the private `uploads`
+ * disk; the columns below denormalize the stored Media's metadata so lists and
+ * search need no media join. Downloads go only through gated controller actions.
+ *
+ * @property int|null $size
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
+class File extends BaseModel implements HasMedia
+{
+    /** @use HasFactory<FileFactory> */
+    use HasFactory;
+
+    use InteractsWithMedia;
+
+    public const COLLECTION = 'file';
+
+    protected $fillable = [
+        'original_name',
+        'extension',
+        'mime',
+        'size',
+        'disk',
+        'path',
+        'owner_id',
+        'tag',
+    ];
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+}

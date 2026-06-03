@@ -1,0 +1,19 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    paths:
+        - app
+        - database
+        - config
+        - routes
+
+    level: 5
+
+    # Larastan checks Eloquent magic, facades, etc. New findings are surfaced;
+    # known/legacy issues are parked in phpstan-baseline.neon.
+    # checkModelProperties is intentionally OFF: BaseModel/concerns operate on
+    # generic Model with dynamic, table-qualified columns (e.g. created_by,
+    # "{table}.record_status") that this opt-in check can't statically resolve.
+    checkOctaneCompatibility: false

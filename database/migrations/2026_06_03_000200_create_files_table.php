@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tbl_files', function (Blueprint $table): void {
+            $table->id();
+            $table->string('original_name');
+            $table->string('extension', 32)->nullable();
+            $table->string('mime')->nullable();
+            $table->unsignedBigInteger('size')->default(0);
+            $table->string('disk')->default('uploads');
+            $table->string('path')->nullable();
+            $table->foreignId('owner_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('tag')->nullable();
+            $table->auditColumns();
+
+            $table->index('tag');
+            $table->index('owner_id');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('tbl_files');
+    }
+};
