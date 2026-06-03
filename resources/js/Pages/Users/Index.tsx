@@ -111,6 +111,13 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
             s.includes(id) ? s.filter((x) => x !== id) : [...s, id],
         );
 
+    const visibleIds = users.data.map((u) => u.id);
+    const allSelected =
+        visibleIds.length > 0 &&
+        visibleIds.every((id) => selected.includes(id));
+
+    const toggleAll = () => setSelected(allSelected ? [] : visibleIds);
+
     const runBulk = () => {
         if (!bulk) return;
         router.post(
@@ -294,7 +301,13 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-10"></TableHead>
+                            <TableHead className="w-10">
+                                <Checkbox
+                                    checked={allSelected}
+                                    onCheckedChange={toggleAll}
+                                    aria-label="Select all"
+                                />
+                            </TableHead>
                             <TableHead>Name</TableHead>
                             {columns.email && <TableHead>Email</TableHead>}
                             {columns.status && <TableHead>Status</TableHead>}
