@@ -132,6 +132,8 @@ export default function Index({
                                         <Button
                                             size="icon"
                                             variant="ghost"
+                                            title="Mark as unread"
+                                            aria-label="Mark as unread"
                                             onClick={() => setRead(n.id, false)}
                                         >
                                             <Undo2 className="h-4 w-4" />
@@ -140,6 +142,8 @@ export default function Index({
                                         <Button
                                             size="icon"
                                             variant="ghost"
+                                            title="Mark as read"
+                                            aria-label="Mark as read"
                                             onClick={() => setRead(n.id, true)}
                                         >
                                             <Check className="h-4 w-4" />
@@ -148,6 +152,8 @@ export default function Index({
                                     <Button
                                         size="icon"
                                         variant="ghost"
+                                        title="Delete"
+                                        aria-label="Delete"
                                         onClick={() =>
                                             router.post(
                                                 route('notifications.bulk'),

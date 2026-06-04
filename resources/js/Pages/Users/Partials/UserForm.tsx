@@ -315,6 +315,8 @@ export default function UserForm({
                                     type="button"
                                     size="icon"
                                     variant="ghost"
+                                    title="Remove field"
+                                    aria-label="Remove field"
                                     onClick={() =>
                                         setData(
                                             'meta',

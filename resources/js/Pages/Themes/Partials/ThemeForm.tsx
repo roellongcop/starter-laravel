@@ -167,6 +167,8 @@ function TokenEditor({
                             type="button"
                             size="icon"
                             variant="ghost"
+                            title="Remove token"
+                            aria-label="Remove token"
                             onClick={() =>
                                 onChange(rows.filter((_, idx) => idx !== i))
                             }

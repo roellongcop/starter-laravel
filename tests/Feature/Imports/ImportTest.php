@@ -64,6 +64,31 @@ it('processes an import, creating users and counting failures', function (): voi
         ->and(User::where('email', 'ada@example.com')->exists())->toBeTrue();
 });
 
+it('lets the owner download the original file but forbids others / 404s when missing', function (): void {
+    Storage::fake('imports');
+    $owner = actingAsRole('developer');
+
+    Storage::disk('imports')->put('2026/06/users.csv', "name,email\nAda,ada@example.com\n");
+    $import = UserImport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'resource' => 'users',
+        'filename' => '2026/06/users.csv',
+        'status' => UserImportStatus::Pending,
+    ]);
+
+    $this->get(route('imports.download', $import))->assertOk();
+
+    // A different user cannot download someone else's import.
+    $this->actingAs(User::factory()->create());
+    $this->get(route('imports.download', $import))->assertForbidden();
+
+    // Owner again, but the stored file is gone → 404.
+    $this->actingAs($owner);
+    Storage::disk('imports')->delete('2026/06/users.csv');
+    $this->get(route('imports.download', $import))->assertNotFound();
+});
+
 it('queues a large import via the process route and notifies', function (): void {
     config(['keen.import_sync_threshold' => 0]); // force the queued path
     Notification::fake();

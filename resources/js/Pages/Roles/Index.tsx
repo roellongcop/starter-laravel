@@ -131,6 +131,8 @@ export default function Index({ roles, filters }: Props) {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
+                                                title="Edit"
+                                                aria-label="Edit"
                                                 asChild
                                             >
                                                 <Link
@@ -148,6 +150,8 @@ export default function Index({ roles, filters }: Props) {
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
+                                                    title="Delete"
+                                                    aria-label="Delete"
                                                     onClick={() =>
                                                         setDeleting(role)
                                                     }

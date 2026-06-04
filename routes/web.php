@@ -127,6 +127,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('imports', [ImportController::class, 'index'])->name('imports.index');
     Route::get('imports/create', [ImportController::class, 'create'])->name('imports.create');
     Route::post('imports', [ImportController::class, 'store'])->name('imports.store');
+    Route::get('imports/{import}/download', [ImportController::class, 'download'])->name('imports.download');
     Route::get('imports/{import}/preview', [ImportController::class, 'preview'])->name('imports.preview');
     Route::post('imports/{import}/process', [ImportController::class, 'process'])->name('imports.process');
     Route::get('imports/{import}/errors', [ImportController::class, 'errors'])->name('imports.errors');

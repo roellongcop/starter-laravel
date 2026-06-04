@@ -94,6 +94,16 @@ class ImportController extends Controller
             ->with('success', 'Import queued — you will be notified when it finishes.');
     }
 
+    /** Stream the originally uploaded import file back to its owner. */
+    public function download(Request $request, UserImport $import): StreamedResponse
+    {
+        $this->authorize('view', $import);
+        abort_unless($import->user_id === $request->user()->id, 403);
+        abort_unless($import->filename && Storage::disk('imports')->exists($import->filename), 404);
+
+        return Storage::disk('imports')->download($import->filename);
+    }
+
     public function errors(Request $request, UserImport $import): StreamedResponse
     {
         $this->authorize('view', $import);

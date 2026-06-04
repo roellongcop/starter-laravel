@@ -101,6 +101,8 @@ export default function Index({ exports }: Props) {
                                         <Button
                                             size="icon"
                                             variant="ghost"
+                                            title="Download"
+                                            aria-label="Download"
                                             asChild
                                         >
                                             <a

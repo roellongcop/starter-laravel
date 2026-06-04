@@ -140,12 +140,15 @@ export default function Index({ files, filters }: Props) {
                                             variant="ghost"
                                             onClick={() => preview(file)}
                                             title="Preview"
+                                            aria-label="Preview"
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Button>
                                         <Button
                                             size="icon"
                                             variant="ghost"
+                                            title="Download"
+                                            aria-label="Download"
                                             asChild
                                         >
                                             <a
@@ -161,6 +164,8 @@ export default function Index({ files, filters }: Props) {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
+                                                title="Delete"
+                                                aria-label="Delete"
                                                 onClick={() =>
                                                     setDeleting(file)
                                                 }

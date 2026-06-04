@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { FileWarning, Plus, RefreshCw } from 'lucide-react';
+import { Download, FileWarning, Plus, RefreshCw } from 'lucide-react';
 
 import Can from '@/Components/Can';
 import CursorPager from '@/Components/CursorPager';
@@ -58,7 +58,9 @@ export default function Index({ imports }: Props) {
                             <TableHead>Success</TableHead>
                             <TableHead>Failed</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Errors</TableHead>
+                            <TableHead className="text-right">
+                                Actions
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -86,22 +88,44 @@ export default function Index({ imports }: Props) {
                                     <StatusBadge status={i.status} />
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    {i.has_error_report && (
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            asChild
-                                        >
-                                            <a
-                                                href={route(
-                                                    'imports.errors',
-                                                    i.token,
-                                                )}
+                                    <div className="flex justify-end gap-1">
+                                        {i.filename && (
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                title="Download file"
+                                                aria-label="Download file"
+                                                asChild
                                             >
-                                                <FileWarning className="h-4 w-4" />
-                                            </a>
-                                        </Button>
-                                    )}
+                                                <a
+                                                    href={route(
+                                                        'imports.download',
+                                                        i.token,
+                                                    )}
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                </a>
+                                            </Button>
+                                        )}
+                                        {i.has_error_report && (
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                title="Download error report"
+                                                aria-label="Download error report"
+                                                asChild
+                                            >
+                                                <a
+                                                    href={route(
+                                                        'imports.errors',
+                                                        i.token,
+                                                    )}
+                                                >
+                                                    <FileWarning className="h-4 w-4" />
+                                                </a>
+                                            </Button>
+                                        )}
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

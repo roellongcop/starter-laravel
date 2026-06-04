@@ -400,6 +400,8 @@ export default function MenuBuilder({
                                 type="button"
                                 size="icon"
                                 variant="ghost"
+                                title="Move up"
+                                aria-label="Move up"
                                 disabled={i === 0}
                                 onClick={() => moveGroup(g.id, -1)}
                             >
@@ -409,6 +411,8 @@ export default function MenuBuilder({
                                 type="button"
                                 size="icon"
                                 variant="ghost"
+                                title="Move down"
+                                aria-label="Move down"
                                 disabled={i === state.groups.length - 1}
                                 onClick={() => moveGroup(g.id, 1)}
                             >
@@ -418,6 +422,8 @@ export default function MenuBuilder({
                                 type="button"
                                 size="icon"
                                 variant="ghost"
+                                title="Remove group"
+                                aria-label="Remove group"
                                 onClick={() => removeGroup(g.id)}
                             >
                                 <X className="h-4 w-4 text-destructive" />
@@ -574,6 +580,8 @@ function LeafRow({
                 type="button"
                 size="icon"
                 variant="ghost"
+                title="Remove item"
+                aria-label="Remove item"
                 onClick={() => onRemove(container, leaf.id)}
             >
                 <X className="h-4 w-4 text-destructive" />

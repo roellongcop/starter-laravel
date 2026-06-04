@@ -16,6 +16,7 @@ export default function Bell() {
                 type="button"
                 onClick={() => setOpen((o) => !o)}
                 className="relative rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                title="Notifications"
                 aria-label="Notifications"
             >
                 <BellIcon className="h-5 w-5" />

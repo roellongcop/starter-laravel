@@ -98,6 +98,8 @@ export default function DocumentList({
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
+                                                title="Delete"
+                                                aria-label="Delete"
                                                 onClick={() => onDelete(doc)}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
