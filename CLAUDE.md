@@ -19,6 +19,7 @@ make test       # Pest suite (in-container)
 make pint       # PHP formatter (Laravel Pint)
 make stan       # Larastan (phpstan) static analysis
 make lint       # eslint --fix + prettier --check on resources/js
+make is-mergeable # the full CI gate locally, check-only: pint --test + stan + test + prettier/eslint check + build
 make shell      # bash in the app container; make tinker; make ide-helper
 ```
 
@@ -137,5 +138,6 @@ one-shot bag to null instead of re-toasting it; `app.tsx` turns it into toasts g
 ## Workflow
 
 Build phase-by-phase; after a feature, run `make test` + `make pint` + `make stan` + `make lint` +
-`tsc`/build before considering it done. The full implementation history lives in the auto-memory at
-`~/.claude/projects/.../memory/`.
+`tsc`/build before considering it done — or just `make is-mergeable`, which runs that whole gate
+(check-only) exactly as CI (`.github/workflows/ci.yml`) does. The full implementation history lives in
+the auto-memory at `~/.claude/projects/.../memory/`.

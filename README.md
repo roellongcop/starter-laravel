@@ -107,6 +107,7 @@ make test       Pest test suite
 make pint       Format PHP (Pint)
 make stan       Static analysis (Larastan)
 make lint       ESLint + Prettier check
+make is-mergeable  Run the full CI gate locally (check-only, no writes)
 make logs       Follow logs
 make ps         Container status
 make tinker     Tinker REPL
@@ -119,6 +120,9 @@ make ide-helper Generate IDE helper files
 - **Larastan** (`phpstan.neon`, level 5) with a baseline in `phpstan-baseline.neon`.
 - **ESLint + Prettier** — 4-space, single quotes, organized imports.
 - **Pre-commit hook** in `.githooks/` — enable with `git config core.hooksPath .githooks`.
+- **CI** (`.github/workflows/ci.yml`) runs the backend (Pint, Larastan, Pest) and frontend
+  (Prettier, ESLint, build) checks on every push/PR. Mirror it locally before pushing with
+  `make is-mergeable` (check-only, no writes — the same gate CI enforces).
 
 ## Theming
 
