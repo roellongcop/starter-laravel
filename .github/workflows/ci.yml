@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+# Only run the latest commit per branch/PR; cancel superseded runs.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (Pint, Larastan, Pest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4' # matches docker/app/Dockerfile
+          # gd: Glide image tests; pdo_sqlite/sqlite3: the in-memory test DB.
+          extensions: mbstring, intl, bcmath, gd, exif, zip, pcntl, fileinfo, dom, curl, pdo_sqlite, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Pint (code style, check only)
+        run: vendor/bin/pint --test
+
+      - name: Larastan (static analysis)
+        run: vendor/bin/phpstan analyse --no-progress
+
+      - name: Tests (Pest)
+        run: php artisan test
+
+  frontend:
+    name: Frontend (Prettier, ESLint, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # matches the node:20-alpine compose image
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prettier (format check)
+        run: npm run format:check
+
+      - name: ESLint (lint check)
+        run: npm run lint:check
+
+      - name: Type-check & build
+        run: npm run build

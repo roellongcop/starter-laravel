@@ -6,6 +6,7 @@
         "build": "tsc && vite build",
         "dev": "vite",
         "lint": "eslint resources/js --ext .js,.jsx,.ts,.tsx --ignore-path .gitignore --fix",
+        "lint:check": "eslint resources/js --ext .js,.jsx,.ts,.tsx --ignore-path .gitignore",
         "format": "prettier --write resources/js",
         "format:check": "prettier --check resources/js",
         "types": "tsc --noEmit"
