@@ -8,6 +8,7 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminFile } from '@/types';
+import BackButton from "@/Components/BackButton.js";
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
     return (
@@ -41,9 +42,7 @@ export default function Show({ file }: { file: AdminFile }) {
                 description={file.tag ?? undefined}
                 actions={
                     <>
-                        <Button variant="outline" asChild>
-                            <Link href={route('files.index')}>Back</Link>
-                        </Button>
+                        <BackButton fallback={route('files.index')} />
                         <Button variant="outline" onClick={openPreview}>
                             <Eye className="h-4 w-4" /> Preview
                         </Button>

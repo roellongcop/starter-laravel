@@ -31,6 +31,20 @@ it('uploads a file to the private disk and denormalizes metadata', function (): 
         ->and($file->getFirstMedia(File::COLLECTION))->not->toBeNull();
 });
 
+it('accepts document and spreadsheet types and returns JSON for axios uploads', function (): void {
+    actingAsRole('developer');
+
+    $this->postJson(route('files.store'), [
+        'file' => UploadedFile::fake()->create('report.xlsx', 20),
+        'tag' => 'reports',
+    ])->assertOk()->assertJsonStructure(['id', 'original_name', 'extension']);
+
+    $file = File::first();
+    expect($file)->not->toBeNull()
+        ->and($file->extension)->toBe('xlsx')
+        ->and($file->tag)->toBe('reports');
+});
+
 it('rejects a disallowed extension', function (): void {
     actingAsRole('developer');
 

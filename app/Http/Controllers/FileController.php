@@ -6,6 +6,7 @@ use App\Actions\StoreUploadedFile;
 use App\Http\Requests\StoreFileRequest;
 use App\Models\File;
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -48,11 +49,17 @@ class FileController extends Controller
         return Inertia::render('Files/Create');
     }
 
-    public function store(StoreFileRequest $request, StoreUploadedFile $store): RedirectResponse
+    public function store(StoreFileRequest $request, StoreUploadedFile $store): RedirectResponse|JsonResponse
     {
         $this->authorize('create', File::class);
 
         $file = $store($request->file('file'), $request->user()->id, $request->input('tag'));
+
+        // The drag-and-drop uploader posts each file via axios and expects JSON;
+        // a plain form submit still gets the redirect-to-detail behaviour.
+        if ($request->expectsJson()) {
+            return response()->json($this->row($file));
+        }
 
         return redirect()->route('files.show', $file)->with('success', 'File uploaded.');
     }

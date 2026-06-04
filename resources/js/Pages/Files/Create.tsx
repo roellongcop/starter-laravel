@@ -1,8 +1,9 @@
-import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { useState } from 'react';
+import { type Accept } from 'react-dropzone';
 
 import BackButton from '@/Components/BackButton';
-import InputError from '@/Components/InputError';
+import FileDropzone from '@/Components/FileDropzone';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
@@ -10,59 +11,71 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function Create() {
-    const { data, setData, post, processing, errors } = useForm<{
-        file: File | null;
-        tag: string;
-    }>({
-        file: null,
-        tag: '',
-    });
+// Client-side dialog/drag hint only — StoreFileRequest is authoritative.
+const FILE_ACCEPT: Accept = {
+    'image/jpeg': ['.jpg', '.jpeg'],
+    'image/png': ['.png'],
+    'image/webp': ['.webp'],
+    'image/gif': ['.gif'],
+    'application/pdf': ['.pdf'],
+    'application/msword': ['.doc'],
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [
+        '.docx',
+    ],
+    'text/csv': ['.csv'],
+    'application/vnd.ms-excel': ['.xls'],
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [
+        '.xlsx',
+    ],
+};
 
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        post(route('files.store'), { forceFormData: true });
-    };
+export default function Create() {
+    const [tag, setTag] = useState('');
+    const [uploaded, setUploaded] = useState(0);
 
     return (
         <AuthenticatedLayout>
-            <Head title="Upload File" />
+            <Head title="Upload Files" />
             <PageHeader
-                title="Upload File"
+                title="Upload Files"
                 actions={<BackButton fallback={route('files.index')} />}
             />
             <Card>
-                <CardContent className="pt-6">
-                    <form onSubmit={submit} className="max-w-xl space-y-4">
-                        <div>
-                            <Label htmlFor="file">File</Label>
-                            <Input
-                                id="file"
-                                type="file"
-                                className="mt-1"
-                                onChange={(e) =>
-                                    setData('file', e.target.files?.[0] ?? null)
-                                }
-                            />
-                            <InputError
-                                message={errors.file}
-                                className="mt-1"
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="tag">Tag (optional)</Label>
-                            <Input
-                                id="tag"
-                                value={data.tag}
-                                onChange={(e) => setData('tag', e.target.value)}
-                                className="mt-1"
-                            />
-                            <InputError message={errors.tag} className="mt-1" />
-                        </div>
-                        <Button type="submit" disabled={processing}>
-                            Upload
+                <CardContent className="space-y-4 pt-6">
+                    <div className="max-w-xl">
+                        <Label htmlFor="tag">Tag (optional)</Label>
+                        <Input
+                            id="tag"
+                            value={tag}
+                            onChange={(e) => setTag(e.target.value)}
+                            className="mt-1"
+                            placeholder="Applied to every file in this batch"
+                        />
+                    </div>
+
+                    <FileDropzone
+                        uploadUrl={route('files.store')}
+                        accept={FILE_ACCEPT}
+                        multiple
+                        field="file"
+                        data={tag ? { tag } : undefined}
+                        hint="Images, PDF, Word, CSV or Excel — up to 10 MB each"
+                        onUploaded={() => setUploaded((n) => n + 1)}
+                    />
+
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                            {uploaded > 0
+                                ? `${uploaded} file${uploaded === 1 ? '' : 's'} uploaded`
+                                : ''}
+                        </span>
+                        <Button
+                            type="button"
+                            onClick={() => router.get(route('files.index'))}
+                        >
+                            {uploaded > 0 ? 'View files' : 'Done'}
                         </Button>
-                    </form>
+                    </div>
                 </CardContent>
             </Card>
         </AuthenticatedLayout>

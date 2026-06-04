@@ -41,4 +41,16 @@ return [
 
     'document_extensions' => ['pdf', 'doc', 'docx'],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Files admin upload allowlist
+    |--------------------------------------------------------------------------
+    |
+    | Extensions the Files admin uploader (/files/create) accepts on top of the
+    | editable image types (ImageSettings::allowed_types).
+    |
+    */
+
+    'file_document_extensions' => ['pdf', 'doc', 'docx', 'csv', 'xls', 'xlsx'],
+
 ];
