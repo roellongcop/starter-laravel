@@ -29,11 +29,14 @@ up: ## Start the stack (waits for a healthy database)
 	$(DC) up -d
 	@$(MAKE) wait-db
 
+# `--profile dev` ensures the dev-only `node` container is torn down too;
+# `down` ignores inactive-profile containers, which otherwise get left behind
+# pinned to a deleted network and break the next `make dev`.
 down: ## Stop and remove containers
-	$(DC) down
+	$(DC) --profile dev down
 
 down-v: ## Stop and remove containers + named volumes (db, seaweedfs)
-	$(DC) down -v --remove-orphans
+	$(DC) --profile dev down -v --remove-orphans
 
 # Build assets are written by the node container (root), so host `rm` hits
 # permission errors. Delete inside a one-off root container — the project is
@@ -47,7 +50,7 @@ clean: ## Delete generated/uploaded local files (assets, hot file, local disk fi
 		find storage/app/public -mindepth 1 -not -name .gitignore -delete 2>/dev/null || true'
 
 refresh: ## Wipe EVERYTHING (containers, volumes, local files) and rebuild fresh
-	$(DC) down -v --remove-orphans
+	$(DC) --profile dev down -v --remove-orphans
 	$(DC) build
 	@$(MAKE) clean
 	@$(MAKE) setup

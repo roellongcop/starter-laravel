@@ -24,7 +24,7 @@ Then open:
 | App          | http://localhost:8080              |
 | phpMyAdmin   | http://localhost:8081              |
 | Vite (dev)   | http://localhost:5173 (`make dev`) |
-| SeaweedFS S3 | http://localhost:8333              |
+| SeaweedFS S3 | http://localhost:8888              |
 
 For active frontend development, run `make dev` (starts the Vite dev server with HMR)
 alongside the stack.

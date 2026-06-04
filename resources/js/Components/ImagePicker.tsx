@@ -103,7 +103,7 @@ export default function ImagePicker({
             open={open}
             onOpenChange={(o) => (o ? onOpenChange(o) : close())}
         >
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
@@ -117,7 +117,7 @@ export default function ImagePicker({
                         <Cropper
                             ref={cropperRef}
                             src={imageSrc}
-                            className="max-h-80 w-full"
+                            className="max-h-[28rem] w-full"
                             aspectRatio={aspectRatio}
                             viewMode={1}
                             background={false}
@@ -231,7 +231,7 @@ function ExistingTab({
 
     return (
         <div className="space-y-3">
-            <div className="grid max-h-64 grid-cols-4 gap-2 overflow-y-auto">
+            <div className="grid max-h-96 grid-cols-6 gap-2 overflow-y-auto">
                 {photos.map((p) => (
                     <button
                         key={p.id}
@@ -359,7 +359,7 @@ function CameraTab({
                     autoPlay
                     playsInline
                     muted
-                    className="h-64 w-full object-cover"
+                    className="h-[28rem] w-full object-cover"
                 />
             </div>
             <DialogFooter>
