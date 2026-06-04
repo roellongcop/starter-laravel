@@ -15,7 +15,7 @@ export GID := $(shell id -g)
 
 .DEFAULT_GOAL := help
 .PHONY: help build up down down-v refresh restart install setup shell migrate \
-        fresh seed queue dev assets test pint stan lint logs ps tinker \
+        fresh seed queue dev assets test pint stan lint is-mergeable logs ps tinker \
         ide-helper wait-db key storage-link clean
 
 help: ## Show this help
@@ -121,6 +121,14 @@ stan: ## Run Larastan static analysis
 lint: ## Lint + format-check the frontend
 	$(NODE_RUN) npm run lint
 	$(NODE_RUN) npm run format:check
+
+is-mergeable: ## Run the full CI gate locally (check-only, no writes)
+	$(APP) ./vendor/bin/pint --test
+	$(APP) ./vendor/bin/phpstan analyse --no-progress
+	$(APP) php artisan test
+	$(NODE_RUN) npm run format:check
+	$(NODE_RUN) npm run lint:check
+	$(NODE_RUN) npm run build
 
 logs: ## Follow container logs
 	$(DC) logs -f
