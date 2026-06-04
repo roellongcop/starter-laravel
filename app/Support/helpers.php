@@ -2,6 +2,19 @@
 
 use Illuminate\Contracts\Pagination\CursorPaginator;
 
+if (! function_exists('dated_path')) {
+    /**
+     * Prefix a storage filename with a YYYY/MM/ folder so generated artifacts
+     * (backups, exports, imports) follow the same date-foldered layout as
+     * uploads (see App\Support\MediaPathGenerator). Keeps disks tidy instead of
+     * dumping everything at the root.
+     */
+    function dated_path(string $name): string
+    {
+        return now()->format('Y/m').'/'.ltrim($name, '/');
+    }
+}
+
 if (! function_exists('cursorResponse')) {
     /**
      * Normalize a keyset (cursor) paginator into the shape the React <CursorPager>

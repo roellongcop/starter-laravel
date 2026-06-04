@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('disk')->default('backups');
             $table->unsignedBigInteger('size')->nullable();
             $table->string('status')->default(BackupStatus::Pending->value);
+            $table->text('error_message')->nullable();
             $table->auditColumns();
 
             $table->index('status');

@@ -70,7 +70,7 @@ class ProcessImportJob implements ShouldQueue
 
             $reportPath = null;
             if ($failures !== []) {
-                $reportPath = "errors-{$this->import->id}.csv";
+                $reportPath = dated_path("errors-{$this->import->id}.csv");
                 Storage::disk('imports')->put($reportPath, $this->toCsv($failures));
             }
 

@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
  *
  * @property BackupStatus $status
  * @property int|null $size
+ * @property string|null $error_message
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -20,7 +21,7 @@ class Backup extends BaseModel
     /** @use HasFactory<BackupFactory> */
     use HasFactory;
 
-    protected $fillable = ['filename', 'disk', 'size', 'status'];
+    protected $fillable = ['filename', 'disk', 'size', 'status', 'error_message'];
 
     /**
      * @return array<string, string>

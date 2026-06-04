@@ -6,6 +6,7 @@ use App\Models\Theme;
 use App\Settings\SystemSettings;
 use App\Support\Navigation;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -60,11 +61,14 @@ class HandleInertiaRequests extends Middleware
             // theme/settings tables may not exist during early migrations).
             'settings' => fn () => $this->appSettings(),
             'theme' => fn () => $this->activeThemeTokens(),
-            'flash' => [
-                'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
-                'hint' => fn () => $request->session()->get('hint'),
-            ],
+            // Always-prop so partial reloads (router.reload({ only: [...] }))
+            // re-evaluate it: the one-shot session value is already gone, so the
+            // client gets nulls instead of re-toasting the previous flash.
+            'flash' => Inertia::always(fn () => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+                'hint' => $request->session()->get('hint'),
+            ]),
         ];
     }
 

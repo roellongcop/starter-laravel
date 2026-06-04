@@ -13,7 +13,8 @@ make setup      # up + composer/npm install + key + migrate --seed + build asset
 make up / down  # start / stop the stack (up waits for a healthy DB)
 make dev        # Vite dev server with HMR (http://localhost:5173); app is http://localhost:8080
 make fresh      # DB only: migrate:fresh --seed
-make refresh    # full wipe: down -v + clean local files + rebuild + setup
+make refresh    # full wipe: down -v + clean (local files + storage/runtime caches) + rebuild + setup
+make clean      # delete generated/uploaded files + storage caches (logs, framework, bootstrap)
 make test       # Pest suite (in-container)
 make pint       # PHP formatter (Laravel Pint)
 make stan       # Larastan (phpstan) static analysis
@@ -37,8 +38,10 @@ docker compose run --rm node npm run build
 ```
 
 Tests use Pest on an **in-memory sqlite** DB with `QUEUE_CONNECTION=sync`, array cache/session/mail
-(`phpunit.xml`). Most feature tests `seed(PermissionSeeder::class, RoleSeeder::class)` and use the
-`actingAsRole('developer')` helper (`tests/Pest.php`).
+(`phpunit.xml`). `tests/Pest.php` binds the Laravel `TestCase` + `RefreshDatabase` only `->in('Feature')`,
+so **all real tests live in `tests/Feature/`** (HTTP/Inertia/DB); `tests/Unit/` is plain PHPUnit. Most
+feature tests `seed(PermissionSeeder::class, RoleSeeder::class)` and use the `actingAsRole('developer')`
+helper. `tests/Feature/SmokeTest.php` GETs every Inertia page route asserting 200 — add new pages there.
 
 Demo logins (seeded by `make setup`/`make fresh`): `developer@developer.com`,
 `superadmin@superadmin.com`, `admin@admin.com` — **password equals the email**.
@@ -94,14 +97,23 @@ local `image-cache` disk; widths clamp to a preset ladder in `App\Support\ImageP
 csv/xls/xlsx via SheetJS, docx via mammoth — both lazy-loaded), `<Avatar>` (requests a preset size).
 Storage disks `uploads`/`exports`/`imports`/`backups` switch local↔s3 (SeaweedFS) via
 `*_DISK_DRIVER`; **downloads are always streamed through gated controller actions, never public URLs**.
+Generated artifacts (backups/exports/imports) are nested under `YYYY/MM/` like uploads via the
+`dated_path()` helper (`app/Support/helpers.php`) — reuse it for any new disk writes.
 
 **Heavy work is queued** with DB-status tracking: backups (spatie/laravel-backup), exports
-(maatwebsite/excel + dompdf), imports — jobs flip a `*Status` enum and notify on completion. Export/
-import below `config('keen.*_sync_threshold')` run synchronously, above it queue.
+(maatwebsite/excel + dompdf), imports — jobs flip a `*Status` enum, capture failures into an
+`error_message` column (surfaced in the grid), and notify on completion. Export/import below
+`config('keen.*_sync_threshold')` run synchronously, above it queue. **Backups** need the
+`mysqldump`/`mysql` binaries — the app image symlinks them to MariaDB's `mariadb-dump`/`mariadb`
+(`docker/app/Dockerfile`), and the DB connection sets `dump.skip_ssl` + `dump.exclude_tables=['backups']`
+(`config/database.php`) so dumps connect without TLS and a restore never wipes the backup list.
+`CreateBackupJob` relocates the archive under `YYYY/MM/`; `RestoreBackupJob` extracts to a temp
+workdir it recursively cleans.
 
-**User feedback**: controllers `->with('success'|'error', …)`; `HandleInertiaRequests` shares `flash`;
-`app.tsx` turns it into toasts globally (`resources/js/hooks/use-toast.ts` + `<Toaster>`). Axios
-uploads (no session flash) toast client-side.
+**User feedback**: controllers `->with('success'|'error', …)`; `HandleInertiaRequests` shares `flash`
+as an `Inertia::always()` prop so partial reloads (`router.reload({ only: [...] })`) re-evaluate the
+one-shot bag to null instead of re-toasting it; `app.tsx` turns it into toasts globally
+(`resources/js/hooks/use-toast.ts` + `<Toaster>`). Axios uploads (no session flash) toast client-side.
 
 ## Conventions when editing
 
@@ -110,12 +122,15 @@ uploads (no session flash) toast client-side.
   Models with any `@property` need a complete set (incl. `created_at`/`updated_at`) or Larastan fails;
   `checkModelProperties` is off; avoid generic `Attribute<...>` return docblocks (covariance error).
 - **Frontend:** React is all TypeScript; shadcn primitives live in `resources/js/Components/ui/`.
-  Prettier/`@trivago/prettier-plugin-sort-imports` enforce import ordering — run `eslint --fix` after
-  edits (manually-ordered imports get reshuffled). `<BackButton fallback>` navigates to the previous
+  Prettier (`prettier-plugin-organize-imports` + `prettier-plugin-tailwindcss`) enforces import
+  ordering and class sorting — run `eslint --fix` after edits (manually-ordered imports get reshuffled). `<BackButton fallback>` navigates to the previous
   page with a **fresh** `router.get` via a per-tab sessionStorage nav stack (`lib/navHistory.ts`), not
   `history.back()` (which serves Inertia's stale cache).
 - **The `node` container runs as root**, so `npm run build` writes root-owned files under
-  `public/build`. `make clean` deletes generated/uploaded files via a root container for this reason.
+  `public/build`. `make clean` deletes generated/uploaded files **and** storage runtime caches
+  (`storage/framework/*`, `storage/logs`, `bootstrap/cache`, backup-temp/restore workdirs) via a root
+  container for this reason; `make refresh` runs it as part of a full wipe. Logs use the `daily` channel
+  (`LOG_STACK=daily`) so they rotate instead of growing unbounded.
 - After changing controllers/config, a cached config can mask it: `make shell` →
   `php artisan config:clear`.
 

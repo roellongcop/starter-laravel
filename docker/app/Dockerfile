@@ -13,6 +13,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libonig-dev \
         libxml2-dev \
         default-mysql-client \
+    # default-mysql-client is MariaDB: it ships mariadb-dump/mariadb but no
+    # mysqldump/mysql, which spatie/laravel-backup (dump) and the restore job
+    # (import) invoke by name. Symlink them so both work.
+    && ln -sf /usr/bin/mariadb-dump /usr/bin/mysqldump \
+    && ln -sf /usr/bin/mariadb /usr/bin/mysql \
     && rm -rf /var/lib/apt/lists/*
 
 # --- PHP extensions (via mlocati helper for reliability) ---

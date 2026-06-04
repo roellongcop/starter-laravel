@@ -10,8 +10,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use ZipArchive;
 
 /**
@@ -42,7 +44,7 @@ class RestoreBackupJob implements ShouldQueue
         $zipPath = $workdir.'/backup.zip';
 
         try {
-            @mkdir($workdir, 0775, true);
+            File::ensureDirectoryExists($workdir);
             file_put_contents($zipPath, Storage::disk($this->backup->disk)->get($this->backup->filename));
 
             $sql = $this->extractSqlDump($zipPath, $workdir);
@@ -50,7 +52,10 @@ class RestoreBackupJob implements ShouldQueue
 
             $this->backup->update(['status' => BackupStatus::Restored]);
         } catch (\Throwable $e) {
-            $this->backup->update(['status' => BackupStatus::RestoreFailed]);
+            $this->backup->update([
+                'status' => BackupStatus::RestoreFailed,
+                'error_message' => Str::limit($e->getMessage(), 5000, ''),
+            ]);
 
             throw $e;
         } finally {
@@ -62,7 +67,14 @@ class RestoreBackupJob implements ShouldQueue
     public function failed(\Throwable $e): void
     {
         RestoreSentinel::clear();
-        $this->backup->update(['status' => BackupStatus::RestoreFailed]);
+        // The catch block normally records the detailed reason first; only fall
+        // back to the bare message if nothing was captured.
+        $this->backup->refresh();
+        $this->backup->update([
+            'status' => BackupStatus::RestoreFailed,
+            'error_message' => $this->backup->error_message
+                ?? Str::limit($e->getMessage(), 5000, ''),
+        ]);
     }
 
     protected function extractSqlDump(string $zipPath, string $workdir): string
@@ -97,8 +109,13 @@ class RestoreBackupJob implements ShouldQueue
         /** @var array<string, mixed> $db */
         $db = config('database.connections.'.config('database.default'));
 
+        // The MariaDB client defaults to requiring TLS, but the local server
+        // doesn't offer it — mirror the backup dump's skip_ssl setting.
+        $skipSsl = ! empty($db['dump']['skip_ssl']) ? ' --skip-ssl' : '';
+
         $result = Process::timeout(600)->run(sprintf(
-            'mysql -h%s -P%s -u%s -p%s %s < %s',
+            'mysql%s -h%s -P%s -u%s -p%s %s < %s',
+            $skipSsl,
             escapeshellarg((string) $db['host']),
             escapeshellarg((string) $db['port']),
             escapeshellarg((string) $db['username']),
@@ -114,13 +131,8 @@ class RestoreBackupJob implements ShouldQueue
 
     protected function cleanup(string $workdir): void
     {
-        if (! is_dir($workdir)) {
-            return;
-        }
-
-        foreach ((array) glob($workdir.'/*') as $file) {
-            @unlink((string) $file);
-        }
-        @rmdir($workdir);
+        // Recursive: the dump extracts into a nested db-dumps/ subfolder, so a
+        // flat unlink+rmdir would leave the directory (and the .sql) behind.
+        File::deleteDirectory($workdir);
     }
 }

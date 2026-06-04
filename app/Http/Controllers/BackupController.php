@@ -87,6 +87,7 @@ class BackupController extends Controller
             'disk' => $b->disk,
             'size' => $b->size,
             'status' => $b->status->value,
+            'error_message' => $b->error_message,
             'created_at' => $b->created_at?->toIso8601String(),
         ];
     }

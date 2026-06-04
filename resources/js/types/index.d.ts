@@ -244,6 +244,7 @@ export interface AdminBackup {
     disk: string;
     size: number | null;
     status: string;
+    error_message: string | null;
     created_at: string | null;
 }
 

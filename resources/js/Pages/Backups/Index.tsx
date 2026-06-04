@@ -1,5 +1,11 @@
 import { Head, router } from '@inertiajs/react';
-import { Download, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
+import {
+    AlertCircle,
+    Download,
+    RefreshCw,
+    RotateCcw,
+    Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 
 import Can from '@/Components/Can';
@@ -8,6 +14,13 @@ import CursorPager from '@/Components/CursorPager';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
 import { Button } from '@/Components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/Components/ui/dialog';
 import {
     Table,
     TableBody,
@@ -41,6 +54,7 @@ export default function Index({ backups, can }: Props) {
         action: 'restore' | 'delete';
         backup: AdminBackup;
     }>(null);
+    const [errorDetail, setErrorDetail] = useState<AdminBackup | null>(null);
 
     const run = () => {
         if (!confirm) return;
@@ -129,10 +143,26 @@ export default function Index({ backups, can }: Props) {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-1">
+                                        {(b.status === 'Failed' ||
+                                            b.status === 'RestoreFailed') && (
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                title="View failure details"
+                                                aria-label="View failure details"
+                                                onClick={() =>
+                                                    setErrorDetail(b)
+                                                }
+                                            >
+                                                <AlertCircle className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        )}
                                         {b.status === 'Generated' && (
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
+                                                title="Download backup"
+                                                aria-label="Download backup"
                                                 asChild
                                             >
                                                 <a
@@ -150,6 +180,8 @@ export default function Index({ backups, can }: Props) {
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
+                                                    title="Restore backup"
+                                                    aria-label="Restore backup"
                                                     onClick={() =>
                                                         setConfirm({
                                                             action: 'restore',
@@ -164,6 +196,8 @@ export default function Index({ backups, can }: Props) {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
+                                                title="Delete backup"
+                                                aria-label="Delete backup"
                                                 onClick={() =>
                                                     setConfirm({
                                                         action: 'delete',
@@ -208,6 +242,29 @@ export default function Index({ backups, can }: Props) {
                 destructive
                 onConfirm={run}
             />
+
+            <Dialog
+                open={errorDetail !== null}
+                onOpenChange={(o) => !o && setErrorDetail(null)}
+            >
+                <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Backup failed</DialogTitle>
+                        <DialogDescription>
+                            {errorDetail?.filename ?? 'Backup'} —{' '}
+                            {errorDetail?.created_at
+                                ? new Date(
+                                      errorDetail.created_at,
+                                  ).toLocaleString()
+                                : ''}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap break-words rounded bg-muted p-3 text-xs">
+                        {errorDetail?.error_message ??
+                            'No details were captured for this failure.'}
+                    </pre>
+                </DialogContent>
+            </Dialog>
         </AuthenticatedLayout>
     );
 }

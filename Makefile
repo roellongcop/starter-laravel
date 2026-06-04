@@ -41,13 +41,19 @@ down-v: ## Stop and remove containers + named volumes (db, seaweedfs)
 # Build assets are written by the node container (root), so host `rm` hits
 # permission errors. Delete inside a one-off root container — the project is
 # bind-mounted, so root can remove files of any owner. Needs the app image built.
-clean: ## Delete generated/uploaded local files (assets, hot file, local disk files)
+clean: ## Delete generated/uploaded files + runtime caches (assets, storage, compiled config)
 	$(DC) run --rm --no-deps -T --user root app sh -lc 'rm -rf \
 		public/build public/hot \
 		storage/app/private/uploads storage/app/private/exports \
 		storage/app/private/imports storage/app/private/backups \
-		storage/app/private/image-cache; \
-		find storage/app/public -mindepth 1 -not -name .gitignore -delete 2>/dev/null || true'
+		storage/app/private/image-cache \
+		storage/app/backup-temp; \
+		find storage/app/public -mindepth 1 -not -name .gitignore -delete 2>/dev/null || true; \
+		for d in storage/framework/cache storage/framework/sessions \
+			storage/framework/views storage/framework/testing \
+			storage/logs bootstrap/cache; do \
+			find "$$d" -mindepth 1 -not -name .gitignore -delete 2>/dev/null || true; \
+		done'
 
 refresh: ## Wipe EVERYTHING (containers, volumes, local files) and rebuild fresh
 	$(DC) --profile dev down -v --remove-orphans

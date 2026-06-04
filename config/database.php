@@ -62,6 +62,15 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            // The MariaDB client (mariadb-dump) defaults to requiring TLS, but
+            // the local server doesn't offer it — tell spatie/laravel-backup to
+            // pass --skip-ssl so DB backups can connect.
+            'dump' => [
+                'skip_ssl' => (bool) env('DB_BACKUP_SKIP_SSL', true),
+                // Keep the backups metadata table out of dumps so restoring an
+                // older archive never erases the record of which backups exist.
+                'exclude_tables' => ['backups'],
+            ],
         ],
 
         'mariadb' => [
@@ -82,6 +91,15 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            // The MariaDB client (mariadb-dump) defaults to requiring TLS, but
+            // the local server doesn't offer it — tell spatie/laravel-backup to
+            // pass --skip-ssl so DB backups can connect.
+            'dump' => [
+                'skip_ssl' => (bool) env('DB_BACKUP_SKIP_SSL', true),
+                // Keep the backups metadata table out of dumps so restoring an
+                // older archive never erases the record of which backups exist.
+                'exclude_tables' => ['backups'],
+            ],
         ],
 
         'pgsql' => [

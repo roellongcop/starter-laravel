@@ -22,6 +22,90 @@ function toObject(rows: Row[]): Record<string, string> {
     }, {});
 }
 
+// Default token sets for a brand-new theme — mirrors database/seeders/ThemeSeeder
+// so a new theme starts from the canonical "Keen" palette with every key present.
+const DEFAULT_LIGHT: Row[] = [
+    { key: '--background', value: '0 0% 100%' },
+    { key: '--foreground', value: '222.2 84% 4.9%' },
+    { key: '--primary', value: '222.2 47.4% 11.2%' },
+    { key: '--primary-foreground', value: '210 40% 98%' },
+    { key: '--secondary', value: '210 40% 96.1%' },
+    { key: '--muted', value: '210 40% 96.1%' },
+    { key: '--accent', value: '210 40% 96.1%' },
+    { key: '--destructive', value: '0 84.2% 60.2%' },
+    { key: '--border', value: '214.3 31.8% 91.4%' },
+    { key: '--ring', value: '222.2 84% 4.9%' },
+];
+
+const DEFAULT_DARK: Row[] = [
+    { key: '--background', value: '222.2 84% 4.9%' },
+    { key: '--foreground', value: '210 40% 98%' },
+    { key: '--primary', value: '210 40% 98%' },
+    { key: '--primary-foreground', value: '222.2 47.4% 11.2%' },
+    { key: '--secondary', value: '217.2 32.6% 17.5%' },
+    { key: '--muted', value: '217.2 32.6% 17.5%' },
+    { key: '--accent', value: '217.2 32.6% 17.5%' },
+    { key: '--destructive', value: '0 62.8% 30.6%' },
+    { key: '--border', value: '217.2 32.6% 17.5%' },
+    { key: '--ring', value: '212.7 26.8% 83.9%' },
+];
+
+/**
+ * Convert a shadcn HSL triplet ("222.2 47.4% 11.2%") to a #rrggbb hex string for
+ * the native color input. Returns black on an unparseable value.
+ */
+function hslTripletToHex(triplet: string): string {
+    const m = triplet.trim().match(/^([\d.]+)\s+([\d.]+)%?\s+([\d.]+)%?$/);
+    if (!m) return '#000000';
+    const h = parseFloat(m[1]);
+    const s = parseFloat(m[2]) / 100;
+    const l = parseFloat(m[3]) / 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const min = l - c / 2;
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    if (h < 60) [r, g, b] = [c, x, 0];
+    else if (h < 120) [r, g, b] = [x, c, 0];
+    else if (h < 180) [r, g, b] = [0, c, x];
+    else if (h < 240) [r, g, b] = [0, x, c];
+    else if (h < 300) [r, g, b] = [x, 0, c];
+    else [r, g, b] = [c, 0, x];
+    const hex = (n: number) =>
+        Math.round((n + min) * 255)
+            .toString(16)
+            .padStart(2, '0');
+    return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
+
+/** Convert a #rrggbb hex string back to the shadcn HSL triplet format. */
+function hexToHslTriplet(hex: string): string {
+    const m = hex
+        .replace('#', '')
+        .match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+    if (!m) return '0 0% 0%';
+    const r = parseInt(m[1], 16) / 255;
+    const g = parseInt(m[2], 16) / 255;
+    const b = parseInt(m[3], 16) / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+    const l = (max + min) / 2;
+    let h = 0;
+    let s = 0;
+    if (d !== 0) {
+        s = d / (1 - Math.abs(2 * l - 1));
+        if (max === r) h = ((g - b) / d) % 6;
+        else if (max === g) h = (b - r) / d + 2;
+        else h = (r - g) / d + 4;
+        h *= 60;
+        if (h < 0) h += 360;
+    }
+    const round = (n: number) => Math.round(n * 10) / 10;
+    return `${round(h)} ${round(s * 100)}% ${round(l * 100)}%`;
+}
+
 function TokenEditor({
     title,
     rows,
@@ -31,6 +115,9 @@ function TokenEditor({
     rows: Row[];
     onChange: (rows: Row[]) => void;
 }) {
+    const setRow = (i: number, patch: Partial<Row>) =>
+        onChange(rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+
     return (
         <div className="rounded-md border p-3">
             <div className="mb-2 flex items-center justify-between">
@@ -50,34 +137,32 @@ function TokenEditor({
                         <Input
                             placeholder="--primary"
                             value={row.key}
-                            onChange={(e) =>
-                                onChange(
-                                    rows.map((r, idx) =>
-                                        idx === i
-                                            ? { ...r, key: e.target.value }
-                                            : r,
-                                    ),
-                                )
-                            }
+                            onChange={(e) => setRow(i, { key: e.target.value })}
                         />
                         <Input
                             placeholder="222 47% 11%"
                             value={row.value}
                             onChange={(e) =>
-                                onChange(
-                                    rows.map((r, idx) =>
-                                        idx === i
-                                            ? { ...r, value: e.target.value }
-                                            : r,
-                                    ),
-                                )
+                                setRow(i, { value: e.target.value })
                             }
                         />
-                        <span
-                            className="h-8 w-8 shrink-0 rounded border"
+                        <label
+                            className="relative h-8 w-8 shrink-0 cursor-pointer rounded border"
                             style={{ background: `hsl(${row.value})` }}
-                            aria-hidden
-                        />
+                            title="Pick a color"
+                        >
+                            <span className="sr-only">Pick a color</span>
+                            <input
+                                type="color"
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                value={hslTripletToHex(row.value)}
+                                onChange={(e) =>
+                                    setRow(i, {
+                                        value: hexToHslTriplet(e.target.value),
+                                    })
+                                }
+                            />
+                        </label>
                         <Button
                             type="button"
                             size="icon"
@@ -103,8 +188,8 @@ export default function ThemeForm({ theme }: { theme?: AdminTheme }) {
             name: theme?.name ?? '',
             description: theme?.description ?? '',
             is_default: theme?.is_default ?? false,
-            light: toRows(theme?.tokens?.light),
-            dark: toRows(theme?.tokens?.dark),
+            light: theme ? toRows(theme.tokens?.light) : DEFAULT_LIGHT,
+            dark: theme ? toRows(theme.tokens?.dark) : DEFAULT_DARK,
         });
 
     transform((d) => ({

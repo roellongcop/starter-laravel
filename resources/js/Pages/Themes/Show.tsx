@@ -7,6 +7,7 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminTheme } from '@/types';
+import BackButton from "@/Components/BackButton.js";
 
 function Swatches({ tokens }: { tokens: Record<string, string> }) {
     const entries = Object.entries(tokens);
@@ -41,9 +42,7 @@ export default function Show({ theme }: { theme: AdminTheme }) {
                 description={theme.description ?? undefined}
                 actions={
                     <>
-                        <Button variant="outline" asChild>
-                            <Link href={route('themes.index')}>Back</Link>
-                        </Button>
+                        <BackButton fallback={route('themes.show', theme.id)} />
                         <Can ability="themes.update">
                             <Button asChild>
                                 <Link href={route('themes.edit', theme.id)}>

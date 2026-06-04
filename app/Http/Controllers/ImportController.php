@@ -45,7 +45,7 @@ class ImportController extends Controller
     {
         $this->authorize('create', UserImport::class);
 
-        $path = $request->file('file')->store('', 'imports');
+        $path = $request->file('file')->store(now()->format('Y/m'), 'imports');
 
         $import = UserImport::create([
             'user_id' => $request->user()->id,
