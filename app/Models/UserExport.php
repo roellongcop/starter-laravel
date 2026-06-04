@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 /**
  * A queued data export owned by a user, downloadable via an unguessable token.
  *
+ * @property string $token
  * @property UserExportStatus $status
  * @property array<string, mixed>|null $filters
  * @property int|null $row_count

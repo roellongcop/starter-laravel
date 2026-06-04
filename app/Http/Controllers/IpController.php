@@ -99,13 +99,13 @@ class IpController extends Controller
     {
         $validated = $request->validate([
             'process' => ['required', 'in:active,in_active,delete,white_list'],
-            'ids' => ['required', 'array'],
-            'ids.*' => ['integer'],
+            'tokens' => ['required', 'array'],
+            'tokens.*' => ['string'],
         ]);
 
         $this->authorize($validated['process'] === 'delete' ? 'delete' : 'update', Ip::class);
 
-        $count = Ip::bulkAction($validated['process'], $validated['ids']);
+        $count = Ip::bulkAction($validated['process'], $validated['tokens']);
 
         return back()->with('success', "{$count} IP entrie(s) updated.");
     }
@@ -116,7 +116,7 @@ class IpController extends Controller
     protected function row(Ip $ip): array
     {
         return [
-            'id' => $ip->id,
+            'token' => $ip->token,
             'ip_address' => $ip->ip_address,
             'list_type' => $ip->list_type->value,
             'description' => $ip->description,

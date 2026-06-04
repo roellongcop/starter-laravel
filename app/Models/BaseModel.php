@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\RecordStatus;
 use App\Models\Concerns\Blameable;
 use App\Models\Concerns\HasRecordStatus;
+use App\Models\Concerns\HasToken;
 use App\Models\Concerns\IsResource;
 use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Auditable as AuditableTrait;
@@ -23,6 +24,7 @@ abstract class BaseModel extends Model implements Auditable
     use AuditableTrait;
     use Blameable;
     use HasRecordStatus;
+    use HasToken;
     use IsResource;
 
     /**

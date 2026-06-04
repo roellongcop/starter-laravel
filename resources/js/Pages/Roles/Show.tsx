@@ -111,7 +111,7 @@ export default function Show({ role }: { role: AdminRole }) {
                         <BackButton fallback={route('roles.index')} />
                         <Can ability="roles.update">
                             <Button asChild>
-                                <Link href={route('roles.edit', role.id)}>
+                                <Link href={route('roles.edit', role.token)}>
                                     Edit
                                 </Link>
                             </Button>

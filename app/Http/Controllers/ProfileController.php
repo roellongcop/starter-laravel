@@ -30,7 +30,7 @@ class ProfileController extends Controller
             'status' => session('status'),
             'passwordHint' => $request->user()->password_hint,
             'documents' => cursorResponse($documents, fn (File $f): array => [
-                'id' => $f->id,
+                'token' => $f->token,
                 'name' => $f->original_name,
                 'url' => route('documents.download', $f),
                 'size' => $f->size,

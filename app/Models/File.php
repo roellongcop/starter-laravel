@@ -15,6 +15,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * disk; the columns below denormalize the stored Media's metadata so lists and
  * search need no media join. Downloads go only through gated controller actions.
  *
+ * @property string $token
  * @property int|null $size
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -48,25 +49,16 @@ class File extends BaseModel implements HasMedia
     }
 
     /**
-     * Content-unique cache-bust token for image URLs. Keyed on the random
-     * storage-path basename (never reused, even after migrate:fresh) so an
-     * `immutable`-cached derivative is never served for a different file that
-     * happened to reuse an id. Falls back to the id when the path is unset.
+     * Gated, on-demand resized URL for this image at the given width. The route
+     * binds File by its token (HasToken), so the unguessable, never-reused token
+     * sits in the path and doubles as the `immutable`-cache buster — a re-upload
+     * is a new row with a new token, hence a new URL.
      */
-    public function cacheVersion(): string
-    {
-        return $this->path !== null
-            ? pathinfo($this->path, PATHINFO_FILENAME)
-            : (string) $this->id;
-    }
-
-    /** Gated, on-demand resized URL for this image at the given width. */
     public function imageUrl(int $width): string
     {
         return route('media.img', [
-            'file' => $this->id,
+            'file' => $this->getRouteKey(),
             'w' => $width,
-            'v' => $this->cacheVersion(),
         ]);
     }
 

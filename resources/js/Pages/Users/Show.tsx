@@ -38,7 +38,7 @@ export default function Show({
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
     const destroy = () =>
-        router.delete(route('users.destroy', user.id), {
+        router.delete(route('users.destroy', user.token), {
             onFinish: () => setConfirmingDelete(false),
         });
 
@@ -54,7 +54,7 @@ export default function Show({
                         <BackButton fallback={route('users.index')} />
                         <Can ability="users.update">
                             <Button asChild>
-                                <Link href={route('users.edit', user.id)}>
+                                <Link href={route('users.edit', user.token)}>
                                     Edit
                                 </Link>
                             </Button>

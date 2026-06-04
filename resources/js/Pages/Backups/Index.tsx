@@ -61,12 +61,12 @@ export default function Index({ backups, can }: Props) {
         const { action, backup } = confirm;
         if (action === 'restore') {
             router.post(
-                route('backups.restore', backup.id),
+                route('backups.restore', backup.token),
                 {},
                 { preserveScroll: true },
             );
         } else {
-            router.delete(route('backups.destroy', backup.id), {
+            router.delete(route('backups.destroy', backup.token), {
                 preserveScroll: true,
             });
         }
@@ -126,7 +126,7 @@ export default function Index({ backups, can }: Props) {
                             </TableRow>
                         )}
                         {backups.data.map((b) => (
-                            <TableRow key={b.id}>
+                            <TableRow key={b.token}>
                                 <TableCell className="font-mono text-sm">
                                     {b.filename ?? '—'}
                                 </TableCell>
@@ -168,7 +168,7 @@ export default function Index({ backups, can }: Props) {
                                                 <a
                                                     href={route(
                                                         'backups.download',
-                                                        b.id,
+                                                        b.token,
                                                     )}
                                                 >
                                                     <Download className="h-4 w-4" />

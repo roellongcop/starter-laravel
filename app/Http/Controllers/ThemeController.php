@@ -96,13 +96,13 @@ class ThemeController extends Controller
     {
         $validated = $request->validate([
             'process' => ['required', 'in:active,in_active,delete'],
-            'ids' => ['required', 'array'],
-            'ids.*' => ['integer'],
+            'tokens' => ['required', 'array'],
+            'tokens.*' => ['string'],
         ]);
 
         $this->authorize($validated['process'] === 'delete' ? 'delete' : 'update', Theme::class);
 
-        $count = Theme::bulkAction($validated['process'], $validated['ids']);
+        $count = Theme::bulkAction($validated['process'], $validated['tokens']);
 
         return back()->with('success', "{$count} theme(s) updated.");
     }
@@ -127,7 +127,7 @@ class ThemeController extends Controller
     protected function row(Theme $theme, bool $detailed = false): array
     {
         $data = [
-            'id' => $theme->id,
+            'token' => $theme->token,
             'name' => $theme->name,
             'description' => $theme->description,
             'is_default' => $theme->is_default,

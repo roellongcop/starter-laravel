@@ -41,7 +41,7 @@ export default function DocumentList({
         setViewing({
             name: doc.name,
             extension: doc.extension,
-            url: route('documents.view', doc.id),
+            url: route('documents.view', doc.token),
             downloadUrl: doc.url,
         });
 
@@ -62,7 +62,7 @@ export default function DocumentList({
                     </TableHeader>
                     <TableBody>
                         {documents.data.map((doc) => (
-                            <TableRow key={doc.id}>
+                            <TableRow key={doc.token}>
                                 <TableCell className="font-medium">
                                     <button
                                         type="button"

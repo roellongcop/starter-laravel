@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 /**
  * A queued data import owned by a user (upload → preview → process).
  *
+ * @property string $token
  * @property UserImportStatus $status
  * @property int $total
  * @property int $success

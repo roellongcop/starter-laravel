@@ -124,7 +124,7 @@ class UserController extends Controller
             ->cursorPaginate(config('keen.pagination_size'));
 
         return cursorResponse($documents, fn (File $f): array => [
-            'id' => $f->id,
+            'token' => $f->token,
             'name' => $f->original_name,
             'url' => route('documents.download', $f),
             'size' => $f->size,
@@ -176,13 +176,13 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'process' => ['required', 'in:active,in_active,delete'],
-            'ids' => ['required', 'array'],
-            'ids.*' => ['integer'],
+            'tokens' => ['required', 'array'],
+            'tokens.*' => ['string'],
         ]);
 
         $this->authorize($validated['process'] === 'delete' ? 'delete' : 'update', User::class);
 
-        $count = User::bulkAction($validated['process'], $validated['ids']);
+        $count = User::bulkAction($validated['process'], $validated['tokens']);
 
         return back()->with('success', "{$count} user(s) updated.");
     }
@@ -204,13 +204,14 @@ class UserController extends Controller
     }
 
     /**
-     * Set the user's avatar to an existing file id (uploaded via /media by the
-     * picker). Absent, the avatar is left unchanged.
+     * Set the user's avatar to an existing file (uploaded via /media by the
+     * picker), referenced by its public token. Absent, the avatar is unchanged.
      */
     protected function syncAvatar(User $user, Request $request): void
     {
-        if ($request->filled('avatar_file_id')) {
-            $user->update(['avatar_file_id' => $request->integer('avatar_file_id')]);
+        if ($request->filled('avatar_file_token')) {
+            $fileId = File::where('token', $request->string('avatar_file_token'))->value('id');
+            $user->update(['avatar_file_id' => $fileId]);
         }
     }
 
@@ -220,7 +221,7 @@ class UserController extends Controller
     protected function row(User $user, bool $detailed = false): array
     {
         $data = [
-            'id' => $user->id,
+            'token' => $user->token,
             'name' => $user->name,
             'email' => $user->email,
             'username' => $user->username,
@@ -233,7 +234,7 @@ class UserController extends Controller
 
         if ($detailed) {
             $data['password_hint'] = $user->password_hint;
-            $data['avatar_file_id'] = $user->avatar_file_id;
+            $data['avatar_file_token'] = $user->avatarFile?->token;
             $data['meta'] = $user->meta->map(fn ($m) => ['key' => $m->key, 'value' => $m->value])->values();
         }
 

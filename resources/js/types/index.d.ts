@@ -1,5 +1,5 @@
 export interface User {
-    id: number;
+    token: string;
     name: string;
     email: string;
     email_verified_at?: string;
@@ -9,7 +9,7 @@ export interface User {
 
 /** A user document as serialized by DocumentController/ProfileController. */
 export interface AdminDocument {
-    id: number;
+    token: string;
     name: string;
     url: string;
     size: number;
@@ -37,7 +37,7 @@ export interface UserMetaRow {
 
 /** A user as serialized by UserController (admin CRUD pages). */
 export interface AdminUser {
-    id: number;
+    token: string;
     name: string;
     email: string;
     username: string | null;
@@ -48,13 +48,13 @@ export interface AdminUser {
     created_at: string | null;
     // detailed-only
     password_hint?: string | null;
-    avatar_file_id?: number | null;
+    avatar_file_token?: string | null;
     meta?: UserMetaRow[];
 }
 
 /** A role as serialized by RoleController (admin CRUD pages). */
 export interface AdminRole {
-    id: number;
+    token: string;
     name: string;
     description: string | null;
     role_type: string | null;
@@ -100,7 +100,7 @@ export interface SearchGroup {
 
 /** A file as serialized by FileController. */
 export interface AdminFile {
-    id: number;
+    token: string;
     original_name: string;
     extension: string | null;
     mime: string | null;
@@ -116,7 +116,7 @@ export interface AdminFile {
 
 /** An IP entry as serialized by IpController. */
 export interface AdminIp {
-    id: number;
+    token: string;
     ip_address: string;
     list_type: string;
     description: string | null;
@@ -214,7 +214,7 @@ export interface AdminAudit {
 }
 
 export interface AdminVisitor {
-    id: number;
+    token: string;
     cookie_id: string;
     ip_address: string | null;
     browser: string | null;
@@ -226,7 +226,7 @@ export interface AdminVisitor {
 }
 
 export interface AdminVisitLog {
-    id: number;
+    token: string;
     visitor_ip?: string | null;
     url: string | null;
     action: string;
@@ -239,7 +239,7 @@ export interface QueueStats {
 }
 
 export interface AdminBackup {
-    id: number;
+    token: string;
     filename: string | null;
     disk: string;
     size: number | null;
@@ -249,7 +249,6 @@ export interface AdminBackup {
 }
 
 export interface AdminExport {
-    id: number;
     token: string;
     format: string;
     resource: string;
@@ -260,7 +259,7 @@ export interface AdminExport {
 }
 
 export interface AdminImport {
-    id: number;
+    token: string;
     resource: string;
     filename: string | null;
     total: number;
@@ -273,7 +272,7 @@ export interface AdminImport {
 
 /** A theme as serialized by ThemeController (admin CRUD pages). */
 export interface AdminTheme {
-    id: number;
+    token: string;
     name: string;
     description: string | null;
     is_default: boolean;

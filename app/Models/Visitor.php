@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 /**
  * A tracked anonymous/known visitor (cookie-based), populated by TrackVisitor.
  *
+ * @property string $token
  * @property string $cookie_id
  * @property int $visit_count
  * @property Carbon|null $last_visit_at

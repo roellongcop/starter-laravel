@@ -18,7 +18,7 @@ export default function UpdateAvatarForm({
         setSaving(true);
         router.post(
             route('profile.avatar.store'),
-            { file_id: image.id },
+            { file_token: image.token },
             {
                 preserveScroll: true,
                 onFinish: () => setSaving(false),

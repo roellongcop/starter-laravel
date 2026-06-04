@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
  * { "light": { "--background": "0 0% 100%", … }, "dark": { … } }.
  * Exactly one theme is the default; its tokens are injected app-wide.
  *
+ * @property string $token
  * @property array<string, array<string, string>>|null $tokens
  * @property bool $is_default
  * @property Carbon|null $created_at

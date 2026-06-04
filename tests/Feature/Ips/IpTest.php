@@ -33,7 +33,7 @@ it('runs the custom white_list bulk action', function (): void {
     $a = Ip::factory()->blacklist()->create();
     $b = Ip::factory()->blacklist()->create();
 
-    $this->post(route('ips.bulk'), ['process' => 'white_list', 'ids' => [$a->id, $b->id]])
+    $this->post(route('ips.bulk'), ['process' => 'white_list', 'tokens' => [$a->token, $b->token]])
         ->assertRedirect();
 
     expect($a->fresh()->list_type)->toBe(IpListType::Whitelist)
@@ -43,7 +43,7 @@ it('runs the custom white_list bulk action', function (): void {
 it('still runs the default bulk actions', function (): void {
     $a = Ip::factory()->create();
 
-    $this->post(route('ips.bulk'), ['process' => 'in_active', 'ids' => [$a->id]])
+    $this->post(route('ips.bulk'), ['process' => 'in_active', 'tokens' => [$a->token]])
         ->assertRedirect();
 
     expect(Ip::find($a->id))->toBeNull()

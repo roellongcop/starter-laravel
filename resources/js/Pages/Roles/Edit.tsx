@@ -19,7 +19,9 @@ export default function Edit({ role, permissionGroups, menuCatalog }: Props) {
             <Head title={`Edit ${role.name}`} />
             <PageHeader
                 title={`Edit ${role.name}`}
-                actions={<BackButton fallback={route('roles.show', role.id)} />}
+                actions={
+                    <BackButton fallback={route('roles.show', role.token)} />
+                }
             />
             <Card>
                 <CardContent className="pt-6">

@@ -67,14 +67,17 @@ trait HasRecordStatus
     }
 
     /**
-     * Apply a bulk process to the given ids. Returns the number of affected rows.
+     * Apply a bulk process to the given route-key tokens. Returns the number of
+     * affected rows. Selection is keyed on the public token (getRouteKeyName),
+     * never the internal id, so the frontend never handles ids.
      *
-     * @param  array<int, int|string>  $ids
+     * @param  array<int, int|string>  $tokens
      */
-    public static function bulkAction(string $process, array $ids): int
+    public static function bulkAction(string $process, array $tokens): int
     {
         $query = static::query()->withInactive();
-        $query->whereIn($query->getModel()->getQualifiedKeyName(), $ids);
+        $model = $query->getModel();
+        $query->whereIn($model->qualifyColumn($model->getRouteKeyName()), $tokens);
 
         return match ($process) {
             'active' => $query->update([

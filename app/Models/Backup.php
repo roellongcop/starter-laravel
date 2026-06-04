@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 /**
  * Tracks a spatie/laravel-backup archive + its lifecycle status.
  *
+ * @property string $token
  * @property BackupStatus $status
  * @property int|null $size
  * @property string|null $error_message

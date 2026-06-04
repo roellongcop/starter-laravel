@@ -22,7 +22,7 @@ export default function Show({ ip }: { ip: AdminIp }) {
                         </Button>
                         <Can ability="ips.update">
                             <Button asChild>
-                                <Link href={route('ips.edit', ip.id)}>
+                                <Link href={route('ips.edit', ip.token)}>
                                     Edit
                                 </Link>
                             </Button>

@@ -14,7 +14,7 @@ export default function Edit({ theme }: { theme: AdminTheme }) {
             <PageHeader
                 title={`Edit ${theme.name}`}
                 actions={
-                    <BackButton fallback={route('themes.show', theme.id)} />
+                    <BackButton fallback={route('themes.show', theme.token)} />
                 }
             />
             <Card>

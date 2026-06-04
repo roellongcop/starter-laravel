@@ -80,7 +80,7 @@ export default function Index({ logs, filters }: Props) {
                             </TableRow>
                         )}
                         {logs.data.map((l) => (
-                            <TableRow key={l.id}>
+                            <TableRow key={l.token}>
                                 <TableCell className="font-mono text-sm">
                                     {l.visitor_ip ?? '—'}
                                 </TableCell>

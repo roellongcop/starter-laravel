@@ -10,7 +10,6 @@ use App\Models\UserImport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
@@ -49,7 +48,6 @@ class ImportController extends Controller
 
         $import = UserImport::create([
             'user_id' => $request->user()->id,
-            'token' => Str::random(48),
             'resource' => $request->string('resource'),
             'filename' => $path,
             'status' => UserImportStatus::Pending,
@@ -111,7 +109,7 @@ class ImportController extends Controller
     protected function row(UserImport $i): array
     {
         return [
-            'id' => $i->id,
+            'token' => $i->token,
             'resource' => $i->resource,
             'filename' => $i->filename,
             'total' => $i->total,

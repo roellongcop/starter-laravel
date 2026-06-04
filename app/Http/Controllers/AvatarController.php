@@ -40,19 +40,19 @@ class AvatarController extends Controller
             ->cursorPaginate(config('keen.pagination_size'));
 
         return response()->json(cursorResponse($photos, fn (File $f): array => [
-            'id' => $f->id,
+            'token' => $f->token,
             'name' => $f->original_name,
             'mime' => $f->mime,
-            'v' => $f->cacheVersion(),
             'url' => $f->imageUrl(200),
             'created_at' => $f->created_at?->toIso8601String(),
         ]));
     }
 
-    /** Set the caller's avatar to one of their existing image files. */
+    /** Set the caller's avatar to one of their existing image files (by token). */
     public function store(StoreAvatarRequest $request): RedirectResponse
     {
-        $request->user()->update(['avatar_file_id' => $request->integer('file_id')]);
+        $fileId = File::where('token', $request->string('file_token'))->value('id');
+        $request->user()->update(['avatar_file_id' => $fileId]);
 
         return back()->with('success', 'Profile photo updated.');
     }

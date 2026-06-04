@@ -81,7 +81,7 @@ export default function Index({ visitors, filters }: Props) {
                             </TableRow>
                         )}
                         {visitors.data.map((v) => (
-                            <TableRow key={v.id}>
+                            <TableRow key={v.token}>
                                 <TableCell className="font-mono text-sm">
                                     {v.ip_address}
                                 </TableCell>
@@ -100,7 +100,10 @@ export default function Index({ visitors, filters }: Props) {
                                 <TableCell className="text-right">
                                     <Button size="sm" variant="ghost" asChild>
                                         <Link
-                                            href={route('visitors.show', v.id)}
+                                            href={route(
+                                                'visitors.show',
+                                                v.token,
+                                            )}
                                         >
                                             Logs
                                         </Link>

@@ -26,9 +26,9 @@ class StoreDocumentRequest extends BaseFormRequest
                 'extensions:'.implode(',', $allowed),
             ],
             'tag' => ['nullable', 'string', 'max:255'],
-            // Optional target owner — an admin uploading on a user's behalf.
-            // Authorization for cross-user uploads is enforced in the controller.
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            // Optional target owner (by token) — an admin uploading on a user's
+            // behalf. Cross-user authorization is enforced in the controller.
+            'user_token' => ['nullable', 'string', 'exists:users,token'],
         ];
     }
 }

@@ -29,7 +29,7 @@ it('sets the avatar from an existing owned image', function (): void {
     $user = actingAsRole('developer');
     $file = imageFileFor($user);
 
-    $this->post(route('profile.avatar.store'), ['file_id' => $file->id])
+    $this->post(route('profile.avatar.store'), ['file_token' => $file->token])
         ->assertRedirect();
 
     expect($user->refresh()->avatar_file_id)->toBe($file->id)
@@ -40,16 +40,16 @@ it('rejects an image owned by someone else', function (): void {
     actingAsRole('developer');
     $file = imageFileFor(User::factory()->create());
 
-    $this->post(route('profile.avatar.store'), ['file_id' => $file->id])
-        ->assertSessionHasErrors('file_id');
+    $this->post(route('profile.avatar.store'), ['file_token' => $file->token])
+        ->assertSessionHasErrors('file_token');
 });
 
 it('rejects a file that is not an image', function (): void {
     $user = actingAsRole('developer');
     $file = File::factory()->create(['owner_id' => $user->id, 'mime' => 'application/pdf']);
 
-    $this->post(route('profile.avatar.store'), ['file_id' => $file->id])
-        ->assertSessionHasErrors('file_id');
+    $this->post(route('profile.avatar.store'), ['file_token' => $file->token])
+        ->assertSessionHasErrors('file_token');
 });
 
 it('streams the avatar (resized) to another authenticated user', function (): void {
@@ -96,7 +96,7 @@ it('lets an admin set another user\'s avatar via the users form', function (): v
         'name' => $target->name,
         'email' => $target->email,
         'user_status' => $target->user_status->value,
-        'avatar_file_id' => $file->id,
+        'avatar_file_token' => $file->token,
     ])->assertRedirect();
 
     expect($target->refresh()->avatar_file_id)->toBe($file->id);

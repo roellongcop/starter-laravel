@@ -57,7 +57,7 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
     const [search, setSearch] = useState(filters.search);
     // const [dateFrom, setDateFrom] = useState(filters.date_from);
     // const [dateTo, setDateTo] = useState(filters.date_to);
-    const [selected, setSelected] = useState<number[]>([]);
+    const [selected, setSelected] = useState<string[]>([]);
     const [bulk, setBulk] = useState<BulkProcess | null>(null);
     const [deleting, setDeleting] = useState<AdminUser | null>(null);
     // Read saved visibility in the initializer (not a useEffect) so the first
@@ -106,12 +106,12 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
     const toggleInactive = (checked: boolean) =>
         reload({ ...currentFilters(), inactive: checked ? 1 : undefined });
 
-    const toggleRow = (id: number) =>
+    const toggleRow = (id: string) =>
         setSelected((s) =>
             s.includes(id) ? s.filter((x) => x !== id) : [...s, id],
         );
 
-    const visibleIds = users.data.map((u) => u.id);
+    const visibleIds = users.data.map((u) => u.token);
     const allSelected =
         visibleIds.length > 0 &&
         visibleIds.every((id) => selected.includes(id));
@@ -122,7 +122,7 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
         if (!bulk) return;
         router.post(
             route('users.bulk'),
-            { process: bulk, ids: selected },
+            { process: bulk, tokens: selected },
             {
                 preserveScroll: true,
                 onFinish: () => {
@@ -135,7 +135,7 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
 
     const destroy = () => {
         if (!deleting) return;
-        router.delete(route('users.destroy', deleting.id), {
+        router.delete(route('users.destroy', deleting.token), {
             preserveScroll: true,
             onFinish: () => setDeleting(null),
         });
@@ -329,12 +329,12 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                             </TableRow>
                         )}
                         {users.data.map((user) => (
-                            <TableRow key={user.id}>
+                            <TableRow key={user.token}>
                                 <TableCell>
                                     <Checkbox
-                                        checked={selected.includes(user.id)}
+                                        checked={selected.includes(user.token)}
                                         onCheckedChange={() =>
-                                            toggleRow(user.id)
+                                            toggleRow(user.token)
                                         }
                                     />
                                 </TableCell>
@@ -346,7 +346,10 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                                             size={28}
                                         />
                                         <Link
-                                            href={route('users.show', user.id)}
+                                            href={route(
+                                                'users.show',
+                                                user.token,
+                                            )}
                                             className="hover:underline"
                                         >
                                             {user.name}
@@ -393,7 +396,7 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                                                 <Link
                                                     href={route(
                                                         'users.edit',
-                                                        user.id,
+                                                        user.token,
                                                     )}
                                                 >
                                                     <Pencil className="h-4 w-4" />

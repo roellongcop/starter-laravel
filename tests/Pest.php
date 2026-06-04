@@ -71,6 +71,7 @@ function createWidgetsTable(): void
 
     Schema::create('widgets', function (Blueprint $table): void {
         $table->id();
+        $table->uuid('token')->unique(); // HasToken (via BaseModel) fills it on create
         $table->string('name');
         $table->auditColumns();
     });

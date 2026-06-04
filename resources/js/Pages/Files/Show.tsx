@@ -29,8 +29,8 @@ export default function Show({ file }: { file: AdminFile }) {
             name: file.original_name,
             extension: file.extension,
             mime: file.mime,
-            url: route('files.preview', file.id),
-            downloadUrl: route('files.download', file.id),
+            url: route('files.preview', file.token),
+            downloadUrl: route('files.download', file.token),
         });
 
     return (
@@ -47,7 +47,7 @@ export default function Show({ file }: { file: AdminFile }) {
                             <Eye className="h-4 w-4" /> Preview
                         </Button>
                         <Button asChild>
-                            <a href={route('files.download', file.id)}>
+                            <a href={route('files.download', file.token)}>
                                 <Download className="h-4 w-4" /> Download
                             </a>
                         </Button>
@@ -78,7 +78,7 @@ export default function Show({ file }: { file: AdminFile }) {
                         </CardHeader>
                         <CardContent>
                             <img
-                                src={route('files.preview', file.id)}
+                                src={route('files.preview', file.token)}
                                 alt={file.original_name}
                                 className="max-h-80 rounded border"
                             />

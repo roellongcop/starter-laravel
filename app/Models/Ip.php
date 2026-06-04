@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 /**
  * An IP allow/deny entry consumed by the EnforceIpRules middleware.
  *
+ * @property string $token
  * @property IpListType $list_type
  * @property RecordStatus $record_status
  * @property Carbon|null $created_at
@@ -38,20 +39,21 @@ class Ip extends BaseModel
      * Adds the resource-specific `white_list` process (flip rows to the
      * whitelist) on top of the default active/in_active/delete dispatcher.
      *
-     * @param  array<int, int|string>  $ids
+     * @param  array<int, int|string>  $tokens
      */
-    public static function bulkAction(string $process, array $ids): int
+    public static function bulkAction(string $process, array $tokens): int
     {
         if ($process === 'white_list') {
             $query = static::query()->withInactive();
+            $model = $query->getModel();
 
-            return $query->whereIn($query->getModel()->getKeyName(), $ids)->update([
+            return $query->whereIn($model->qualifyColumn($model->getRouteKeyName()), $tokens)->update([
                 'list_type' => IpListType::Whitelist->value,
                 'updated_by' => Auth::id(),
                 'updated_at' => now(),
             ]);
         }
 
-        return parent::bulkAction($process, $ids);
+        return parent::bulkAction($process, $tokens);
     }
 }

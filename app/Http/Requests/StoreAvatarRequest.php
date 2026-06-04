@@ -6,10 +6,10 @@ use App\Models\File;
 use Closure;
 
 /**
- * Validates a profile-photo selection: a file_id pointing at one of the
+ * Validates a profile-photo selection: a file_token pointing at one of the
  * authenticated user's previously uploaded images. The image bytes are uploaded
  * separately via the generic /media endpoint (by the <ImagePicker>), so this
- * request only ever receives an id.
+ * request only ever receives the file's public token.
  */
 class StoreAvatarRequest extends BaseFormRequest
 {
@@ -19,12 +19,12 @@ class StoreAvatarRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'file_id' => [
+            'file_token' => [
                 'required',
-                'integer',
-                'exists:files,id',
+                'string',
+                'exists:files,token',
                 function (string $attribute, mixed $value, Closure $fail): void {
-                    $file = File::find($value);
+                    $file = File::where('token', $value)->first();
 
                     if ($file === null || $file->owner_id !== $this->user()?->id) {
                         $fail('That photo does not belong to you.');

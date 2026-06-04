@@ -113,7 +113,7 @@ it('runs bulk inactivate which hides rows from the default scope', function (): 
     $a = User::factory()->create();
     $b = User::factory()->create();
 
-    $this->post(route('users.bulk'), ['process' => 'in_active', 'ids' => [$a->id, $b->id]])
+    $this->post(route('users.bulk'), ['process' => 'in_active', 'tokens' => [$a->token, $b->token]])
         ->assertRedirect();
 
     expect(User::find($a->id))->toBeNull()

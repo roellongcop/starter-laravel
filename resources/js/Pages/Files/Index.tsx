@@ -37,8 +37,8 @@ export default function Index({ files, filters }: Props) {
             name: file.original_name,
             extension: file.extension,
             mime: file.mime,
-            url: route('files.preview', file.id),
-            downloadUrl: route('files.download', file.id),
+            url: route('files.preview', file.token),
+            downloadUrl: route('files.download', file.token),
         });
 
     const submitSearch: FormEventHandler = (e) => {
@@ -52,7 +52,7 @@ export default function Index({ files, filters }: Props) {
 
     const destroy = () => {
         if (!deleting) return;
-        router.delete(route('files.destroy', deleting.id), {
+        router.delete(route('files.destroy', deleting.token), {
             preserveScroll: true,
             onFinish: () => setDeleting(null),
         });
@@ -114,10 +114,10 @@ export default function Index({ files, filters }: Props) {
                             </TableRow>
                         )}
                         {files.data.map((file) => (
-                            <TableRow key={file.id}>
+                            <TableRow key={file.token}>
                                 <TableCell className="font-medium">
                                     <Link
-                                        href={route('files.show', file.id)}
+                                        href={route('files.show', file.token)}
                                         className="hover:underline"
                                     >
                                         {file.original_name}
@@ -151,7 +151,7 @@ export default function Index({ files, filters }: Props) {
                                             <a
                                                 href={route(
                                                     'files.download',
-                                                    file.id,
+                                                    file.token,
                                                 )}
                                             >
                                                 <Download className="h-4 w-4" />

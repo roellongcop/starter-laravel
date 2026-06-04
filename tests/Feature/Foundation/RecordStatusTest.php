@@ -45,13 +45,13 @@ it('runs bulk active / in_active / delete processes', function (): void {
     $a = Widget::create(['name' => 'a']);
     $b = Widget::create(['name' => 'b']);
 
-    Widget::bulkAction('in_active', [$a->id, $b->id]);
+    Widget::bulkAction('in_active', [$a->token, $b->token]);
     expect(Widget::count())->toBe(0);
 
-    Widget::bulkAction('active', [$a->id]);
+    Widget::bulkAction('active', [$a->token]);
     expect(Widget::count())->toBe(1);
 
-    $affected = Widget::bulkAction('delete', [$a->id, $b->id]);
+    $affected = Widget::bulkAction('delete', [$a->token, $b->token]);
     expect($affected)->toBe(2)
         ->and(Widget::withInactive()->count())->toBe(0);
 });

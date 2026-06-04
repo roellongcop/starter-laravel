@@ -39,7 +39,7 @@ class VisitorController extends Controller
         return Inertia::render('Visitors/Show', [
             'visitor' => $this->row($visitor),
             'logs' => $visitor->logs->map(fn ($l) => [
-                'id' => $l->id,
+                'token' => $l->token,
                 'url' => $l->url,
                 'action' => $l->action->value,
                 'created_at' => $l->created_at?->toIso8601String(),
@@ -53,7 +53,7 @@ class VisitorController extends Controller
     protected function row(Visitor $v): array
     {
         return [
-            'id' => $v->id,
+            'token' => $v->token,
             'cookie_id' => $v->cookie_id,
             'ip_address' => $v->ip_address,
             'browser' => $v->browser,

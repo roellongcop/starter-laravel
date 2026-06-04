@@ -2,12 +2,12 @@
 
 use App\Models\File;
 use App\Models\Ip;
+use App\Models\Role;
 use App\Models\Theme;
 use App\Models\User;
 use App\Models\Visitor;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
-use Spatie\Permission\Models\Role;
 
 beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);

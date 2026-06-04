@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 /**
  * A single visitor action/page view.
  *
+ * @property string $token
  * @property VisitLogAction $action
  * @property array<string, mixed>|null $data
  * @property Carbon|null $created_at

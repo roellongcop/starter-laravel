@@ -82,7 +82,7 @@ class BackupController extends Controller
     protected function row(Backup $b): array
     {
         return [
-            'id' => $b->id,
+            'token' => $b->token,
             'filename' => $b->filename ? basename($b->filename) : null,
             'disk' => $b->disk,
             'size' => $b->size,

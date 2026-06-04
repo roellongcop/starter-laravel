@@ -162,7 +162,7 @@ class RoleController extends Controller
     protected function row(Role $role, bool $detailed = false): array
     {
         $data = [
-            'id' => $role->id,
+            'token' => $role->token,
             'name' => $role->name,
             'description' => $role->description,
             'role_type' => $role->role_type?->value,

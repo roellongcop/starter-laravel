@@ -124,7 +124,7 @@ class FileController extends Controller
     protected function row(File $file, bool $detailed = false): array
     {
         $data = [
-            'id' => $file->id,
+            'token' => $file->token,
             'original_name' => $file->original_name,
             'extension' => $file->extension,
             'mime' => $file->mime,

@@ -6,6 +6,7 @@ use App\Enums\RecordStatus;
 use App\Enums\UserStatus;
 use App\Models\Concerns\Blameable;
 use App\Models\Concerns\HasRecordStatus;
+use App\Models\Concerns\HasToken;
 use App\Models\Concerns\IsResource;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -22,6 +23,7 @@ use Spatie\Permission\Traits\HasRoles;
 /**
  * @property UserStatus $user_status
  * @property RecordStatus $record_status
+ * @property string $token
  * @property string|null $username
  * @property string|null $password_hint
  * @property string|null $avatar
@@ -31,7 +33,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements Auditable
 {
     /** @use HasFactory<UserFactory> */
-    use AuditableTrait, Blameable, HasApiTokens, HasFactory, HasRecordStatus, HasRoles, IsResource, Notifiable;
+    use AuditableTrait, Blameable, HasApiTokens, HasFactory, HasRecordStatus, HasRoles, HasToken, IsResource, Notifiable;
 
     /**
      * Explicit table name (the model lives outside the BaseModel hierarchy).
@@ -110,12 +112,11 @@ class User extends Authenticatable implements Auditable
         return Attribute::get(function (): ?string {
             if ($this->avatar_file_id !== null) {
                 // The `v` token busts the browser + Glide cache whenever the
-                // photo changes. We key it on the avatar File's content-unique
-                // cache version (its random storage-path basename), never reused
-                // even after migrate:fresh — unlike the auto-increment id, which
-                // would collide with an `immutable`-cached copy from before a
-                // wipe. Falls back to the id when the file/relation is missing.
-                $version = $this->avatarFile?->cacheVersion() ?? $this->avatar_file_id;
+                // photo changes: the avatar route binds the user (stable token),
+                // so we tag it with the avatar File's own token, which changes on
+                // every re-upload (a new File row = a new token).
+                $file = $this->avatarFile;
+                $version = $file !== null ? $file->token : $this->avatar_file_id;
 
                 return route('profile.avatar', ['user' => $this, 'v' => $version]);
             }

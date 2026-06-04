@@ -75,7 +75,7 @@ export default function Index({ exports }: Props) {
                             </TableRow>
                         )}
                         {exports.data.map((e) => (
-                            <TableRow key={e.id}>
+                            <TableRow key={e.token}>
                                 <TableCell>{e.resource}</TableCell>
                                 <TableCell className="uppercase">
                                     {e.format}

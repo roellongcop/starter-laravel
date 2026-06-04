@@ -27,7 +27,7 @@ export default function Preview({
     rows,
     rowCount,
 }: Props) {
-    const process = () => router.post(route('imports.process', imp.id));
+    const process = () => router.post(route('imports.process', imp.token));
 
     return (
         <AuthenticatedLayout>

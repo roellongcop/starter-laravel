@@ -50,7 +50,7 @@ export default function UserForm({
         password_confirmation: string;
         password_hint: string;
         user_status: string;
-        avatar_file_id: number | null;
+        avatar_file_token: string | null;
         roles: string[];
         meta: UserMetaRow[];
     }>({
@@ -61,7 +61,7 @@ export default function UserForm({
         password_confirmation: '',
         password_hint: user?.password_hint ?? '',
         user_status: user?.user_status ?? 'Active',
-        avatar_file_id: null,
+        avatar_file_token: null,
         roles: user?.roles ?? [],
         meta: user?.meta ?? [],
     });
@@ -72,7 +72,7 @@ export default function UserForm({
     );
 
     const onPicked = (image: PickedImage) => {
-        setData('avatar_file_id', image.id);
+        setData('avatar_file_token', image.token);
         setPreview(image.url);
     };
 
@@ -82,7 +82,7 @@ export default function UserForm({
 
     const destroyDocument = () => {
         if (!deletingDoc) return;
-        router.delete(route('documents.destroy', deletingDoc.id), {
+        router.delete(route('documents.destroy', deletingDoc.token), {
             preserveScroll: true,
             onFinish: () => setDeletingDoc(null),
         });
@@ -91,7 +91,7 @@ export default function UserForm({
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         if (editing && user) {
-            patch(route('users.update', user.id));
+            patch(route('users.update', user.token));
         } else {
             post(route('users.store'));
         }
@@ -131,7 +131,7 @@ export default function UserForm({
                             Choose photo
                         </Button>
                         <InputError
-                            message={errors.avatar_file_id}
+                            message={errors.avatar_file_token}
                             className="mt-1"
                         />
                     </div>
@@ -349,7 +349,7 @@ export default function UserForm({
                     </div>
                     <FileDropzone
                         uploadUrl={route('documents.store')}
-                        data={{ user_id: user.id }}
+                        data={{ user_token: user.token }}
                         hint="PDF, DOC or DOCX — up to 10 MB each"
                         onUploaded={refreshDocuments}
                     />

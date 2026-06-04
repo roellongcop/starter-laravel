@@ -31,7 +31,7 @@ export default function IpForm({ ip, listTypes }: Props) {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         if (editing && ip) {
-            patch(route('ips.update', ip.id));
+            patch(route('ips.update', ip.token));
         } else {
             post(route('ips.store'));
         }

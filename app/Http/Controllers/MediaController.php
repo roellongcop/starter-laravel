@@ -23,7 +23,7 @@ class MediaController extends Controller
         $file = $store($request->file('file'), $request->user()->id, $request->input('tag'));
 
         return response()->json([
-            'id' => $file->id,
+            'token' => $file->token,
             'original_name' => $file->original_name,
             'url' => $file->imageUrl(400),
             'thumb_url' => $file->imageUrl(160),

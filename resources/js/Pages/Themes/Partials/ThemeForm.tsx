@@ -202,7 +202,7 @@ export default function ThemeForm({ theme }: { theme?: AdminTheme }) {
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         if (editing && theme) {
-            patch(route('themes.update', theme.id));
+            patch(route('themes.update', theme.token));
         } else {
             post(route('themes.store'));
         }

@@ -21,9 +21,9 @@ it('uploads a pdf document for the caller', function (): void {
         'file' => UploadedFile::fake()->create('cv.pdf', 200, 'application/pdf'),
     ]);
 
-    $response->assertOk()->assertJsonStructure(['id', 'name', 'url', 'size', 'extension']);
+    $response->assertOk()->assertJsonStructure(['token', 'name', 'url', 'size', 'extension']);
 
-    $file = File::find($response->json('id'));
+    $file = File::where('token', $response->json('token'))->first();
     expect($file->owner_id)->toBe($user->id)
         ->and($file->extension)->toBe('pdf');
 });
@@ -130,11 +130,11 @@ it('lets an admin upload a document for another user', function (): void {
 
     $response = $this->postJson(route('documents.store'), [
         'file' => UploadedFile::fake()->create('cv.pdf', 200, 'application/pdf'),
-        'user_id' => $target->id,
+        'user_token' => $target->token,
     ]);
 
     $response->assertOk();
-    expect(File::find($response->json('id'))->owner_id)->toBe($target->id);
+    expect(File::where('token', $response->json('token'))->first()->owner_id)->toBe($target->id);
 });
 
 it('forbids uploading a document for another user without users.update', function (): void {
@@ -145,7 +145,7 @@ it('forbids uploading a document for another user without users.update', functio
 
     $this->postJson(route('documents.store'), [
         'file' => UploadedFile::fake()->create('cv.pdf', 200, 'application/pdf'),
-        'user_id' => $target->id,
+        'user_token' => $target->token,
     ])->assertForbidden();
 });
 

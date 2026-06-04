@@ -10,7 +10,6 @@ use App\Models\UserExport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -51,7 +50,6 @@ class ExportController extends Controller
 
         $export = UserExport::create([
             'user_id' => $request->user()->id,
-            'token' => Str::random(48),
             'format' => $request->string('format'),
             'resource' => $request->string('resource'),
             'filters' => $filters,
@@ -94,7 +92,6 @@ class ExportController extends Controller
     protected function row(UserExport $e): array
     {
         return [
-            'id' => $e->id,
             'token' => $e->token,
             'format' => $e->format,
             'resource' => $e->resource,

@@ -22,9 +22,9 @@ it('uploads an image to a year/month path with a random unique name', function (
         'file' => UploadedFile::fake()->image('My Photo.jpg', 300, 300),
     ]);
 
-    $response->assertOk()->assertJsonStructure(['id', 'url', 'thumb_url']);
+    $response->assertOk()->assertJsonStructure(['token', 'url', 'thumb_url']);
 
-    $file = File::find($response->json('id'));
+    $file = File::where('token', $response->json('token'))->first();
     expect($file->owner_id)->toBe($user->id)
         ->and($file->original_name)->toBe('My Photo.jpg')
         ->and($file->path)->toMatch('#^\d{4}/\d{2}/[A-Za-z0-9]{40}\.\w+$#');
@@ -37,7 +37,7 @@ it('serves a resized cached copy of an image', function (): void {
         $user->id,
     );
 
-    $this->get(route('media.img', ['file' => $file->id, 'w' => 200]))
+    $this->get(route('media.img', ['file' => $file->token, 'w' => 200]))
         ->assertOk()
         ->assertHeader('content-type', $file->mime);
 });
@@ -49,7 +49,7 @@ it('clamps an out-of-range width instead of failing', function (): void {
         $user->id,
     );
 
-    $this->get(route('media.img', ['file' => $file->id, 'w' => 99999]))
+    $this->get(route('media.img', ['file' => $file->token, 'w' => 99999]))
         ->assertOk();
 });
 
@@ -61,7 +61,7 @@ it('forbids viewing an image you do not own without files.view', function (): vo
     );
 
     $this->actingAs(User::factory()->create())
-        ->get(route('media.img', ['file' => $file->id, 'w' => 200]))
+        ->get(route('media.img', ['file' => $file->token, 'w' => 200]))
         ->assertForbidden();
 });
 

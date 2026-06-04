@@ -30,7 +30,9 @@ export default function Edit({
             <Head title={`Edit ${user.name}`} />
             <PageHeader
                 title={`Edit ${user.name}`}
-                actions={<BackButton fallback={route('users.show', user.id)} />}
+                actions={
+                    <BackButton fallback={route('users.show', user.token)} />
+                }
             />
             <Card>
                 <CardContent className="pt-6">

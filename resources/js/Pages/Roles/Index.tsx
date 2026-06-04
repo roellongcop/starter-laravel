@@ -40,7 +40,7 @@ export default function Index({ roles, filters }: Props) {
 
     const destroy = () => {
         if (!deleting) return;
-        router.delete(route('roles.destroy', deleting.id), {
+        router.delete(route('roles.destroy', deleting.token), {
             preserveScroll: true,
             onFinish: () => setDeleting(null),
         });
@@ -101,10 +101,10 @@ export default function Index({ roles, filters }: Props) {
                             </TableRow>
                         )}
                         {roles.data.map((role) => (
-                            <TableRow key={role.id}>
+                            <TableRow key={role.token}>
                                 <TableCell className="font-medium">
                                     <Link
-                                        href={route('roles.show', role.id)}
+                                        href={route('roles.show', role.token)}
                                         className="hover:underline"
                                     >
                                         {role.name}
@@ -136,7 +136,7 @@ export default function Index({ roles, filters }: Props) {
                                                 <Link
                                                     href={route(
                                                         'roles.edit',
-                                                        role.id,
+                                                        role.token,
                                                     )}
                                                 >
                                                     <Pencil className="h-4 w-4" />

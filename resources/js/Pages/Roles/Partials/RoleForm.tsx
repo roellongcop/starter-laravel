@@ -51,7 +51,7 @@ export default function RoleForm({
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         if (editing && role) {
-            patch(route('roles.update', role.id));
+            patch(route('roles.update', role.token));
         } else {
             post(route('roles.store'));
         }

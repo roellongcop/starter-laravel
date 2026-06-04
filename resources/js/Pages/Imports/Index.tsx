@@ -73,7 +73,7 @@ export default function Index({ imports }: Props) {
                             </TableRow>
                         )}
                         {imports.data.map((i) => (
-                            <TableRow key={i.id}>
+                            <TableRow key={i.token}>
                                 <TableCell>{i.resource}</TableCell>
                                 <TableCell>{i.total}</TableCell>
                                 <TableCell className="text-green-600">
@@ -95,7 +95,7 @@ export default function Index({ imports }: Props) {
                                             <a
                                                 href={route(
                                                     'imports.errors',
-                                                    i.id,
+                                                    i.token,
                                                 )}
                                             >
                                                 <FileWarning className="h-4 w-4" />

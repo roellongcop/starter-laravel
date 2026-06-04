@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\RoleType;
+use App\Models\Concerns\HasToken;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
@@ -14,6 +15,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * No HasRecordStatus global scope here: spatie resolves roles through this model
  * during permission checks, and a hidden-by-default scope could mask grants.
  *
+ * @property string $token
  * @property RoleType|null $role_type
  * @property string|null $description
  * @property array<string, array<int, string>>|null $module_access
@@ -22,6 +24,8 @@ use Spatie\Permission\Models\Role as SpatieRole;
  */
 class Role extends SpatieRole
 {
+    use HasToken;
+
     protected $fillable = [
         'name',
         'guard_name',

@@ -17,16 +17,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 
 export interface PickedImage {
-    id: number;
+    token: string;
     url: string;
 }
 
 interface PhotoItem {
-    id: number;
+    token: string;
     name: string;
     mime: string;
-    /** Content-unique cache-bust token, mirrored onto resized URLs. */
-    v: string;
     url: string;
     created_at: string | null;
 }
@@ -43,7 +41,7 @@ interface Props {
 const hasCamera =
     typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
 
-/** Upload a (cropped) blob to the generic /media endpoint → { id, url }. */
+/** Upload a (cropped) blob to the generic /media endpoint → { token, url }. */
 async function uploadBlob(blob: Blob, mime: string): Promise<PickedImage> {
     const ext = mime === 'image/png' ? 'png' : 'jpg';
     const form = new FormData();
@@ -52,7 +50,7 @@ async function uploadBlob(blob: Blob, mime: string): Promise<PickedImage> {
         new File([blob], `image-${Date.now()}.${ext}`, { type: mime }),
     );
     const { data } = await axios.post(route('media.store'), form);
-    return { id: data.id, url: data.url };
+    return { token: data.token, url: data.url };
 }
 
 /**
@@ -252,12 +250,12 @@ function ExistingTab({
             <div className="grid max-h-96 grid-cols-6 gap-2 overflow-y-auto">
                 {photos.map((p) => (
                     <button
-                        key={p.id}
+                        key={p.token}
                         type="button"
                         onClick={() => setSelected(p)}
                         className={
                             'aspect-square overflow-hidden rounded-md border-2 ' +
-                            (selected?.id === p.id
+                            (selected?.token === p.token
                                 ? 'border-primary'
                                 : 'border-transparent')
                         }
@@ -293,9 +291,8 @@ function ExistingTab({
                         selected &&
                         onEdit(
                             route('media.img', {
-                                file: selected.id,
+                                file: selected.token,
                                 w: 800,
-                                v: selected.v,
                             }),
                             selected.mime,
                         )
@@ -307,7 +304,7 @@ function ExistingTab({
                     disabled={!selected}
                     onClick={() =>
                         selected &&
-                        onUseAsIs({ id: selected.id, url: selected.url })
+                        onUseAsIs({ token: selected.token, url: selected.url })
                     }
                 >
                     Use this photo

@@ -36,7 +36,7 @@ type BulkProcess = 'active' | 'in_active' | 'delete' | 'white_list';
 
 export default function Index({ ips, filters }: Props) {
     const [search, setSearch] = useState(filters.search);
-    const [selected, setSelected] = useState<number[]>([]);
+    const [selected, setSelected] = useState<string[]>([]);
     const [bulk, setBulk] = useState<BulkProcess | null>(null);
     const [deleting, setDeleting] = useState<AdminIp | null>(null);
 
@@ -52,7 +52,7 @@ export default function Index({ ips, filters }: Props) {
         reload({ search, inactive: filters.inactive ? 1 : undefined });
     };
 
-    const toggleRow = (id: number) =>
+    const toggleRow = (id: string) =>
         setSelected((s) =>
             s.includes(id) ? s.filter((x) => x !== id) : [...s, id],
         );
@@ -61,7 +61,7 @@ export default function Index({ ips, filters }: Props) {
         if (!bulk) return;
         router.post(
             route('ips.bulk'),
-            { process: bulk, ids: selected },
+            { process: bulk, tokens: selected },
             {
                 preserveScroll: true,
                 onFinish: () => {
@@ -74,7 +74,7 @@ export default function Index({ ips, filters }: Props) {
 
     const destroy = () => {
         if (!deleting) return;
-        router.delete(route('ips.destroy', deleting.id), {
+        router.delete(route('ips.destroy', deleting.token), {
             preserveScroll: true,
             onFinish: () => setDeleting(null),
         });
@@ -170,16 +170,18 @@ export default function Index({ ips, filters }: Props) {
                             </TableRow>
                         )}
                         {ips.data.map((ip) => (
-                            <TableRow key={ip.id}>
+                            <TableRow key={ip.token}>
                                 <TableCell>
                                     <Checkbox
-                                        checked={selected.includes(ip.id)}
-                                        onCheckedChange={() => toggleRow(ip.id)}
+                                        checked={selected.includes(ip.token)}
+                                        onCheckedChange={() =>
+                                            toggleRow(ip.token)
+                                        }
                                     />
                                 </TableCell>
                                 <TableCell className="font-mono text-sm">
                                     <Link
-                                        href={route('ips.show', ip.id)}
+                                        href={route('ips.show', ip.token)}
                                         className="hover:underline"
                                     >
                                         {ip.ip_address}
@@ -210,7 +212,7 @@ export default function Index({ ips, filters }: Props) {
                                                 <Link
                                                     href={route(
                                                         'ips.edit',
-                                                        ip.id,
+                                                        ip.token,
                                                     )}
                                                 >
                                                     <Pencil className="h-4 w-4" />

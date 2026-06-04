@@ -59,7 +59,7 @@ export default function Show({ visitor, logs }: Props) {
                                 </TableRow>
                             )}
                             {logs.map((l) => (
-                                <TableRow key={l.id}>
+                                <TableRow key={l.token}>
                                     <TableCell>
                                         <Badge variant="secondary">
                                             {l.action}

@@ -19,7 +19,7 @@ export default function UpdateDocumentsForm({
 
     const destroy = () => {
         if (!deleting) return;
-        router.delete(route('documents.destroy', deleting.id), {
+        router.delete(route('documents.destroy', deleting.token), {
             preserveScroll: true,
             onFinish: () => setDeleting(null),
         });

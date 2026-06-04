@@ -28,7 +28,7 @@ export default function Index({ themes }: Props) {
 
     const destroy = () => {
         if (!deleting) return;
-        router.delete(route('themes.destroy', deleting.id), {
+        router.delete(route('themes.destroy', deleting.token), {
             preserveScroll: true,
             onFinish: () => setDeleting(null),
         });
@@ -76,10 +76,10 @@ export default function Index({ themes }: Props) {
                             </TableRow>
                         )}
                         {themes.data.map((theme) => (
-                            <TableRow key={theme.id}>
+                            <TableRow key={theme.token}>
                                 <TableCell className="font-medium">
                                     <Link
-                                        href={route('themes.show', theme.id)}
+                                        href={route('themes.show', theme.token)}
                                         className="hover:underline"
                                     >
                                         {theme.name}
@@ -102,7 +102,7 @@ export default function Index({ themes }: Props) {
                                                 <Link
                                                     href={route(
                                                         'themes.edit',
-                                                        theme.id,
+                                                        theme.token,
                                                     )}
                                                 >
                                                     <Pencil className="h-4 w-4" />

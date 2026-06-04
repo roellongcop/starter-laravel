@@ -42,10 +42,12 @@ export default function Show({ theme }: { theme: AdminTheme }) {
                 description={theme.description ?? undefined}
                 actions={
                     <>
-                        <BackButton fallback={route('themes.show', theme.id)} />
+                        <BackButton
+                            fallback={route('themes.show', theme.token)}
+                        />
                         <Can ability="themes.update">
                             <Button asChild>
-                                <Link href={route('themes.edit', theme.id)}>
+                                <Link href={route('themes.edit', theme.token)}>
                                     Edit
                                 </Link>
                             </Button>

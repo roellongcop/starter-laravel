@@ -24,7 +24,7 @@ class VisitLogController extends Controller
 
         return Inertia::render('VisitLogs/Index', [
             'logs' => cursorResponse($logs, fn (VisitLog $l) => [
-                'id' => $l->id,
+                'token' => $l->token,
                 'visitor_ip' => $l->visitor?->ip_address,
                 'url' => $l->url,
                 'action' => $l->action->value,

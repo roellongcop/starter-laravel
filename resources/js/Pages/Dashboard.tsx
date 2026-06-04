@@ -37,7 +37,7 @@ const ICONS: Record<string, LucideIcon> = {
 interface Props {
     metrics: DashboardMetric[];
     recent: {
-        users: { id: number; name: string; email: string }[];
+        users: { token: string; name: string; email: string }[];
     };
 }
 
@@ -87,7 +87,7 @@ export default function Dashboard({ metrics, recent }: Props) {
                         <ul className="divide-y">
                             {recent.users.map((u) => (
                                 <li
-                                    key={u.id}
+                                    key={u.token}
                                     className="flex items-center justify-between py-2 text-sm"
                                 >
                                     <span className="font-medium">

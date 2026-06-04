@@ -28,8 +28,8 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'metrics' => $this->metrics($user),
             'recent' => [
-                'users' => User::query()->latest()->take(5)->get(['id', 'name', 'email'])
-                    ->map(fn ($u) => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email]),
+                'users' => User::query()->latest()->take(5)->get(['token', 'name', 'email'])
+                    ->map(fn ($u) => ['token' => $u->token, 'name' => $u->name, 'email' => $u->email]),
             ],
         ]);
     }
@@ -48,7 +48,7 @@ class DashboardController extends Controller
                 'hits' => User::query()
                     ->where(fn ($w) => $w->where('name', 'like', "%{$q}%")->orWhere('email', 'like', "%{$q}%"))
                     ->take(5)->get()
-                    ->map(fn ($u) => ['label' => $u->name, 'sublabel' => $u->email, 'href' => route('users.show', $u->id, false)])
+                    ->map(fn ($u) => ['label' => $u->name, 'sublabel' => $u->email, 'href' => route('users.show', $u, false)])
                     ->all(),
             ];
         }
@@ -57,7 +57,7 @@ class DashboardController extends Controller
             $groups[] = [
                 'label' => 'Roles',
                 'hits' => Role::query()->where('name', 'like', "%{$q}%")->take(5)->get()
-                    ->map(fn ($r) => ['label' => $r->name, 'sublabel' => $r->description, 'href' => route('roles.show', $r->id, false)])
+                    ->map(fn ($r) => ['label' => $r->name, 'sublabel' => $r->description, 'href' => route('roles.show', $r, false)])
                     ->all(),
             ];
         }
@@ -68,7 +68,7 @@ class DashboardController extends Controller
                 'hits' => File::query()
                     ->where(fn ($w) => $w->where('original_name', 'like', "%{$q}%")->orWhere('tag', 'like', "%{$q}%"))
                     ->take(5)->get()
-                    ->map(fn ($f) => ['label' => $f->original_name, 'sublabel' => $f->tag, 'href' => route('files.show', $f->id, false)])
+                    ->map(fn ($f) => ['label' => $f->original_name, 'sublabel' => $f->tag, 'href' => route('files.show', $f, false)])
                     ->all(),
             ];
         }
@@ -79,7 +79,7 @@ class DashboardController extends Controller
                 'hits' => Ip::query()
                     ->where(fn ($w) => $w->where('ip_address', 'like', "%{$q}%")->orWhere('description', 'like', "%{$q}%"))
                     ->take(5)->get()
-                    ->map(fn ($ip) => ['label' => $ip->ip_address, 'sublabel' => $ip->list_type->value, 'href' => route('ips.show', $ip->id, false)])
+                    ->map(fn ($ip) => ['label' => $ip->ip_address, 'sublabel' => $ip->list_type->value, 'href' => route('ips.show', $ip, false)])
                     ->all(),
             ];
         }

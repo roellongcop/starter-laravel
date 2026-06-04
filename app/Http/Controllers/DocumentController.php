@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\StoreUploadedFile;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Models\File;
+use App\Models\User;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -29,9 +30,11 @@ class DocumentController extends Controller
     public function store(StoreDocumentRequest $request, StoreUploadedFile $store): JsonResponse
     {
         $ownerId = $request->user()->id;
-        $targetId = $request->integer('user_id');
+        $targetId = $request->filled('user_token')
+            ? User::where('token', $request->string('user_token'))->value('id')
+            : null;
 
-        if ($targetId !== 0 && $targetId !== $ownerId) {
+        if ($targetId !== null && $targetId !== $ownerId) {
             abort_unless($request->user()->can('users.update'), 403);
             $ownerId = $targetId;
         }
@@ -101,7 +104,7 @@ class DocumentController extends Controller
     protected function row(File $file): array
     {
         return [
-            'id' => $file->id,
+            'token' => $file->token,
             'name' => $file->original_name,
             'url' => route('documents.download', $file),
             'size' => $file->size,
