@@ -42,7 +42,9 @@ class AvatarController extends Controller
         return response()->json(cursorResponse($photos, fn (File $f): array => [
             'id' => $f->id,
             'name' => $f->original_name,
-            'url' => route('media.img', ['file' => $f->id, 'w' => 200]),
+            'mime' => $f->mime,
+            'v' => $f->cacheVersion(),
+            'url' => $f->imageUrl(200),
             'created_at' => $f->created_at?->toIso8601String(),
         ]));
     }

@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
+import BackButton from '@/Components/BackButton.js';
 import Can from '@/Components/Can';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
@@ -7,7 +8,6 @@ import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminTheme } from '@/types';
-import BackButton from "@/Components/BackButton.js";
 
 function Swatches({ tokens }: { tokens: Record<string, string> }) {
     const entries = Object.entries(tokens);

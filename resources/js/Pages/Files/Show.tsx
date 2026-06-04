@@ -1,14 +1,14 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { Download, Eye } from 'lucide-react';
 import { useState } from 'react';
 
+import BackButton from '@/Components/BackButton.js';
 import FileViewer, { type ViewerFile } from '@/Components/FileViewer';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminFile } from '@/types';
-import BackButton from "@/Components/BackButton.js";
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
     return (

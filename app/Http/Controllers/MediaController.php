@@ -25,8 +25,8 @@ class MediaController extends Controller
         return response()->json([
             'id' => $file->id,
             'original_name' => $file->original_name,
-            'url' => route('media.img', ['file' => $file->id, 'w' => 400]),
-            'thumb_url' => route('media.img', ['file' => $file->id, 'w' => 160]),
+            'url' => $file->imageUrl(400),
+            'thumb_url' => $file->imageUrl(160),
         ]);
     }
 

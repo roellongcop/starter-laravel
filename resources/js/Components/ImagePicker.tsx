@@ -24,6 +24,9 @@ export interface PickedImage {
 interface PhotoItem {
     id: number;
     name: string;
+    mime: string;
+    /** Content-unique cache-bust token, mirrored onto resized URLs. */
+    v: string;
     url: string;
     created_at: string | null;
 }
@@ -41,13 +44,12 @@ const hasCamera =
     typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
 
 /** Upload a (cropped) blob to the generic /media endpoint → { id, url }. */
-async function uploadBlob(blob: Blob): Promise<PickedImage> {
+async function uploadBlob(blob: Blob, mime: string): Promise<PickedImage> {
+    const ext = mime === 'image/png' ? 'png' : 'jpg';
     const form = new FormData();
     form.append(
         'file',
-        new File([blob], `image-${Date.now()}.jpg`, {
-            type: 'image/jpeg',
-        }),
+        new File([blob], `image-${Date.now()}.${ext}`, { type: mime }),
     );
     const { data } = await axios.post(route('media.store'), form);
     return { id: data.id, url: data.url };
@@ -66,8 +68,16 @@ export default function ImagePicker({
     title = 'Choose image',
 }: Props) {
     const [imageSrc, setImageSrc] = useState<string | null>(null);
+    // MIME of the image being cropped — drives the export format so PNG
+    // transparency survives the crop (JPEG would flatten it to white).
+    const [sourceMime, setSourceMime] = useState<string>('image/jpeg');
     const [busy, setBusy] = useState(false);
     const cropperRef = useRef<ReactCropperElement>(null);
+
+    const loadImage = useCallback((src: string, mime: string) => {
+        setImageSrc(src);
+        setSourceMime(mime);
+    }, []);
 
     const reset = useCallback(() => setImageSrc(null), []);
 
@@ -80,6 +90,9 @@ export default function ImagePicker({
         const cropper = cropperRef.current?.cropper;
         if (!cropper) return;
         setBusy(true);
+        // Keep PNG as PNG (alpha preserved); everything else → JPEG to stay small.
+        const isPng = sourceMime === 'image/png';
+        const mime = isPng ? 'image/png' : 'image/jpeg';
         cropper.getCroppedCanvas({ maxWidth: 1600, maxHeight: 1600 }).toBlob(
             async (blob) => {
                 if (!blob) {
@@ -87,14 +100,14 @@ export default function ImagePicker({
                     return;
                 }
                 try {
-                    onPicked(await uploadBlob(blob));
+                    onPicked(await uploadBlob(blob, mime));
                     close();
                 } finally {
                     setBusy(false);
                 }
             },
-            'image/jpeg',
-            0.9,
+            mime,
+            isPng ? undefined : 0.9,
         );
     };
 
@@ -149,11 +162,11 @@ export default function ImagePicker({
                         </TabsList>
 
                         <TabsContent value="upload">
-                            <UploadTab onImage={setImageSrc} />
+                            <UploadTab onImage={loadImage} />
                         </TabsContent>
                         <TabsContent value="existing">
                             <ExistingTab
-                                onEdit={setImageSrc}
+                                onEdit={loadImage}
                                 onUseAsIs={(image) => {
                                     onPicked(image);
                                     close();
@@ -161,7 +174,7 @@ export default function ImagePicker({
                             />
                         </TabsContent>
                         <TabsContent value="camera">
-                            <CameraTab onCapture={setImageSrc} active={open} />
+                            <CameraTab onCapture={loadImage} active={open} />
                         </TabsContent>
                     </Tabs>
                 )}
@@ -170,11 +183,16 @@ export default function ImagePicker({
     );
 }
 
-function UploadTab({ onImage }: { onImage: (src: string) => void }) {
+function UploadTab({
+    onImage,
+}: {
+    onImage: (src: string, mime: string) => void;
+}) {
     const onFile = (file?: File) => {
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = () => onImage(String(reader.result));
+        reader.onload = () =>
+            onImage(String(reader.result), file.type || 'image/jpeg');
         reader.readAsDataURL(file);
     };
 
@@ -196,7 +214,7 @@ function ExistingTab({
     onEdit,
     onUseAsIs,
 }: {
-    onEdit: (src: string) => void;
+    onEdit: (src: string, mime: string) => void;
     onUseAsIs: (image: PickedImage) => void;
 }) {
     const [photos, setPhotos] = useState<PhotoItem[]>([]);
@@ -274,7 +292,12 @@ function ExistingTab({
                     onClick={() =>
                         selected &&
                         onEdit(
-                            route('media.img', { file: selected.id, w: 800 }),
+                            route('media.img', {
+                                file: selected.id,
+                                w: 800,
+                                v: selected.v,
+                            }),
+                            selected.mime,
                         )
                     }
                 >
@@ -298,7 +321,7 @@ function CameraTab({
     onCapture,
     active,
 }: {
-    onCapture: (src: string) => void;
+    onCapture: (src: string, mime: string) => void;
     active: boolean;
 }) {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -340,7 +363,7 @@ function CameraTab({
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         canvas.getContext('2d')?.drawImage(video, 0, 0);
-        onCapture(canvas.toDataURL('image/jpeg', 0.92));
+        onCapture(canvas.toDataURL('image/jpeg', 0.92), 'image/jpeg');
     };
 
     if (error) {

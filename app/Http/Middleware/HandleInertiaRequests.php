@@ -34,6 +34,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        // Loaded so the avatar_url accessor reads the File's path for its cache
+        // -bust token without a lazy query on every shared-prop evaluation.
+        $user?->loadMissing('avatarFile');
         $permissions = $user ? $user->getAllPermissions()->pluck('name')->all() : [];
         $modules = Navigation::modulesFor($permissions);
 

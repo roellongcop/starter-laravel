@@ -39,7 +39,7 @@ class UserController extends Controller
         $total = (clone $query)->count();
 
         $users = $query
-            ->with('roles:id,name')
+            ->with(['roles:id,name', 'avatarFile'])
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
@@ -89,7 +89,7 @@ class UserController extends Controller
     {
         $this->authorize('view', $user);
 
-        $user->load('roles:id,name', 'meta');
+        $user->load('roles:id,name', 'meta', 'avatarFile');
 
         return Inertia::render('Users/Show', [
             'user' => $this->row($user, detailed: true),
@@ -101,7 +101,7 @@ class UserController extends Controller
     {
         $this->authorize('update', $user);
 
-        $user->load('roles:id,name', 'meta');
+        $user->load('roles:id,name', 'meta', 'avatarFile');
 
         return Inertia::render('Users/Edit', [
             'user' => $this->row($user, detailed: true),

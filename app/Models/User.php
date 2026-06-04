@@ -109,9 +109,15 @@ class User extends Authenticatable implements Auditable
     {
         return Attribute::get(function (): ?string {
             if ($this->avatar_file_id !== null) {
-                // The `v` (= avatar file id) busts the browser + Glide cache
-                // whenever the photo changes, so a new avatar shows immediately.
-                return route('profile.avatar', ['user' => $this, 'v' => $this->avatar_file_id]);
+                // The `v` token busts the browser + Glide cache whenever the
+                // photo changes. We key it on the avatar File's content-unique
+                // cache version (its random storage-path basename), never reused
+                // even after migrate:fresh — unlike the auto-increment id, which
+                // would collide with an `immutable`-cached copy from before a
+                // wipe. Falls back to the id when the file/relation is missing.
+                $version = $this->avatarFile?->cacheVersion() ?? $this->avatar_file_id;
+
+                return route('profile.avatar', ['user' => $this, 'v' => $version]);
             }
 
             if (is_string($this->avatar) && str_starts_with($this->avatar, 'http')) {

@@ -48,6 +48,29 @@ class File extends BaseModel implements HasMedia
     }
 
     /**
+     * Content-unique cache-bust token for image URLs. Keyed on the random
+     * storage-path basename (never reused, even after migrate:fresh) so an
+     * `immutable`-cached derivative is never served for a different file that
+     * happened to reuse an id. Falls back to the id when the path is unset.
+     */
+    public function cacheVersion(): string
+    {
+        return $this->path !== null
+            ? pathinfo($this->path, PATHINFO_FILENAME)
+            : (string) $this->id;
+    }
+
+    /** Gated, on-demand resized URL for this image at the given width. */
+    public function imageUrl(int $width): string
+    {
+        return route('media.img', [
+            'file' => $this->id,
+            'w' => $width,
+            'v' => $this->cacheVersion(),
+        ]);
+    }
+
+    /**
      * @param  Builder<File>  $query
      */
     public function scopeImages(Builder $query): void
