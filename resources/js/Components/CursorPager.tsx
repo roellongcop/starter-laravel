@@ -30,15 +30,19 @@ export default function CursorPager({
 }: CursorPagerProps) {
     const go = (cursor: string | null) => {
         if (!cursor) return;
-        router.get(
-            window.location.pathname,
-            { [cursorName]: cursor },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                ...(only ? { only } : {}),
-            },
+        // Preserve existing query params (search, inactive, etc.) so the
+        // filtered result set the cursor was computed against stays the same.
+        // Sending only the cursor would re-run an unfiltered query and the
+        // keyset position would point into the wrong result set.
+        const params = Object.fromEntries(
+            new URLSearchParams(window.location.search),
         );
+        params[cursorName] = cursor;
+        router.get(window.location.pathname, params, {
+            preserveState: true,
+            preserveScroll: true,
+            ...(only ? { only } : {}),
+        });
     };
 
     return (
