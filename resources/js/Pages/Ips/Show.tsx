@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 
+import BackButton from '@/Components/BackButton.js';
 import Can from '@/Components/Can';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
@@ -17,9 +18,7 @@ export default function Show({ ip }: { ip: AdminIp }) {
                 title={ip.ip_address}
                 actions={
                     <>
-                        <Button variant="outline" asChild>
-                            <Link href={route('ips.index')}>Back</Link>
-                        </Button>
+                        <BackButton fallback={route('ips.index')} />
                         <Can ability="ips.update">
                             <Button asChild>
                                 <Link href={route('ips.edit', ip.token)}>

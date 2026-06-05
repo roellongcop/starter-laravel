@@ -1,7 +1,7 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 
+import BackButton from '@/Components/BackButton.js';
 import PageHeader from '@/Components/PageHeader';
-import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminAudit } from '@/types';
@@ -34,11 +34,7 @@ export default function Show({ log }: { log: AdminAudit }) {
             <PageHeader
                 title={`${log.event} ${log.auditable_type} #${log.auditable_id}`}
                 description={`${log.user} · ${log.browser} / ${log.os} / ${log.device}`}
-                actions={
-                    <Button variant="outline" asChild>
-                        <Link href={route('logs.index')}>Back</Link>
-                    </Button>
-                }
+                actions={<BackButton fallback={route('logs.index')} />}
             />
 
             <div className="mb-6 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">

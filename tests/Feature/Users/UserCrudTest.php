@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -7,7 +8,7 @@ use Database\Seeders\RoleSeeder;
 beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 });
 
 it('lists users with the keyset cursor shape', function (): void {
@@ -31,14 +32,14 @@ it('creates a user with roles and inline meta', function (): void {
         'password' => 'password123',
         'password_confirmation' => 'password123',
         'user_status' => 'Active',
-        'roles' => ['admin'],
+        'roles' => [SystemRole::Admin->value],
         'meta' => [['key' => 'rank', 'value' => 'Rear Admiral']],
     ]);
 
     $user = User::where('email', 'grace@example.com')->first();
 
     $response->assertRedirect(route('users.show', $user));
-    expect($user->hasRole('admin'))->toBeTrue()
+    expect($user->hasRole(SystemRole::Admin->value))->toBeTrue()
         ->and($user->meta()->where('key', 'rank')->value('value'))->toBe('Rear Admiral');
 });
 

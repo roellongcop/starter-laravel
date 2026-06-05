@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Navigation;
@@ -27,7 +28,7 @@ function customRole(string $name, array $permissions, ?array $menu, int $priorit
 }
 
 it('persists main_navigation and priority and returns them on edit', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $menu = [
         ['key' => 'users', 'label' => 'Members', 'icon' => 'Users', 'href' => '/users'],
@@ -53,7 +54,7 @@ it('persists main_navigation and priority and returns them on edit', function ()
 });
 
 it('rejects a menu link with an unsafe href scheme', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->post(route('roles.store'), [
         'name' => 'Bad',

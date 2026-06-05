@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +11,7 @@ beforeEach(function (): void {
 });
 
 it('lists sessions', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     DB::table('sessions')->insert([
         'id' => 'sess-abc',
         'ip_address' => '10.0.0.1',
@@ -25,7 +26,7 @@ it('lists sessions', function (): void {
 });
 
 it('revokes a session', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     DB::table('sessions')->insert([
         'id' => 'sess-xyz',
         'ip_address' => '10.0.0.2',

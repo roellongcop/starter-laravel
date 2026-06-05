@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\IpListType;
+use App\Enums\SystemRole;
 use App\Models\Ip;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -8,7 +9,7 @@ use Database\Seeders\RoleSeeder;
 beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 });
 
 it('creates an IP entry', function (): void {

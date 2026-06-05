@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\Role;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -7,7 +8,7 @@ use Database\Seeders\RoleSeeder;
 beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);
     $this->seed(RoleSeeder::class);
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 });
 
 it('creates a role and derives module_access from permissions', function (): void {
@@ -40,7 +41,7 @@ it('re-derives module_access when permissions change', function (): void {
 });
 
 it('blocks deleting a system role', function (): void {
-    $system = Role::where('name', 'admin')->first();
+    $system = Role::where('name', SystemRole::Admin->value)->first();
 
     $this->delete(route('roles.destroy', $system))->assertForbidden();
 
@@ -48,12 +49,12 @@ it('blocks deleting a system role', function (): void {
 });
 
 it('blocks renaming a system role', function (): void {
-    $system = Role::where('name', 'admin')->first();
+    $system = Role::where('name', SystemRole::Admin->value)->first();
 
     $this->patch(route('roles.update', $system), [
         'name' => 'renamed-admin',
         'permissions' => [],
     ])->assertForbidden();
 
-    expect(Role::find($system->id)->name)->toBe('admin');
+    expect(Role::find($system->id)->name)->toBe(SystemRole::Admin->value);
 });

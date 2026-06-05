@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\StoreUploadedFile;
+use App\Enums\SystemRole;
 use App\Models\File;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -16,7 +17,7 @@ beforeEach(function (): void {
 });
 
 it('uploads an image to a year/month path with a random unique name', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
 
     $response = $this->post(route('media.store'), [
         'file' => UploadedFile::fake()->image('My Photo.jpg', 300, 300),
@@ -31,7 +32,7 @@ it('uploads an image to a year/month path with a random unique name', function (
 });
 
 it('serves a resized cached copy of an image', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $file = app(StoreUploadedFile::class)(
         UploadedFile::fake()->image('p.jpg', 600, 400),
         $user->id,
@@ -43,7 +44,7 @@ it('serves a resized cached copy of an image', function (): void {
 });
 
 it('clamps an out-of-range width instead of failing', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $file = app(StoreUploadedFile::class)(
         UploadedFile::fake()->image('p.jpg', 600, 400),
         $user->id,
@@ -66,7 +67,7 @@ it('forbids viewing an image you do not own without files.view', function (): vo
 });
 
 it('rejects a non-image upload', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->post(route('media.store'), [
         'file' => UploadedFile::fake()->create('notes.pdf', 20, 'application/pdf'),

@@ -1,8 +1,8 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 
+import BackButton from '@/Components/BackButton.js';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
     Table,
@@ -27,11 +27,7 @@ export default function Show({ visitor, logs }: Props) {
             <PageHeader
                 title={visitor.ip_address ?? visitor.cookie_id}
                 description={`${visitor.browser} / ${visitor.os} · ${visitor.visit_count} visits`}
-                actions={
-                    <Button variant="outline" asChild>
-                        <Link href={route('visitors.index')}>Back</Link>
-                    </Button>
-                }
+                actions={<BackButton fallback={route('visitors.index')} />}
             />
 
             <Card>

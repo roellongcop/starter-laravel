@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\SystemRole;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -11,9 +12,9 @@ class UserSeeder extends Seeder
     {
         // Demo logins — password equals the email address. Idempotent.
         $demo = [
-            ['name' => 'Developer', 'email' => 'developer@developer.com', 'role' => 'developer'],
-            ['name' => 'Super Admin', 'email' => 'superadmin@superadmin.com', 'role' => 'superadmin'],
-            ['name' => 'Admin', 'email' => 'admin@admin.com', 'role' => 'admin'],
+            ['name' => 'Developer', 'email' => 'developer@developer.com', 'role' => SystemRole::Developer->value],
+            ['name' => 'Super Admin', 'email' => 'superadmin@superadmin.com', 'role' => SystemRole::Superadmin->value],
+            ['name' => 'Admin', 'email' => 'admin@admin.com', 'role' => SystemRole::Admin->value],
         ];
 
         foreach ($demo as $row) {
@@ -36,7 +37,7 @@ class UserSeeder extends Seeder
                 ->count(25)
                 ->create()
                 ->each(function (User $user): void {
-                    $user->assignRole('admin');
+                    $user->assignRole(SystemRole::Admin->value);
                     $user->meta()->createMany([
                         ['key' => 'department', 'value' => fake()->randomElement(['Sales', 'Support', 'Engineering'])],
                         ['key' => 'phone', 'value' => fake()->phoneNumber()],

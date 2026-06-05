@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
@@ -10,11 +11,11 @@ beforeEach(function (): void {
 
 it('seeds the three system roles with derived module access', function (): void {
     expect(Role::pluck('name')->all())
-        ->toContain('developer')
-        ->toContain('superadmin')
-        ->toContain('admin');
+        ->toContain(SystemRole::Developer->value)
+        ->toContain(SystemRole::Superadmin->value)
+        ->toContain(SystemRole::Admin->value);
 
-    $admin = Role::where('name', 'admin')->first();
+    $admin = Role::where('name', SystemRole::Admin->value)->first();
 
     expect($admin->role_type->value)->toBe('System')
         ->and($admin->module_access['users'])->toBe(['index', 'show'])
@@ -25,7 +26,7 @@ it('seeds the three system roles with derived module access', function (): void 
 it('lets the developer bypass every gate', function (): void {
     $developer = User::where('email', 'developer@developer.com')->first();
 
-    expect($developer->hasRole('developer'))->toBeTrue()
+    expect($developer->hasRole(SystemRole::Developer->value))->toBeTrue()
         ->and($developer->can('users.delete'))->toBeTrue()
         ->and($developer->can('settings.update'))->toBeTrue();
 });
@@ -48,5 +49,5 @@ it('logs in a demo user with password equal to email', function (): void {
     $response->assertRedirect(route('dashboard', absolute: false));
     $this->assertAuthenticated();
 
-    expect(auth()->user()->hasRole('superadmin'))->toBeTrue();
+    expect(auth()->user()->hasRole(SystemRole::Superadmin->value))->toBeTrue();
 });

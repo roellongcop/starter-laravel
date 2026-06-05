@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\RecordStatus;
+use App\Enums\SystemRole;
 use App\Models\User;
 use App\Settings\EmailSettings;
 use App\Settings\SystemSettings;
@@ -36,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
         // God mode: the developer role bypasses every permission check. Returning
         // null (not false) for everyone else lets normal gate resolution proceed.
         Gate::before(function (User $user): ?bool {
-            return $user->hasRole('developer') ? true : null;
+            return $user->hasRole(SystemRole::Developer->value) ? true : null;
         });
     }
 

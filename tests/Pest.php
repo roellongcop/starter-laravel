@@ -44,6 +44,7 @@ expect()->extend('toBeOne', function () {
 |
 */
 
+use App\Enums\SystemRole;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -52,10 +53,10 @@ use Illuminate\Support\Facades\Schema;
  * Create a user with the given role and authenticate as them. Requires the
  * permission + role seeders to have run first.
  */
-function actingAsRole(string $role): User
+function actingAsRole(SystemRole|string $role): User
 {
     $user = User::factory()->create();
-    $user->assignRole($role);
+    $user->assignRole($role instanceof SystemRole ? $role->value : $role);
     test()->actingAs($user);
 
     return $user;

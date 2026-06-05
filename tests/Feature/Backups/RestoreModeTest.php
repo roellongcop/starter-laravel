@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\User;
 use App\Support\RestoreSentinel;
 use Database\Seeders\PermissionSeeder;
@@ -24,9 +25,9 @@ it('the sentinel put/clear round-trips', function (): void {
 
 it('blocks non-operators with 503 while a restore is active', function (): void {
     $operator = User::factory()->create();
-    $operator->assignRole('admin');
+    $operator->assignRole(SystemRole::Admin->value);
     $other = User::factory()->create();
-    $other->assignRole('admin');
+    $other->assignRole(SystemRole::Admin->value);
 
     RestoreSentinel::put($operator->id);
 
@@ -35,7 +36,7 @@ it('blocks non-operators with 503 while a restore is active', function (): void 
 
 it('lets the operator through during a restore', function (): void {
     $operator = User::factory()->create();
-    $operator->assignRole('admin');
+    $operator->assignRole(SystemRole::Admin->value);
 
     RestoreSentinel::put($operator->id);
 
@@ -44,7 +45,7 @@ it('lets the operator through during a restore', function (): void {
 
 it('lets a developer through during a restore', function (): void {
     $dev = User::factory()->create();
-    $dev->assignRole('developer');
+    $dev->assignRole(SystemRole::Developer->value);
     RestoreSentinel::put(999); // someone else is the operator
 
     $this->actingAs($dev)->get(route('dashboard'))->assertOk();
@@ -58,7 +59,7 @@ it('keeps the login route reachable during a restore', function (): void {
 
 it('restores access once the sentinel clears', function (): void {
     $user = User::factory()->create();
-    $user->assignRole('admin');
+    $user->assignRole(SystemRole::Admin->value);
     RestoreSentinel::put(999);
     $this->actingAs($user)->get(route('dashboard'))->assertStatus(503);
 

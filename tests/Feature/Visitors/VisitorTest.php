@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\Visitor;
 use App\Settings\SystemSettings;
 use Database\Seeders\PermissionSeeder;
@@ -34,7 +35,7 @@ it('lists visitors for an authorized user', function (): void {
     $settings->enable_visitor = false;
     $settings->save();
 
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     Visitor::factory()->count(2)->create();
 
     $this->get(route('visitors.index'))

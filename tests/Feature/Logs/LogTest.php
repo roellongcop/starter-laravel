@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\Audit;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -26,7 +27,7 @@ function makeAudit(): Audit
 }
 
 it('lists audit logs with parsed browser/os', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     makeAudit();
 
     $this->get(route('logs.index'))
@@ -40,7 +41,7 @@ it('lists audit logs with parsed browser/os', function (): void {
 });
 
 it('shows an audit with old/new values', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $audit = makeAudit();
 
     $this->get(route('logs.show', $audit->id))

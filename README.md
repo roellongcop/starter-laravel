@@ -119,6 +119,7 @@ make test       Pest test suite
 make pint       Format PHP (Pint)
 make stan       Static analysis (Larastan)
 make lint       ESLint + Prettier check
+make fix        Auto-format + lint-fix PHP and frontend (writes files)
 make is-mergeable  Run the full CI gate locally (check-only, no writes)
 make hooks      Install the git pre-commit hook (Pint + Prettier + ESLint, check-only)
 make logs       Follow logs
@@ -137,7 +138,8 @@ make ide-helper Generate IDE helper files
   reach CI; bypass a single commit with `SKIP_HOOKS=1 git commit …`.
 - **CI** (`.github/workflows/ci.yml`) runs the backend (Pint, Larastan, Pest) and frontend
   (Prettier, ESLint, build) checks on every push/PR. Mirror it locally before pushing with
-  `make is-mergeable` (check-only, no writes — the same gate CI enforces).
+  `make is-mergeable` (check-only, no writes — the same gate CI enforces). To auto-fix style
+  issues first, run `make fix` (Pint + ESLint --fix + Prettier --write), then `make is-mergeable`.
 
 ## Documentation
 

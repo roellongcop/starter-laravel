@@ -16,7 +16,7 @@ export GID := $(shell id -g)
 .DEFAULT_GOAL := help
 .PHONY: help build up down down-v refresh restart install setup shell migrate \
         fresh seed queue dev assets test pint stan lint is-mergeable logs ps tinker \
-        ide-helper wait-db key storage-link clean hooks mail
+        ide-helper wait-db key storage-link clean hooks mail fix
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -125,6 +125,11 @@ stan: ## Run Larastan static analysis
 lint: ## Lint + format-check the frontend
 	$(NODE_RUN) npm run lint
 	$(NODE_RUN) npm run format:check
+
+fix: ## Auto-format + lint-fix PHP and the frontend (writes files)
+	$(APP) ./vendor/bin/pint
+	$(NODE_RUN) npm run format
+	$(NODE_RUN) npm run lint
 
 hooks: ## Install the git pre-commit hook (Pint + Prettier + ESLint, check-only)
 	git config core.hooksPath .githooks

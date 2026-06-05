@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Notifications\AdminNotification;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -10,7 +11,7 @@ beforeEach(function (): void {
 });
 
 it('lists the user notifications and shares the bell count', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $user->notify(new AdminNotification('Hello there'));
 
     $this->get(route('notifications.index'))
@@ -23,7 +24,7 @@ it('lists the user notifications and shares the bell count', function (): void {
 });
 
 it('marks a notification read and unread', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $user->notify(new AdminNotification('Ping'));
     $id = $user->notifications()->first()->id;
 
@@ -35,7 +36,7 @@ it('marks a notification read and unread', function (): void {
 });
 
 it('bulk deletes notifications', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $user->notify(new AdminNotification('a'));
     $user->notify(new AdminNotification('b'));
     $ids = $user->notifications()->pluck('id')->all();

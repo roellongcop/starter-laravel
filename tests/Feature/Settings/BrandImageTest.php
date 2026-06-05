@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\StoreUploadedFile;
+use App\Enums\SystemRole;
 use App\Settings\ImageSettings;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -15,7 +16,7 @@ beforeEach(function (): void {
 });
 
 it('saves the brand image tokens from the image tab', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $favicon = app(StoreUploadedFile::class)(UploadedFile::fake()->image('f.png', 64, 64), $user->id);
     $square = app(StoreUploadedFile::class)(UploadedFile::fake()->image('s.png', 256, 256), $user->id);
 
@@ -32,7 +33,7 @@ it('saves the brand image tokens from the image tab', function (): void {
 });
 
 it('rejects a brand token that is not a real file', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->put(route('settings.update', 'image'), [
         'favicon_token' => 'not-a-real-token',
@@ -42,7 +43,7 @@ it('rejects a brand token that is not a real file', function (): void {
 });
 
 it('serves a configured brand image publicly (no auth)', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $file = app(StoreUploadedFile::class)(UploadedFile::fake()->image('logo.png', 300, 300), $user->id);
 
     $image = app(ImageSettings::class);
@@ -65,7 +66,7 @@ it('rejects an unknown brand slot', function (): void {
 });
 
 it('shares brand asset urls as a global prop', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->get(route('settings.index'))
         ->assertOk()

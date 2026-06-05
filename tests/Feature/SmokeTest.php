@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\File;
 use App\Models\Ip;
 use App\Models\Role;
@@ -14,7 +15,7 @@ beforeEach(function (): void {
     $this->seed(RoleSeeder::class);
     // developer gets god-mode via Gate::before, so authorization never blocks
     // the smoke sweep — we only care that each page renders.
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 });
 
 /**

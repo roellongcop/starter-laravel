@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\RecordStatus;
+use App\Enums\SystemRole;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -15,7 +16,7 @@ it('redirects guests to login', function (): void {
 });
 
 it('lets an admin list users but blocks deletion', function (): void {
-    actingAsRole('admin');
+    actingAsRole(SystemRole::Admin);
     $target = User::factory()->create();
 
     $this->get(route('users.index'))->assertOk();
@@ -24,7 +25,7 @@ it('lets an admin list users but blocks deletion', function (): void {
 });
 
 it('lets a developer delete users', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $target = User::factory()->create();
 
     $this->delete(route('users.destroy', $target))->assertRedirect();
@@ -35,12 +36,12 @@ it('gates inactive rows behind view-inactive', function (): void {
     User::factory()->create(['record_status' => RecordStatus::Inactive]);
 
     // admin lacks view-inactive: the inactive flag is ignored.
-    actingAsRole('admin');
+    actingAsRole(SystemRole::Admin);
     $this->get(route('users.index', ['inactive' => 1]))
         ->assertInertia(fn ($page) => $page->where('filters.inactive', false));
 
     // developer has view-inactive (all permissions): inactive rows surface.
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $this->get(route('users.index', ['inactive' => 1]))
         ->assertInertia(fn ($page) => $page
             ->where('filters.inactive', true)

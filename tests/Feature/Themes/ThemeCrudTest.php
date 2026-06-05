@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\Theme;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -11,7 +12,7 @@ beforeEach(function (): void {
 });
 
 it('creates a theme with tokens', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->post(route('themes.store'), [
         'name' => 'Midnight',
@@ -30,7 +31,7 @@ it('creates a theme with tokens', function (): void {
 });
 
 it('enforces a single default theme', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $existing = Theme::factory()->default()->create();
 
     $this->post(route('themes.store'), [
@@ -45,7 +46,7 @@ it('enforces a single default theme', function (): void {
 });
 
 it('updates a theme', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $theme = Theme::factory()->create(['name' => 'Old']);
 
     $this->patch(route('themes.update', $theme), [
@@ -58,7 +59,7 @@ it('updates a theme', function (): void {
 });
 
 it('deletes a theme', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $theme = Theme::factory()->create();
 
     $this->delete(route('themes.destroy', $theme))->assertRedirect();
@@ -76,7 +77,7 @@ it('shares the default theme tokens with the frontend', function (): void {
     $theme = Theme::factory()->default()->create([
         'tokens' => ['light' => ['--primary' => '1 2% 3%'], 'dark' => []],
     ]);
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->get(route('dashboard'))
         ->assertInertia(fn ($page) => $page

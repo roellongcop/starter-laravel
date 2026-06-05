@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -11,7 +12,7 @@ beforeEach(function (): void {
 });
 
 it('renders the dashboard with metrics', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->get(route('dashboard'))
         ->assertOk()
@@ -37,7 +38,7 @@ it('gates metric tiles by permission', function (): void {
 });
 
 it('returns grouped search hits', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     User::factory()->create(['name' => 'Searchable Sam', 'email' => 'sam@example.com']);
 
     $response = $this->getJson(route('dashboard.search', ['q' => 'Searchable']));

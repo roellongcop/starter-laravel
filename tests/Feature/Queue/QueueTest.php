@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,7 @@ function seedJobs(): void
 }
 
 it('shows pending and failed counts', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     seedJobs();
 
     $this->get(route('queue.index'))
@@ -44,7 +45,7 @@ it('shows pending and failed counts', function (): void {
 });
 
 it('clears pending jobs for a manager', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     seedJobs();
 
     $this->post(route('queue.clear-pending'))->assertRedirect();
@@ -53,7 +54,7 @@ it('clears pending jobs for a manager', function (): void {
 
 it('forbids queue management without queue.manage', function (): void {
     // admin has queue.index but not queue.manage.
-    actingAsRole('admin');
+    actingAsRole(SystemRole::Admin);
 
     $this->get(route('queue.index'))->assertOk();
     $this->post(route('queue.clear-failed'))->assertForbidden();

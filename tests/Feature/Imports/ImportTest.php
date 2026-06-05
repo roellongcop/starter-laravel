@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Enums\UserImportStatus;
 use App\Jobs\ProcessImportJob;
 use App\Models\User;
@@ -18,7 +19,7 @@ beforeEach(function (): void {
 
 it('uploads a file and creates a pending import then previews it', function (): void {
     Storage::fake('imports');
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $csv = "name,email\nAda Lovelace,ada@example.com\n";
     $file = UploadedFile::fake()->createWithContent('users.csv', $csv);
@@ -40,7 +41,7 @@ it('uploads a file and creates a pending import then previews it', function (): 
 
 it('processes an import, creating users and counting failures', function (): void {
     Storage::fake('imports');
-    $owner = actingAsRole('developer');
+    $owner = actingAsRole(SystemRole::Developer);
 
     $csv = "name,email\nAda Lovelace,ada@example.com\nNoEmailRow,\n";
     Storage::disk('imports')->put('users.csv', $csv);
@@ -66,7 +67,7 @@ it('processes an import, creating users and counting failures', function (): voi
 
 it('lets the owner download the original file but forbids others / 404s when missing', function (): void {
     Storage::fake('imports');
-    $owner = actingAsRole('developer');
+    $owner = actingAsRole(SystemRole::Developer);
 
     Storage::disk('imports')->put('2026/06/users.csv', "name,email\nAda,ada@example.com\n");
     $import = UserImport::create([
@@ -93,7 +94,7 @@ it('queues a large import via the process route and notifies', function (): void
     config(['keen.import_sync_threshold' => 0]); // force the queued path
     Notification::fake();
     Storage::fake('imports');
-    $owner = actingAsRole('developer');
+    $owner = actingAsRole(SystemRole::Developer);
 
     Storage::disk('imports')->put('users.csv', "name,email\nGrace Hopper,grace@example.com\n");
     $import = UserImport::create([

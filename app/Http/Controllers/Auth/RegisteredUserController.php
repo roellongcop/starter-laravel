@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\SystemRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -43,8 +44,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Self-registered users default to the read-only "User" role.
-        $user->assignRole('user');
+        // Self-registered users default to the read-only "user" role.
+        $user->assignRole(SystemRole::User->value);
 
         event(new Registered($user));
 

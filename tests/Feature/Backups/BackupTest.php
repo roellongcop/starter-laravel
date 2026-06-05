@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\BackupStatus;
+use App\Enums\SystemRole;
 use App\Jobs\CreateBackupJob;
 use App\Models\Backup;
 use Database\Seeders\PermissionSeeder;
@@ -15,7 +16,7 @@ beforeEach(function (): void {
 
 it('queues a backup and records a pending row', function (): void {
     Bus::fake();
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->post(route('backups.store'))->assertRedirect();
 
@@ -27,7 +28,7 @@ it('queues a backup and records a pending row', function (): void {
 it('gates backup download and streams a generated archive', function (): void {
     Storage::fake('backups');
     Storage::disk('backups')->put('test.zip', 'ZIP');
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $backup = Backup::factory()->create([
         'filename' => 'test.zip',

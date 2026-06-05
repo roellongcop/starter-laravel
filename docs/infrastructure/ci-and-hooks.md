@@ -24,6 +24,11 @@ Keep `master` green by running the same checks in three places: locally on deman
 `make is-mergeable` runs that whole gate locally, **check-only (no writes)** — the same
 thing CI enforces. Run it as the *last* step before pushing.
 
+To auto-fix style issues instead of just being told about them, run **`make fix`** (Pint +
+ESLint `--fix` + Prettier `--write` — this **writes files**), then `make is-mergeable` to
+verify. `make is-mergeable` and the pre-commit hook stay check-only; `make fix` is the only
+write-mode formatter.
+
 **The pre-commit hook** (`.githooks/pre-commit`): runs Pint + Prettier + ESLint
 (check-only) inside the containers before each commit, so a malformed edit can't reach CI.
 Enable it once per clone:

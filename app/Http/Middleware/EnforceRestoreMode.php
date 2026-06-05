@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\SystemRole;
 use App\Support\RestoreSentinel;
 use Closure;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class EnforceRestoreMode
         }
 
         $user = $request->user();
-        if ($user && ($user->id === RestoreSentinel::operatorId() || $user->hasRole('developer'))) {
+        if ($user && ($user->id === RestoreSentinel::operatorId() || $user->hasRole(SystemRole::Developer->value))) {
             return $next($request);
         }
 

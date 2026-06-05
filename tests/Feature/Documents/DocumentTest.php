@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\StoreUploadedFile;
+use App\Enums\SystemRole;
 use App\Models\File;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -15,7 +16,7 @@ beforeEach(function (): void {
 });
 
 it('uploads a pdf document for the caller', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
 
     $response = $this->postJson(route('documents.store'), [
         'file' => UploadedFile::fake()->create('cv.pdf', 200, 'application/pdf'),
@@ -29,7 +30,7 @@ it('uploads a pdf document for the caller', function (): void {
 });
 
 it('accepts a docx document', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->postJson(route('documents.store'), [
         'file' => UploadedFile::fake()->create(
@@ -41,7 +42,7 @@ it('accepts a docx document', function (): void {
 });
 
 it('rejects a disallowed file type', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->postJson(route('documents.store'), [
         'file' => UploadedFile::fake()->image('photo.png', 100, 100),
@@ -51,7 +52,7 @@ it('rejects a disallowed file type', function (): void {
 });
 
 it('downloads a document for its owner', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $doc = app(StoreUploadedFile::class)(
         UploadedFile::fake()->create('cv.pdf', 200, 'application/pdf'),
         $user->id,
@@ -62,7 +63,7 @@ it('downloads a document for its owner', function (): void {
 });
 
 it('streams a document inline for the in-app viewer', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $doc = app(StoreUploadedFile::class)(
         UploadedFile::fake()->create('cv.pdf', 200, 'application/pdf'),
         $user->id,
@@ -102,7 +103,7 @@ it('forbids downloading a document you do not own without files.view', function 
 });
 
 it('deletes the caller\'s document', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $doc = app(StoreUploadedFile::class)(
         UploadedFile::fake()->create('cv.pdf', 200, 'application/pdf'),
         $user->id,
@@ -115,7 +116,7 @@ it('deletes the caller\'s document', function (): void {
 });
 
 it('shares only the caller\'s documents on the profile page', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     File::factory()->count(2)->create(['owner_id' => $user->id, 'extension' => 'pdf']);
     File::factory()->create(['owner_id' => $user->id, 'extension' => 'png']); // image, excluded
     File::factory()->create(['owner_id' => User::factory()->create()->id, 'extension' => 'pdf']);
@@ -125,7 +126,7 @@ it('shares only the caller\'s documents on the profile page', function (): void 
 });
 
 it('lets an admin upload a document for another user', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $target = User::factory()->create();
 
     $response = $this->postJson(route('documents.store'), [
@@ -139,7 +140,7 @@ it('lets an admin upload a document for another user', function (): void {
 
 it('forbids uploading a document for another user without users.update', function (): void {
     $actor = User::factory()->create();
-    $actor->assignRole('admin'); // index/show only, no users.update
+    $actor->assignRole(SystemRole::Admin->value); // index/show only, no users.update
     $this->actingAs($actor);
     $target = User::factory()->create();
 
@@ -150,7 +151,7 @@ it('forbids uploading a document for another user without users.update', functio
 });
 
 it('shares the target user\'s documents on the admin show and edit pages', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $target = User::factory()->create();
     File::factory()->count(2)->create(['owner_id' => $target->id, 'extension' => 'pdf']);
     File::factory()->create(['owner_id' => $target->id, 'extension' => 'png']); // image, excluded

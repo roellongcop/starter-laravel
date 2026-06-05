@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Enums\UserExportStatus;
 use App\Jobs\GenerateExportJob;
 use App\Models\User;
@@ -18,7 +19,7 @@ beforeEach(function (): void {
 
 it('runs a small export synchronously', function (): void {
     Bus::fake();
-    actingAsRole('developer'); // only a handful of users → under threshold
+    actingAsRole(SystemRole::Developer); // only a handful of users → under threshold
 
     $this->post(route('exports.store'), [
         'format' => 'csv',
@@ -33,7 +34,7 @@ it('queues a large export and notifies on completion', function (): void {
     config(['keen.export_sync_threshold' => 0]); // force the queued path
     Notification::fake();
     Storage::fake('exports');
-    $owner = actingAsRole('developer');
+    $owner = actingAsRole(SystemRole::Developer);
 
     // sync queue driver runs the dispatched job immediately.
     $this->post(route('exports.store'), [
@@ -48,7 +49,7 @@ it('queues a large export and notifies on completion', function (): void {
 
 it('generates a csv file and marks the export done', function (): void {
     Storage::fake('exports');
-    $owner = actingAsRole('developer');
+    $owner = actingAsRole(SystemRole::Developer);
     User::factory()->count(3)->create();
 
     $export = UserExport::create([
@@ -71,7 +72,7 @@ it('generates a csv file and marks the export done', function (): void {
 it('owner-gates the token download', function (): void {
     Storage::fake('exports');
     Storage::disk('exports')->put('out.csv', 'id,name');
-    $owner = actingAsRole('developer');
+    $owner = actingAsRole(SystemRole::Developer);
 
     $export = UserExport::factory()->create([
         'user_id' => $owner->id,

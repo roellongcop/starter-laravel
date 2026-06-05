@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\File;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -14,7 +15,7 @@ beforeEach(function (): void {
 });
 
 it('uploads a file to the private disk and denormalizes metadata', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->post(route('files.store'), [
         'file' => UploadedFile::fake()->image('avatar.png', 100, 100),
@@ -32,7 +33,7 @@ it('uploads a file to the private disk and denormalizes metadata', function (): 
 });
 
 it('accepts document and spreadsheet types and returns JSON for axios uploads', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->postJson(route('files.store'), [
         'file' => UploadedFile::fake()->create('report.xlsx', 20),
@@ -46,7 +47,7 @@ it('accepts document and spreadsheet types and returns JSON for axios uploads', 
 });
 
 it('rejects a disallowed extension', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->post(route('files.store'), [
         'file' => UploadedFile::fake()->create('malware.exe', 10),
@@ -56,7 +57,7 @@ it('rejects a disallowed extension', function (): void {
 });
 
 it('streams a gated download and forbids unauthorized users', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $this->post(route('files.store'), [
         'file' => UploadedFile::fake()->image('pic.png'),
     ]);
@@ -74,7 +75,7 @@ it('streams a gated download and forbids unauthorized users', function (): void 
 });
 
 it('deletes a file and its media', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $this->post(route('files.store'), [
         'file' => UploadedFile::fake()->image('gone.png'),
     ]);

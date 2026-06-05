@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\StoreUploadedFile;
+use App\Enums\SystemRole;
 use App\Models\File;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -26,7 +27,7 @@ function imageFileFor(User $user): File
 }
 
 it('sets the avatar from an existing owned image', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $file = imageFileFor($user);
 
     $this->post(route('profile.avatar.store'), ['file_token' => $file->token])
@@ -37,7 +38,7 @@ it('sets the avatar from an existing owned image', function (): void {
 });
 
 it('rejects an image owned by someone else', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
     $file = imageFileFor(User::factory()->create());
 
     $this->post(route('profile.avatar.store'), ['file_token' => $file->token])
@@ -45,7 +46,7 @@ it('rejects an image owned by someone else', function (): void {
 });
 
 it('rejects a file that is not an image', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $file = File::factory()->create(['owner_id' => $user->id, 'mime' => 'application/pdf']);
 
     $this->post(route('profile.avatar.store'), ['file_token' => $file->token])
@@ -53,7 +54,7 @@ it('rejects a file that is not an image', function (): void {
 });
 
 it('streams the avatar (resized) to another authenticated user', function (): void {
-    $owner = actingAsRole('developer');
+    $owner = actingAsRole(SystemRole::Developer);
     $owner->update(['avatar_file_id' => imageFileFor($owner)->id]);
 
     $this->actingAs(User::factory()->create())
@@ -62,13 +63,13 @@ it('streams the avatar (resized) to another authenticated user', function (): vo
 });
 
 it('returns 404 when the user has no avatar', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
 
     $this->get(route('profile.avatar', $user))->assertNotFound();
 });
 
 it('clears the avatar', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     $user->update(['avatar_file_id' => imageFileFor($user)->id]);
 
     $this->delete(route('profile.avatar.destroy'))->assertRedirect();
@@ -77,7 +78,7 @@ it('clears the avatar', function (): void {
 });
 
 it('lists only the caller\'s own images in the picker', function (): void {
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
     File::factory()->count(2)->create(['owner_id' => $user->id, 'mime' => 'image/png']);
     File::factory()->create(['owner_id' => $user->id, 'mime' => 'application/pdf']);
     File::factory()->create(['owner_id' => User::factory()->create()->id, 'mime' => 'image/png']);
@@ -88,7 +89,7 @@ it('lists only the caller\'s own images in the picker', function (): void {
 });
 
 it('lets an admin set another user\'s avatar via the users form', function (): void {
-    $admin = actingAsRole('developer');
+    $admin = actingAsRole(SystemRole::Developer);
     $target = User::factory()->create()->refresh();
     $file = imageFileFor($admin);
 

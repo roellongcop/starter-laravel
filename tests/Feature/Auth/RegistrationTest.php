@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -25,7 +26,7 @@ test('new users can register and default to the read-only User role', function (
     $response->assertRedirect(route('dashboard', absolute: false));
 
     $user = User::where('email', 'test@example.com')->first();
-    expect($user->hasRole('User'))->toBeTrue()
+    expect($user->hasRole(SystemRole::User->value))->toBeTrue()
         // read-only: can view the dashboard, cannot create users.
         ->and($user->can('dashboard.index'))->toBeTrue()
         ->and($user->can('users.index'))->toBeTrue()

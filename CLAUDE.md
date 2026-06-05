@@ -19,6 +19,7 @@ make test       # Pest suite (in-container)
 make pint       # PHP formatter (Laravel Pint)
 make stan       # Larastan (phpstan) static analysis
 make lint       # eslint --fix + prettier --check on resources/js
+make fix        # auto-fix everything (write): pint + eslint --fix + prettier --write
 make is-mergeable # the full CI gate locally, check-only: pint --test + stan + test + prettier/eslint check + build
 make hooks      # install the pre-commit hook (Pint + Prettier + ESLint, check-only)
 make shell      # bash in the app container; make tinker; make ide-helper

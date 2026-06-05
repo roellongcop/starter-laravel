@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\RoleType;
+use App\Enums\SystemRole;
 use App\Models\Role;
 use App\Support\Navigation;
 use App\Support\Permissions;
@@ -18,10 +19,10 @@ class RoleSeeder extends Seeder
         // gates via Gate::before, but we grant explicitly too for clarity.)
         $all = Permissions::all();
 
-        $this->makeRole('developer', 'Full system access (god mode).', $all, $guard, 30);
-        $this->makeRole('superadmin', 'Manages the entire application.', $all, $guard, 20);
-        $this->makeRole('admin', 'Day-to-day administration.', $this->adminPermissions(), $guard, 10);
-        $this->makeRole('user', 'Read-only access.', $this->viewOnlyPermissions(), $guard, 0);
+        $this->makeRole(SystemRole::Developer->value, 'Full system access (god mode).', $all, $guard, 30);
+        $this->makeRole(SystemRole::Superadmin->value, 'Manages the entire application.', $all, $guard, 20);
+        $this->makeRole(SystemRole::Admin->value, 'Day-to-day administration.', $this->adminPermissions(), $guard, 10);
+        $this->makeRole(SystemRole::User->value, 'Read-only access.', $this->viewOnlyPermissions(), $guard, 0);
     }
 
     /**

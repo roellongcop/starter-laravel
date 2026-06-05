@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SystemRole;
 use App\Mail\TestMail;
 use App\Providers\AppServiceProvider;
 use App\Settings\EmailSettings;
@@ -14,7 +15,7 @@ beforeEach(function (): void {
 });
 
 it('renders all settings groups', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->get(route('settings.index'))
         ->assertOk()
@@ -26,7 +27,7 @@ it('renders all settings groups', function (): void {
 });
 
 it('persists a system settings update', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->put(route('settings.update', 'system'), [
         'app_name' => 'Renamed App',
@@ -115,7 +116,7 @@ it('leaves the mail config untouched when the active transport is not smtp', fun
 });
 
 it('exposes auto_logout_seconds in the shared inertia props', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $system = app(SystemSettings::class);
     $system->auto_logout_seconds = 120;
@@ -128,7 +129,7 @@ it('exposes auto_logout_seconds in the shared inertia props', function (): void 
 
 it('sends a test email to the current user from the email tab', function (): void {
     Mail::fake();
-    $user = actingAsRole('developer');
+    $user = actingAsRole(SystemRole::Developer);
 
     $this->post(route('settings.email.test'))
         ->assertRedirect()
@@ -139,7 +140,7 @@ it('sends a test email to the current user from the email tab', function (): voi
 
 it('forbids sending a test email without the settings.update permission', function (): void {
     Mail::fake();
-    actingAsRole('admin'); // has settings.index, not settings.update
+    actingAsRole(SystemRole::Admin); // has settings.index, not settings.update
 
     $this->post(route('settings.email.test'))->assertForbidden();
 
@@ -147,7 +148,7 @@ it('forbids sending a test email without the settings.update permission', functi
 });
 
 it('validates settings input', function (): void {
-    actingAsRole('developer');
+    actingAsRole(SystemRole::Developer);
 
     $this->put(route('settings.update', 'system'), [
         'app_name' => '',
@@ -162,7 +163,7 @@ it('validates settings input', function (): void {
 
 it('forbids updating settings without the permission', function (): void {
     // admin has settings.index but not settings.update.
-    actingAsRole('admin');
+    actingAsRole(SystemRole::Admin);
 
     $this->get(route('settings.index'))->assertOk();
     $this->put(route('settings.update', 'system'), [
