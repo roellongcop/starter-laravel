@@ -47,6 +47,8 @@ from the map below.
   queue/scheduler, storage disks, `dated_path()`, gated downloads.
 - [CI & hooks](infrastructure/ci-and-hooks.md) — the `make is-mergeable` gate, the
   `make hooks` pre-commit hook, and the code-quality tools.
+- [Observability](infrastructure/observability.md) — structured logs + `request_id` correlation,
+  the Pulse dashboard, and where tracing goes next.
 
 ### Features — *per-feature deep dives*
 

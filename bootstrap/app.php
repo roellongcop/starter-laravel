@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnforceIpRules;
 use App\Http\Middleware\EnforceRestoreMode;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -20,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // First in the global stack so every log line / job / response carries a
+        // correlation id (see docs/infrastructure/observability.md).
+        $middleware->prepend(AssignRequestId::class);
+
         $middleware->web(append: [
             EnforceRestoreMode::class,
             EnforceIpRules::class,

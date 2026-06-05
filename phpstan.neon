@@ -9,6 +9,11 @@ parameters:
         - config
         - routes
 
+    # Vendor-generated migration published verbatim by `pulse:install`; its
+    # match() on the DB driver trips match.unhandled and isn't ours to fix.
+    excludePaths:
+        - database/migrations/*_create_pulse_tables.php
+
     level: 5
 
     # Larastan checks Eloquent magic, facades, etc. New findings are surfaced;

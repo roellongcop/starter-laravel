@@ -45,6 +45,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function (User $user): ?bool {
             return $user->hasRole(SystemRole::Developer->value) ? true : null;
         });
+
+        // Pulse dashboard (/pulse) is developer-only, matching the Telescope gate.
+        Gate::define('viewPulse', fn (User $user): bool => $user->hasRole(SystemRole::Developer->value));
     }
 
     /**

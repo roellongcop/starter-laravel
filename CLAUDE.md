@@ -63,6 +63,10 @@ one-shot `seaweedfs-init` that creates the S3 buckets).
 **Debugging:** Laravel Telescope (dev-only, local only, developer-gated) at `/telescope` for
 requests/queries/logs — see `docs/infrastructure/services-and-stack.md` § "Debugging — Telescope".
 
+**Observability (prod):** structured JSON logs carrying a `request_id` (the `AssignRequestId`
+middleware via `Context`, propagated into jobs) + the Laravel Pulse dashboard at `/pulse`
+(developer-gated). See `docs/infrastructure/observability.md`.
+
 ## Architecture & cross-cutting conventions
 
 These rules are implemented once and obeyed everywhere — understand them before adding a resource.
