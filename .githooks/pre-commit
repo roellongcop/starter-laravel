@@ -1,10 +1,11 @@
 #!/bin/sh
 # Pre-commit quality gate. Enable once with:
-#   git config core.hooksPath .githooks
+#   make hooks            # (or: git config core.hooksPath .githooks)
 #
-# Runs Pint (check-only) and the frontend format check inside the app/node
-# containers so contributors need nothing installed on the host. Set
-# SKIP_HOOKS=1 to bypass in a pinch.
+# Runs Pint, Prettier, and ESLint (all check-only) inside the app/node
+# containers so contributors need nothing installed on the host. These mirror
+# the frontend checks in `make is-mergeable` / CI, catching the common reasons a
+# commit fails the pipeline. Set SKIP_HOOKS=1 to bypass in a pinch.
 set -e
 
 if [ "${SKIP_HOOKS:-0}" = "1" ]; then
@@ -13,6 +14,8 @@ if [ "${SKIP_HOOKS:-0}" = "1" ]; then
 fi
 
 DC="docker compose"
+# Match the Makefile: node is a dev-profile one-off, not a long-running service.
+NODE_RUN="$DC run --rm -T node"
 
 if ! $DC ps --status running app >/dev/null 2>&1; then
     echo "pre-commit: app container not running — start it with 'make up'." >&2
@@ -20,10 +23,21 @@ if ! $DC ps --status running app >/dev/null 2>&1; then
     exit 1
 fi
 
+fail() {
+    echo "pre-commit: $1" >&2
+    exit 1
+}
+
 echo "pre-commit: Pint (check only)..."
-$DC exec -T app ./vendor/bin/pint --test
+$DC exec -T app ./vendor/bin/pint --test \
+    || fail "Pint found issues — run 'make pint' to fix, then re-commit."
 
 echo "pre-commit: Prettier (check only)..."
-$DC exec -T node npm run format:check
+$NODE_RUN npm run format:check \
+    || fail "Prettier found issues — run 'make lint' (or 'npm run format') to fix, then re-commit."
+
+echo "pre-commit: ESLint (check only)..."
+$NODE_RUN npm run lint:check \
+    || fail "ESLint found issues — run 'make lint' to fix, then re-commit."
 
 echo "pre-commit: ok"

@@ -16,7 +16,7 @@ export GID := $(shell id -g)
 .DEFAULT_GOAL := help
 .PHONY: help build up down down-v refresh restart install setup shell migrate \
         fresh seed queue dev assets test pint stan lint is-mergeable logs ps tinker \
-        ide-helper wait-db key storage-link clean
+        ide-helper wait-db key storage-link clean hooks
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -121,6 +121,10 @@ stan: ## Run Larastan static analysis
 lint: ## Lint + format-check the frontend
 	$(NODE_RUN) npm run lint
 	$(NODE_RUN) npm run format:check
+
+hooks: ## Install the git pre-commit hook (Pint + Prettier + ESLint, check-only)
+	git config core.hooksPath .githooks
+	@echo "Git hooks enabled (.githooks/pre-commit). Bypass once with SKIP_HOOKS=1 git commit."
 
 is-mergeable: ## Run the full CI gate locally (check-only, no writes)
 	$(APP) ./vendor/bin/pint --test

@@ -15,7 +15,7 @@ export default function Authenticated({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
-  const { props } = usePage()
+    const { props } = usePage();
     const user = props.auth.user;
     const appName = props.settings.system.app_name;
 

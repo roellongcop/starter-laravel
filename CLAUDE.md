@@ -20,8 +20,13 @@ make pint       # PHP formatter (Laravel Pint)
 make stan       # Larastan (phpstan) static analysis
 make lint       # eslint --fix + prettier --check on resources/js
 make is-mergeable # the full CI gate locally, check-only: pint --test + stan + test + prettier/eslint check + build
+make hooks      # install the pre-commit hook (Pint + Prettier + ESLint, check-only)
 make shell      # bash in the app container; make tinker; make ide-helper
 ```
+
+Run `make hooks` once per clone to enable the `.githooks/pre-commit` gate (it sets
+`core.hooksPath`). It runs the same frontend/Pint checks as CI before each commit so a
+malformed edit can't reach the pipeline; bypass a single commit with `SKIP_HOOKS=1`.
 
 Under the hood: `APP := docker compose exec -T app`, `NODE_RUN := docker compose run --rm node`.
 
@@ -141,3 +146,8 @@ Build phase-by-phase; after a feature, run `make test` + `make pint` + `make sta
 `tsc`/build before considering it done — or just `make is-mergeable`, which runs that whole gate
 (check-only) exactly as CI (`.github/workflows/ci.yml`) does. The full implementation history lives in
 the auto-memory at `~/.claude/projects/.../memory/`.
+
+**Deeper docs:** long-form rationale and per-feature deep dives live in `docs/` (start at
+`docs/README.md`) — ADRs under `docs/decisions/`, code style in `docs/conventions/`,
+infrastructure in `docs/infrastructure/`, per-feature in `docs/features/`. This file stays the
+dense quick-ref; `docs/` is the canonical long-form. Keep facts in one place and cross-link.

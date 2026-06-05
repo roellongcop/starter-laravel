@@ -108,6 +108,7 @@ make pint       Format PHP (Pint)
 make stan       Static analysis (Larastan)
 make lint       ESLint + Prettier check
 make is-mergeable  Run the full CI gate locally (check-only, no writes)
+make hooks      Install the git pre-commit hook (Pint + Prettier + ESLint, check-only)
 make logs       Follow logs
 make ps         Container status
 make tinker     Tinker REPL
@@ -119,10 +120,20 @@ make ide-helper Generate IDE helper files
 - **Pint** (`pint.json`) — Laravel preset.
 - **Larastan** (`phpstan.neon`, level 5) with a baseline in `phpstan-baseline.neon`.
 - **ESLint + Prettier** — 4-space, single quotes, organized imports.
-- **Pre-commit hook** in `.githooks/` — enable with `git config core.hooksPath .githooks`.
+- **Pre-commit hook** in `.githooks/` — enable once per clone with `make hooks`. It runs
+  Pint + Prettier + ESLint (all check-only) before each commit so a malformed edit can't
+  reach CI; bypass a single commit with `SKIP_HOOKS=1 git commit …`.
 - **CI** (`.github/workflows/ci.yml`) runs the backend (Pint, Larastan, Pest) and frontend
   (Prettier, ESLint, build) checks on every push/PR. Mirror it locally before pushing with
   `make is-mergeable` (check-only, no writes — the same gate CI enforces).
+
+## Documentation
+
+Deeper docs live in [`docs/`](docs/README.md), organized as a "memory palace" — one
+canonical, same-shaped doc per topic (`decisions/`, `conventions/`, `infrastructure/`,
+`features/`). The split: this **README is the front door** (what/why + quickstart, links
+in), **`docs/` is the canonical long-form**, and **`CLAUDE.md` is the agent quick-ref**
+that cross-links into `docs/`. Start at [`docs/README.md`](docs/README.md) for the map.
 
 ## Theming
 
