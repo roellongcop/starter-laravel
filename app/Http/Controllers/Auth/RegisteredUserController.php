@@ -43,6 +43,9 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        // Self-registered users default to the read-only "User" role.
+        $user->assignRole('user');
+
         event(new Registered($user));
 
         Auth::login($user);

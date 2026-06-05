@@ -21,6 +21,7 @@ class RoleSeeder extends Seeder
         $this->makeRole('developer', 'Full system access (god mode).', $all, $guard, 30);
         $this->makeRole('superadmin', 'Manages the entire application.', $all, $guard, 20);
         $this->makeRole('admin', 'Day-to-day administration.', $this->adminPermissions(), $guard, 10);
+        $this->makeRole('user', 'Read-only access.', $this->viewOnlyPermissions(), $guard, 0);
     }
 
     /**
@@ -69,6 +70,33 @@ class RoleSeeder extends Seeder
         $names = array_merge($names, Permissions::forResources(
             ['files', 'themes', 'notifications', 'exports', 'imports'],
         ));
+
+        $names[] = 'dashboard.search';
+
+        return array_values(array_unique($names));
+    }
+
+    /**
+     * Default self-registration role: read-only. index/show on every readable
+     * resource (so they can browse, never mutate) plus the dashboard + its
+     * search. No create/update/delete, no view-inactive.
+     *
+     * @return array<int, string>
+     */
+    protected function viewOnlyPermissions(): array
+    {
+        $names = [];
+
+        foreach (Permissions::map() as $key => $abilities) {
+            if ($key === '*') {
+                continue;
+            }
+            foreach (['index', 'show'] as $ability) {
+                if (in_array($ability, $abilities, true)) {
+                    $names[] = "{$key}.{$ability}";
+                }
+            }
+        }
 
         $names[] = 'dashboard.search';
 
