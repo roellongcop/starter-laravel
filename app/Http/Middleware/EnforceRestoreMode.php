@@ -10,8 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * While a restore sentinel is active, return 503 to everyone except the operator
- * who triggered it (or a developer), and the auth routes (so the operator can
- * re-authenticate after the session store is replaced).
+ * (or a developer) and the auth routes. See docs/features/backups-exports-imports.md.
  */
 class EnforceRestoreMode
 {

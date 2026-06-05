@@ -11,6 +11,7 @@ return new class extends Migration
     {
         Schema::create('backups', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('token')->unique();
             $table->string('filename')->nullable();
             $table->string('disk')->default('backups');
             $table->unsignedBigInteger('size')->nullable();

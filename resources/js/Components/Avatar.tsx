@@ -38,9 +38,8 @@ function sized(src: string, size: number): string {
 }
 
 /**
- * Circular user avatar. Shows the image when `src` resolves, otherwise falls
- * back to the user's initials on a muted background. `src` typically comes from
- * the gated `profile.avatar` route (auth.user.avatar_url).
+ * Circular user avatar with an initials fallback; sizes internal image URLs
+ * retina-aware (see sized()). See docs/features/files-and-media.md.
  */
 export default function Avatar({ name, src, size = 36, className }: Props) {
     const [failed, setFailed] = useState(false);

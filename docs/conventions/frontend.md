@@ -28,13 +28,34 @@ imports or fail the format check.
   the user can't access.
 - **Navigation:** use `<BackButton fallback>` — it does a fresh `router.get` via a per-tab
   sessionStorage nav stack (`lib/navHistory.ts`), **not** `history.back()` (which serves
-  Inertia's stale cache).
+  Inertia's stale cache). See *Navigation history* below.
+- **Pagination:** `<CursorPager>` renders Prev/Next only — no page numbers, no sortable
+  headers (lists are ordered `created_at DESC, id DESC` server-side; see
+  [ADR 0002](../decisions/0002-keyset-cursor-pagination.md)). It navigates by pushing the
+  opaque cursor onto the *current* URL, **merging** existing query params (search, `inactive`,
+  …) so the filtered result set the cursor was computed against stays the same — sending only
+  the cursor would re-run an unfiltered query and the keyset position would point into the
+  wrong set.
 - **Toasts:** controllers flash `success`/`error`; `app.tsx` turns the shared `flash` prop
   into toasts. From client code call `toast()` (`hooks/use-toast.ts`) directly.
 
 ## Decisions & why
 
 - Theming is CSS-variable + `data-theme` based — see [Theming](../features/theming.md).
+
+### Navigation history
+
+`<BackButton>` does a **fresh** `router.get` rather than `window.history.back()` because Inertia
+restores history navigations from its own cache (stale data). The previous URL comes from a
+small per-tab stack in `lib/navHistory.ts`, kept in `sessionStorage` (survives refresh, supports
+multi-level back).
+
+The stack is driven by Inertia's **`navigate`** event: a navigation to the second-from-top URL
+is treated as a back (pop), anything else as a forward (push) — no flags. **Caveat:** filter/sort
+reloads use `{ replace: true }`, for which Inertia *skips* the `navigate` event, so the stack
+mirrors those via the **`success`** event instead — when a visit lands on the same path as the
+stack top but a different query string, it replaces the top (matching the browser's
+`replaceState`).
 
 ## Gotchas
 

@@ -3,9 +3,9 @@
 namespace App\Support;
 
 /**
- * A file-based "restore in progress" sentinel. Deliberately a file (not the
- * cache, which is database-backed and would itself be overwritten during a DB
- * restore) so it survives the restore window. Read by EnforceRestoreMode.
+ * File-based "restore in progress" sentinel (a file, not the DB-backed cache, so
+ * it survives a DB restore). Read by EnforceRestoreMode.
+ * See docs/features/backups-exports-imports.md.
  */
 class RestoreSentinel
 {

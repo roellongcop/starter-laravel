@@ -31,6 +31,14 @@ static analysis and formatting never break the build.
   gives the `developer` role god mode.
 - **Settings that affect behavior** are applied at the boot/middleware/Inertia layer, not
   read ad-hoc in controllers — see [ADR 0005](../decisions/0005-settings-runtime-config-overrides.md).
+- **The audit footer** is the `$table->auditColumns()` Blueprint macro (registered in
+  `AppServiceProvider`): call it after `$table->id()` and it adds `record_status`,
+  `created_by`, `updated_by`, `timestamps()`, plus the indexes. `created_by`/`updated_by` are
+  *logical* FKs to users (null = system) with **no hard constraint** — that keeps migration
+  ordering and self-references simple. The keyset index it emits is the composite
+  `(record_status, created_at, id)`: the active global scope filters `record_status`, then
+  lists order `created_at DESC, id DESC`, so one index serves the whole pattern with no
+  filesort. (Tables with no active scope — e.g. `roles` — instead use a plain `(created_at, id)`.)
 
 ## Decisions & why
 

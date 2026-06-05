@@ -3,9 +3,9 @@
 namespace App\Support;
 
 /**
- * Sanitizes incoming image-resize query params down to a small, safe set so the
- * Glide cache can't be flooded with arbitrary sizes. Widths snap to a preset
- * ladder; fit is whitelisted.
+ * Sanitizes image-resize query params to a bounded set (widths snap to a preset
+ * ladder, fit whitelisted) so the Glide cache can't be flooded with arbitrary
+ * sizes. See docs/features/files-and-media.md.
  */
 class ImageParams
 {

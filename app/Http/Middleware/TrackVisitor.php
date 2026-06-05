@@ -13,8 +13,8 @@ use Jenssegers\Agent\Agent;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Records anonymous visitor activity (cookie-based) when SystemSettings enables
- * it. Tracks GET page loads only; fails open so tracking never breaks a request.
+ * Records anonymous visitor activity (cookie-based) when enable_visitor is on;
+ * GET page loads only, fails open. See docs/features/visitor-and-ip.md.
  */
 class TrackVisitor
 {

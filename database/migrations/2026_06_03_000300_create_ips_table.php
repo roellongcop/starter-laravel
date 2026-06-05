@@ -11,12 +11,13 @@ return new class extends Migration
     {
         Schema::create('ips', function (Blueprint $table): void {
             $table->id();
-            $table->string('ip_address', 45);
+            $table->uuid('token')->unique();
+            // One row per IP: unique on ip_address also satisfies the
+            // EnforceIpRules lookup, so no separate (list_type, ip_address) index.
+            $table->string('ip_address', 45)->unique();
             $table->string('list_type')->default(IpListType::Blacklist->value);
             $table->string('description')->nullable();
             $table->auditColumns();
-
-            $table->index(['list_type', 'ip_address']);
         });
     }
 

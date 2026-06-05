@@ -56,9 +56,8 @@ async function uploadBlob(blob: Blob, mime: string): Promise<PickedImage> {
 }
 
 /**
- * Generic image picker: upload / pick-existing / camera, with a Cropper.js
- * editor. Always resolves to an uploaded File id (+ display url) so any page can
- * just store the id. Reusable beyond avatars via the optional aspectRatio.
+ * Generic image picker (upload / pick-existing / camera + Cropper.js) that always
+ * resolves to an uploaded File { token, url }. See docs/features/files-and-media.md.
  */
 export default function ImagePicker({
     open,

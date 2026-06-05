@@ -8,10 +8,8 @@ use League\Glide\ServerFactory;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Renders an on-demand, resized copy of a stored image via league/glide and
- * streams it from a local cache disk. The first request for a given
- * (file, params) generates + caches the derivative; later requests serve the
- * cached file. Mirrors the "?w=200 → cached asset" behaviour we want.
+ * Renders + caches an on-demand resized copy of a stored image via league/glide
+ * (cached on the local image-cache disk). See docs/features/files-and-media.md.
  */
 class ImageStreamer
 {

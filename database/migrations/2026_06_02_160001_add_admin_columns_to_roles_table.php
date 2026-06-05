@@ -23,19 +23,27 @@ return new class extends Migration
             // Higher priority wins when merging a multi-role user's custom menus.
             $table->unsignedSmallInteger('priority')->default(0)->after('main_navigation');
 
+            // Unguessable route-binding key (see HasToken).
+            $table->uuid('token')->unique()->after('id');
+
             $table->unsignedTinyInteger('record_status')->default(RecordStatus::Active->value);
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
 
-            $table->index('record_status');
+            // Roles have NO active global scope — the list orders created_at
+            // DESC, id DESC with no record_status filter, so a plain keyset
+            // index (not the record_status-prefixed composite) is what fits.
+            $table->index(['created_at', 'id']);
         });
     }
 
     public function down(): void
     {
         Schema::table('roles', function (Blueprint $table): void {
-            $table->dropIndex(['record_status']);
+            $table->dropIndex(['created_at', 'id']);
+            $table->dropUnique(['token']);
             $table->dropColumn([
+                'token',
                 'role_type',
                 'description',
                 'module_access',

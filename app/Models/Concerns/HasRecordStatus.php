@@ -7,12 +7,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Business Active/Inactive lifecycle (NOT deletion — the app avoids SoftDeletes).
- *
- * Queries default to Active rows via a global scope; `withInactive()` lifts it and
- * `onlyInactive()` inverts it. `bulkAction()` is the dispatcher list endpoints call;
- * models may override it to register extra processes (e.g. Ip's `white_list`) while
- * delegating the defaults back here via parent::bulkAction().
+ * Business Active/Inactive lifecycle (a global `active` scope, not SoftDeletes),
+ * with withInactive()/onlyInactive()/activate()/inactivate()/bulkAction().
+ * See docs/decisions/0003-record-status-not-soft-deletes.md.
  */
 trait HasRecordStatus
 {

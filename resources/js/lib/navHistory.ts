@@ -1,13 +1,9 @@
 import { router } from '@inertiajs/react';
 
-// A small in-app navigation stack so <BackButton> can revisit the previous page
-// with a FRESH server request (router.get) instead of window.history.back(),
-// which Inertia restores from its history cache (stale data). Kept in
-// sessionStorage so it survives a refresh, and supports multi-level back.
-//
-// The stack is driven entirely by Inertia's `navigate` event: a navigation to
-// the second-from-top URL is treated as a back (pop), anything else as a forward
-// (push). Back simply visits previousUrl() and the handler pops it — no flags.
+// A small per-tab (sessionStorage) in-app navigation stack so <BackButton> can
+// revisit the previous page with a FRESH router.get instead of history.back().
+// Mechanism + the {replace:true} caveat: docs/conventions/frontend.md
+// ("Navigation history").
 const KEY = 'nav:stack';
 const MAX = 50;
 
@@ -54,12 +50,9 @@ export function initNavHistory(): void {
         write(s);
     });
 
-    // Filter/sort reloads use { replace: true }, for which Inertia SKIPS the
-    // `navigate` event (core: `if (!replace) fireNavigateEvent`). `success` still
-    // fires, so mirror those here: when a visit lands on the same path as the
-    // stack top but a different URL (changed query string), replace the top —
-    // matching the browser's replaceState. Cross-page pushes/pops and back stay
-    // with the `navigate` handler above (different path → ignored here).
+    // {replace:true} reloads (filter/sort) skip the `navigate` event, so mirror
+    // them here: same path as the stack top but a different query string →
+    // replace the top (see frontend.md "Navigation history").
     router.on('success', (event) => {
         const url = event.detail.page.url;
         const s = read();

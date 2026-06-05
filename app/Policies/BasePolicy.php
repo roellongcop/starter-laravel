@@ -5,12 +5,9 @@ namespace App\Policies;
 use App\Models\User;
 
 /**
- * Permission-based policy skeleton. Concrete policies declare the resource's
- * permission key (e.g. "users"); each ability maps to a declared permission like
- * "users.index" / "users.update" and is checked via spatie/laravel-permission's
- * $user->can(). The permission registry + roles are seeded in Phase 2.
- *
- * Authorization lives here and in route `can:` middleware — never in model events.
+ * Permission-based policy skeleton: concrete policies declare a resource key()
+ * and each ability checks "{key}.{action}" via $user->can().
+ * See docs/features/users-roles-permissions.md.
  */
 abstract class BasePolicy
 {

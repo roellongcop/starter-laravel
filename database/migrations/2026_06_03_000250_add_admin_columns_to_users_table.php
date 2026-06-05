@@ -24,11 +24,16 @@ return new class extends Migration
             $table->foreignId('avatar_file_id')->nullable()->after('avatar')
                 ->constrained('files')->nullOnDelete();
 
-            // Audit footer (users already has created_at/updated_at).
+            // Unguessable route-binding key (see HasToken); resource URLs expose
+            // this instead of the enumerable auto-increment id.
+            $table->uuid('token')->unique()->after('id');
+
+            // Audit footer (users already has created_at/updated_at). The keyset
+            // index lives in the companion add_keyset_index migration so it can
+            // match the auditColumns() composite (record_status, created_at, id).
             $table->unsignedTinyInteger('record_status')->default(RecordStatus::Active->value);
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            $table->index('record_status');
         });
     }
 
@@ -36,8 +41,9 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table): void {
             $table->dropConstrainedForeignId('avatar_file_id');
-            $table->dropIndex(['record_status']);
+            $table->dropUnique(['token']);
             $table->dropColumn([
+                'token',
                 'password_hint',
                 'username',
                 'user_status',

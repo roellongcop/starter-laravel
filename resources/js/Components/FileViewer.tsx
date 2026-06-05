@@ -40,10 +40,8 @@ function kindOf(ext?: string | null, mime?: string | null): Kind {
 }
 
 /**
- * In-app file preview. Images and PDFs render natively; csv/xls/xlsx are parsed
- * client-side (SheetJS) into a table; docx is converted to HTML (mammoth).
- * Everything else falls back to an icon + download. Heavy parsers are lazily
- * imported so they're only fetched when actually needed.
+ * In-app file preview: image/pdf native, csv/xls/xlsx (SheetJS) and docx (mammoth)
+ * parsed client-side via lazy imports. See docs/features/files-and-media.md.
  */
 export default function FileViewer({ file, onClose }: Props) {
     const kind = file ? kindOf(file.extension, file.mime) : 'other';

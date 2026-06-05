@@ -52,12 +52,16 @@ from the map below.
 
 - [Settings](features/settings.md) — typed settings groups and exactly which settings are
   wired, and how. ✅ written
-- [Users, roles & permissions](features/users-roles-permissions.md) — _stub_
-- [Files & media](features/files-and-media.md) — _stub_
-- [Backups, exports & imports](features/backups-exports-imports.md) — _stub_
-- [Theming](features/theming.md) — _stub_
-- [Visitor tracking & IP rules](features/visitor-and-ip.md) — _stub_
-- [Notifications, sessions & audit](features/notifications-sessions-audit.md) — _stub_
+- [Users, roles & permissions](features/users-roles-permissions.md) — declared registry,
+  policies, roles-aware sidebar. ✅ written
+- [Files & media](features/files-and-media.md) — uploads, Glide resizing, gated downloads,
+  the viewer. ✅ written
+- [Backups, exports & imports](features/backups-exports-imports.md) — queued jobs, status
+  tracking, the restore gate. ✅ written
+- [Theming](features/theming.md) — CSS-variable light/dark + admin token palettes. ✅ written
+- [Visitor tracking & IP rules](features/visitor-and-ip.md) — cookie logging + IP
+  allow/deny. ✅ written
+- [Notifications, sessions & audit](features/notifications-sessions-audit.md) — bell,
+  sessions, audit log, toasts/idle-logout. ✅ written
 
-> Stubs carry the template headings and a `TODO`. Fill a room when you next touch that
-> area — leave it better-documented than you found it.
+> Fill a room when you next touch that area — leave it better-documented than you found it.

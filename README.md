@@ -84,9 +84,10 @@ via CSS variables + a `data-theme` attribute.
 ### Storage disks
 
 `SESSION_DRIVER`, `QUEUE_CONNECTION`, and `CACHE_STORE` all use the database. Four
-non-public disks — `backups`, `exports`, `imports`, `uploads` — live under
-`storage/app/private/*` (outside the web root) and are each switchable between `local` and
-`s3` (SeaweedFS) via their `*_DISK_DRIVER` env var. All generated artifacts are nested under a
+non-public disks — `backups`, `exports`, `imports`, `uploads` — **default to `s3` (SeaweedFS) in
+`.env.example`** (the generic `FILESYSTEM_DISK` stays `local`); each switches back to `local` via its
+`*_DISK_DRIVER` env var. On `local` they live under `storage/app/private/*`, outside the web root.
+All generated artifacts are nested under a
 `YYYY/MM/` folder (via the `dated_path()` helper). Downloads always go through gated controller
 actions, never a public URL.
 

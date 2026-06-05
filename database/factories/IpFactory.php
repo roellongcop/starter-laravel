@@ -19,7 +19,7 @@ class IpFactory extends Factory
     public function definition(): array
     {
         return [
-            'ip_address' => fake()->ipv4(),
+            'ip_address' => fake()->unique()->ipv4(),
             'list_type' => fake()->randomElement(IpListType::cases()),
             'description' => fake()->sentence(3),
         ];

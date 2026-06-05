@@ -118,16 +118,9 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * The audit footer every domain table carries. Call after $table->id():
-     *
-     *     Schema::create('things', function (Blueprint $table) {
-     *         $table->id();
-     *         $table->string('name');
-     *         $table->auditColumns();
-     *     });
-     *
-     * created_by/updated_by are logical FKs to users (null = system); no hard
-     * constraint is added to keep migration ordering and self-references simple.
+     * The audit footer every domain table carries — call after $table->id().
+     * Adds record_status/created_by/updated_by/timestamps + the composite keyset
+     * index. See docs/conventions/backend.md ("The audit footer").
      */
     protected function registerAuditColumnsMacro(): void
     {
@@ -138,8 +131,9 @@ class AppServiceProvider extends ServiceProvider
             $this->unsignedBigInteger('updated_by')->nullable();
             $this->timestamps();
 
-            $this->index(['created_at', 'id']); // keyset (cursor) pagination
-            $this->index('record_status');
+            // Composite keyset index for the active-scope list pattern (filter
+            // record_status, order created_at/id). See docs/conventions/backend.md.
+            $this->index(['record_status', 'created_at', 'id']);
             $this->index('created_by');
             $this->index('updated_by');
         });

@@ -38,10 +38,8 @@ const DEFAULT_ACCEPT: Accept = {
 };
 
 /**
- * Reusable drag-and-drop uploader. Each accepted file is POSTed to `uploadUrl`
- * as multipart (`field`) with live progress; on success the returned JSON is
- * handed to `onUploaded`. Point `uploadUrl`/`accept` at any endpoint to reuse on
- * other pages.
+ * Reusable drag-and-drop multipart uploader; hands each upload's returned JSON to
+ * `onUploaded`. See docs/features/files-and-media.md.
  */
 export default function FileDropzone({
     uploadUrl,

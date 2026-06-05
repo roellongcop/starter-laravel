@@ -17,9 +17,8 @@ interface CursorPagerProps {
 }
 
 /**
- * Keyset pagination control: Prev/Next only — no page numbers, no sortable
- * headers (lists are ordered created_at DESC, id DESC server-side). Navigates by
- * pushing the opaque cursor onto the current URL via Inertia.
+ * Keyset pagination control: Prev/Next only, pushing the opaque cursor onto the
+ * current URL. See docs/conventions/frontend.md ("Pagination") + ADR 0002.
  */
 export default function CursorPager({
     nextCursor,

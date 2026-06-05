@@ -7,10 +7,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
 /**
- * Persist an uploaded file as a File record backed by medialibrary on the
- * private `uploads` disk, denormalizing the stored Media's metadata onto the
- * File columns. Shared by FileController and the avatar flows so the
- * medialibrary wiring lives in exactly one place.
+ * The single write path for uploads: creates a File (medialibrary, private
+ * `uploads` disk) and denormalizes the Media metadata onto its columns.
+ * See docs/features/files-and-media.md.
  */
 class StoreUploadedFile
 {

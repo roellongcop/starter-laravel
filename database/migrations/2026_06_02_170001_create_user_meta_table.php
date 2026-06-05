@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('user_meta', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('token')->unique();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('key');
             $table->text('value')->nullable();

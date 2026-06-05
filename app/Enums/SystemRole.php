@@ -5,9 +5,9 @@ namespace App\Enums;
 use App\Enums\Concerns\HasOptions;
 
 /**
- * The fixed, seeded roles (RoleType::System). One source of truth for the role
- * names referenced in authorization (Gate::before god-mode), registration, and
- * the seeders — so they can never drift apart by a typo or casing.
+ * The fixed, seeded roles (RoleType::System) — one source of truth for the role
+ * names used in Gate::before, registration, and seeders.
+ * See docs/features/users-roles-permissions.md.
  */
 enum SystemRole: string
 {

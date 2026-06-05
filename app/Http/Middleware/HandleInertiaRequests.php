@@ -130,9 +130,9 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * Public brand image URLs (null when unset). Each points at the public
-     * `brand.show` route with a short cache-buster derived from the file token,
-     * so changing an image yields a new URL despite the immutable cache headers.
+     * Public brand image URLs (null when unset), each with a token-derived
+     * cache-buster so an updated image yields a new URL despite immutable cache
+     * headers. See docs/features/files-and-media.md.
      *
      * @return array<string, string|null>
      */

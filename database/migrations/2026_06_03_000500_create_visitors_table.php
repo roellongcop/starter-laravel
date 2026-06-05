@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('visitors', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('token')->unique();
             $table->string('cookie_id')->unique();
             $table->string('ip_address', 45)->nullable();
             $table->string('browser')->nullable();

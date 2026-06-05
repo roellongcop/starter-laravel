@@ -7,13 +7,9 @@ use App\Models\Concerns\HasToken;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
- * Extends the spatie Role with the admin metadata the app needs:
- * - role_type      System (seeded, protected) vs Custom (user-defined)
- * - module_access  { resourceKey: [abilities] } — drives button visibility in React
- * - main_navigation sidebar tree rendered in React
- *
- * No HasRecordStatus global scope here: spatie resolves roles through this model
- * during permission checks, and a hidden-by-default scope could mask grants.
+ * Extends the spatie Role with admin metadata (role_type, module_access,
+ * main_navigation, priority). No HasRecordStatus scope — see
+ * docs/features/users-roles-permissions.md.
  *
  * @property string $token
  * @property RoleType|null $role_type

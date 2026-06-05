@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('token')->unique();
             $table->string('original_name');
             $table->string('extension', 32)->nullable();
             $table->string('mime')->nullable();

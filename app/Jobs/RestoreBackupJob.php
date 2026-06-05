@@ -17,11 +17,9 @@ use Illuminate\Support\Str;
 use ZipArchive;
 
 /**
- * Restores the app database from a spatie backup archive by extracting the .sql
- * dump and importing it via the mysql client.
- *
- * DESTRUCTIVE: overwrites the current database. Restores only the configured app
- * connection.
+ * Restores the app DB from a spatie backup archive (extract .sql → import via the
+ * mysql client). DESTRUCTIVE: overwrites the configured app connection.
+ * See docs/features/backups-exports-imports.md.
  */
 class RestoreBackupJob implements ShouldQueue
 {

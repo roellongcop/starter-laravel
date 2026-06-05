@@ -46,9 +46,10 @@ This is a **two-layer** model: env is the base, and the Settings → Email tab
 SMTP for prod). Mailpit's SMTP listens on `1025` internally on `appnet` — no host mapping.
 
 **Storage disks.** `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE` all use the database.
-Four non-public disks — `backups`, `exports`, `imports`, `uploads` — live under
-`storage/app/private/*` (outside the web root) and each switch between `local` and `s3`
-(SeaweedFS) via their `*_DISK_DRIVER` env var. Generated artifacts are nested under
+Four non-public disks — `backups`, `exports`, `imports`, `uploads` — **default to `s3` (SeaweedFS)
+in `.env.example`** (`*_DISK_DRIVER=s3`); the generic `FILESYSTEM_DISK` stays `local`. Flip any disk
+back to `local` via its `*_DISK_DRIVER` env var, where it lives under `storage/app/private/*`
+(outside the web root). Generated artifacts are nested under
 `YYYY/MM/` via the `dated_path()` helper — reuse it for any new disk writes. **Downloads
 always stream through gated controller actions, never a public URL.**
 

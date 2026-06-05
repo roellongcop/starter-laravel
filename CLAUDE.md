@@ -102,8 +102,9 @@ local `image-cache` disk; widths clamp to a preset ladder in `App\Support\ImageP
 `?w=`/`?h=`/`fit=` are the cache key). Reusable frontend pieces: `<ImagePicker>` (crop/upload/camera →
 `/media`), `<FileDropzone>` (generic upload → returns an id), `<FileViewer>` (image/pdf native,
 csv/xls/xlsx via SheetJS, docx via mammoth — both lazy-loaded), `<Avatar>` (requests a preset size).
-Storage disks `uploads`/`exports`/`imports`/`backups` switch local↔s3 (SeaweedFS) via
-`*_DISK_DRIVER`; **downloads are always streamed through gated controller actions, never public URLs**.
+Storage disks `uploads`/`exports`/`imports`/`backups` **default to `s3` (SeaweedFS) in `.env.example`**
+via `*_DISK_DRIVER` (the generic `FILESYSTEM_DISK` stays `local`); flip any back with its driver var.
+**Downloads are always streamed through gated controller actions, never public URLs**.
 Generated artifacts (backups/exports/imports) are nested under `YYYY/MM/` like uploads via the
 `dated_path()` helper (`app/Support/helpers.php`) — reuse it for any new disk writes.
 

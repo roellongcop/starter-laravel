@@ -1,6 +1,6 @@
-// Adapted from shadcn/ui's use-toast: a small module-global toast store so
-// toast() can be called from anywhere (React components or plain callbacks like
-// axios handlers and the Inertia flash bridge).
+// Adapted from shadcn/ui's use-toast: a module-global toast store so toast() can
+// be called from anywhere (components, axios handlers, the Inertia flash bridge).
+// See docs/features/notifications-sessions-audit.md.
 import * as React from 'react';
 
 import {

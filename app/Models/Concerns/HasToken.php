@@ -6,15 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * Gives a model a unique, unguessable `token` (UUID v4) that is used as the
- * route-model-binding key in place of the auto-increment `id`. The numeric id
- * stays the internal primary key / foreign-key target, but URLs and Inertia
- * payloads expose the token instead, so resource paths can't be enumerated.
- *
- * Laravel's HasUuids/HasUlids traits replace the primary key, which we don't
- * want — so this fills a separate column on `creating` and overrides the route
- * key name. The `creating` hook composes with Blameable's (order-independent:
- * each only sets attributes that are still empty).
+ * Fills an unguessable UUID `token` on `creating` and binds routes by it instead
+ * of the enumerable `id`. See docs/decisions/0004-uuid-token-route-binding.md.
  */
 trait HasToken
 {

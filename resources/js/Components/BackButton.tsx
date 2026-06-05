@@ -12,9 +12,8 @@ interface Props {
 }
 
 /**
- * Returns to the previous page the user visited with a FRESH server fetch
- * (router.get) rather than window.history.back(), which Inertia restores from
- * its history cache (stale data). Falls back to `fallback` on a direct load.
+ * Returns to the previous in-app page with a FRESH server fetch (router.get),
+ * not window.history.back(). See docs/conventions/frontend.md ("Navigation history").
  */
 export default function BackButton({
     fallback = '/',

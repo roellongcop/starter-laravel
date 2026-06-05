@@ -6,10 +6,9 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;
 
 /**
- * Stores media under `YYYY/MM/` (relative to the disk root, i.e. the bucket) so
- * keys look like `uploads-bucket/2026/06/<random>.ext`. The year/month is taken
- * from the media's created_at so the path is stable across reads. Uniqueness is
- * guaranteed by the random file name set at upload time (see StoreUploadedFile).
+ * Stores media under `YYYY/MM/` (from the media's created_at, stable across
+ * reads); uniqueness comes from the random filename set at upload time.
+ * See docs/features/files-and-media.md.
  */
 class MediaPathGenerator implements PathGenerator
 {

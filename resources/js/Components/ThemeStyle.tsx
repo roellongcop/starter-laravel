@@ -3,9 +3,8 @@ import { usePage } from '@inertiajs/react';
 import { type PageProps } from '@/types';
 
 /**
- * Injects the active theme's tokens as CSS variables onto :root (light) and
- * [data-theme="dark"] (dark), overriding the static defaults in app.css. This is
- * how a Theme's `tokens` JSON restyles the whole app.
+ * Injects the active Theme's tokens as CSS variables (:root + [data-theme="dark"]),
+ * overriding the app.css defaults. See docs/features/theming.md.
  */
 export default function ThemeStyle() {
     const { theme } = usePage<PageProps>().props;

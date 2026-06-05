@@ -11,15 +11,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
- * Allow/deny requests by client IP using the Ip table:
- *  - any matching Blacklist entry → 403;
- *  - when SystemSettings::whitelist_ip_only is on, only Whitelisted IPs pass.
- *
- * Inert by default (whitelist_ip_only=false, no blacklist rows). Wrapped in
- * try/catch so a missing table during early migration never hard-fails.
- *
- * Caveat: behind nginx, $request->ip() is the proxy IP unless TrustProxies is
- * configured for the real client — set that up in production.
+ * Allow/deny requests by client IP using the Ip table (blacklist always;
+ * whitelist when whitelist_ip_only). Inert by default; note the TrustProxies
+ * caveat in docs/features/visitor-and-ip.md.
  */
 class EnforceIpRules
 {

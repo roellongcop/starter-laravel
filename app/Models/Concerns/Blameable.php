@@ -6,9 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Stamps created_by / updated_by from the authenticated user id. On the console
- * or when unauthenticated the id is null (= system). This is data attribution
- * only — never authorization.
+ * Stamps created_by / updated_by from the authenticated user id (null = system).
+ * Data attribution only, never authorization. See docs/conventions/backend.md.
  */
 trait Blameable
 {

@@ -6,12 +6,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 /**
- * Shared resource plumbing for domain models: keyset (cursor) ordering and the
- * routing/url config() descriptor. Lives in a trait so both BaseModel and User
- * (which must extend Authenticatable, not BaseModel) behave identically.
- *
- * Table names follow the Laravel convention (snake_case plural of the class);
- * a model sets $table only to override that (e.g. uncountable nouns).
+ * Shared resource plumbing — keyset() ordering and the routing/url config()
+ * descriptor — in a trait so BaseModel and User (an Authenticatable, not a
+ * BaseModel) behave identically. Keyset pagination:
+ * docs/decisions/0002-keyset-cursor-pagination.md; resource shape:
+ * docs/conventions/backend.md.
  */
 trait IsResource
 {

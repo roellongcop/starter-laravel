@@ -6,16 +6,9 @@ use App\Models\Role;
 use App\Models\User;
 
 /**
- * Derives the two role JSON blobs the frontend consumes:
- *
- * - module_access: { resourceKey: [abilities] } — built from a permission-name
- *   list; React uses it to show/hide buttons (e.g. an Edit button needs
- *   module_access.users to include "update").
- * - main_navigation: the sidebar tree, the default template filtered down to the
- *   modules the role can access (a group survives if any child does).
- *
- * Items use plain href paths (not Ziggy route names) so the sidebar renders even
- * before a resource's routes exist; links go live as later phases add them.
+ * Derives the role JSON the frontend consumes — module_access (button
+ * visibility) and main_navigation (sidebar tree) — and merges a user's roles
+ * into one menu. See docs/features/users-roles-permissions.md.
  */
 class Navigation
 {

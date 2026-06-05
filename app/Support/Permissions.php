@@ -4,7 +4,8 @@ namespace App\Support;
 
 /**
  * Expands the declared registry in config/permissions.php into concrete
- * permission names. Shared by the sync command, the seeders, and Navigation.
+ * permission names (sync command, seeders, Navigation).
+ * See docs/features/users-roles-permissions.md.
  */
 class Permissions
 {

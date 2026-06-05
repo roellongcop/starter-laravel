@@ -11,6 +11,7 @@ return new class extends Migration
     {
         Schema::create('visit_logs', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('token')->unique();
             $table->foreignId('visitor_id')->constrained('visitors')->cascadeOnDelete();
             $table->string('url', 2048)->nullable();
             $table->string('action')->default(VisitLogAction::PageView->value);

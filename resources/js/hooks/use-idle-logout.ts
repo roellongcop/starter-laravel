@@ -1,6 +1,6 @@
-// Auto-logout after a period of inactivity, driven by the `auto_logout_seconds`
-// SystemSetting (0 = off) shared via Inertia. Side-effect only — mount it once in
-// AuthenticatedLayout so it runs only on authenticated pages.
+// Auto-logout after inactivity, driven by the `auto_logout_seconds` SystemSetting
+// (0 = off). Side-effect only — mount once in AuthenticatedLayout.
+// See docs/features/notifications-sessions-audit.md.
 import { router, usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 

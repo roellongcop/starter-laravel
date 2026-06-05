@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::create('themes', function (Blueprint $table): void {
             $table->id();
-            $table->string('name');
+            $table->uuid('token')->unique();
+            $table->string('name')->unique();
             $table->string('description')->nullable();
             $table->string('preview_image')->nullable();
             $table->json('tokens')->nullable();
