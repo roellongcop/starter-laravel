@@ -112,11 +112,14 @@ class HandleInertiaRequests extends Middleware
             $system = app(SystemSettings::class);
 
             return [
-                'app_name' => $system->app_name,
-                'default_theme' => $system->default_theme,
+                'system' => [
+                    'app_name' => $system->app_name,
+                    'default_theme' => $system->default_theme,
+                    'auto_logout_seconds' => $system->auto_logout_seconds,
+                ],
             ];
         } catch (\Throwable) {
-            return ['app_name' => config('app.name'), 'default_theme' => 'system'];
+            return ['system' => ['app_name' => config('app.name'), 'default_theme' => 'system', 'auto_logout_seconds' => 0]];
         }
     }
 

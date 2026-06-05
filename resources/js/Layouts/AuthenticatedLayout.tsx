@@ -3,11 +3,11 @@ import Avatar from '@/Components/Avatar';
 import Bell from '@/Components/Bell';
 import Dropdown from '@/Components/Dropdown';
 import GlobalSearch from '@/Components/GlobalSearch';
-import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Sidebar from '@/Components/Sidebar';
 import ThemeStyle from '@/Components/ThemeStyle';
 import ThemeToggle from '@/Components/ThemeToggle';
+import { useIdleLogout } from '@/hooks/use-idle-logout';
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 
@@ -15,7 +15,11 @@ export default function Authenticated({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
-    const user = usePage().props.auth.user;
+  const { props } = usePage()
+    const user = props.auth.user;
+    const appName = props.settings.system.app_name;
+
+    useIdleLogout();
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -33,13 +37,10 @@ export default function Authenticated({
                                 </Link>
                             </div>
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    Dashboard
-                                </NavLink>
+                            <div className="hidden items-center sm:-my-px sm:ms-10 sm:flex">
+                                <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                    {appName}
+                                </span>
                             </div>
                         </div>
 
@@ -152,7 +153,7 @@ export default function Authenticated({
                             href={route('dashboard')}
                             active={route().current('dashboard')}
                         >
-                            Dashboard
+                            {appName}
                         </ResponsiveNavLink>
                     </div>
 

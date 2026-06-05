@@ -1,5 +1,6 @@
 <?php
 
+use App\Providers\AppServiceProvider;
 use App\Settings\SystemSettings;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -39,6 +40,32 @@ it('persists a system settings update', function (): void {
     expect($system->app_name)->toBe('Renamed App')
         ->and($system->pagination_size)->toBe(30)
         ->and($system->default_theme)->toBe('dark');
+});
+
+it('applies stored timezone and pagination_size to config at boot', function (): void {
+    $system = app(SystemSettings::class);
+    $system->timezone = 'Asia/Manila';
+    $system->pagination_size = 7;
+    $system->save();
+
+    // The provider captures settings at boot, before this test changed them, so
+    // re-run boot() to pick up the freshly saved values.
+    (new AppServiceProvider(app()))->boot();
+
+    expect(config('app.timezone'))->toBe('Asia/Manila')
+        ->and(config('keen.pagination_size'))->toBe(7);
+});
+
+it('exposes auto_logout_seconds in the shared inertia props', function (): void {
+    actingAsRole('developer');
+
+    $system = app(SystemSettings::class);
+    $system->auto_logout_seconds = 120;
+    $system->save();
+
+    $this->get(route('settings.index'))
+        ->assertInertia(fn ($page) => $page
+            ->where('settings.system.auto_logout_seconds', 120));
 });
 
 it('validates settings input', function (): void {

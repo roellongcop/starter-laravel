@@ -35,7 +35,14 @@ createInertiaApp({
         const root = createRoot(el);
 
         const initial = props.initialPage.props as {
-            settings?: { default_theme?: 'light' | 'dark' | 'system' };
+            settings?: {
+                system: {
+                    app_name: string;
+                    timezone: string;
+                    default_theme?: 'light' | 'dark' | 'system';
+                    auto_logout_seconds?: number;
+                };
+            };
             flash?: Flash;
         };
 
@@ -52,7 +59,9 @@ createInertiaApp({
 
         root.render(
             <ThemeProvider
-                defaultTheme={initial.settings?.default_theme ?? 'system'}
+                defaultTheme={
+                    initial.settings?.system?.default_theme ?? 'system'
+                }
             >
                 <App {...props} />
                 <Toaster />

@@ -169,8 +169,12 @@ export type PageProps<
         recent: BellNotification[];
     };
     settings: {
-        app_name: string;
-        default_theme: 'light' | 'dark' | 'system';
+        system: {
+            app_name: string;
+            timezone: string;
+            default_theme: 'light' | 'dark' | 'system';
+            auto_logout_seconds: number;
+        };
     };
     theme: ThemeTokens | null;
     flash: {
