@@ -50,7 +50,7 @@ A complete admin back-office, all gated by a declared permission registry
   search palette (⌘K) across resources.
 - **Users / UserMeta / Roles** — full CRUD; roles bundle permissions and derive the
   sidebar (`module_access`/`main_navigation`); inline per-user meta.
-- **Settings** — typed spatie/laravel-settings groups (System/Email/Image/Notification)
+- **Settings** — typed spatie/laravel-settings groups (System/Email/Image)
   with typed forms; **Themes** — light/dark token palettes (with a color picker) applied live.
 - **Files** — multi-file uploads (images + pdf/doc/docx/csv/xls/xlsx) via medialibrary on a
   private disk, gated download/preview, in-app viewer; plus self-service **My Documents**.

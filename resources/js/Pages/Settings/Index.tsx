@@ -17,7 +17,6 @@ import {
 } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import { Textarea } from '@/Components/ui/textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 interface Props {
@@ -25,7 +24,6 @@ interface Props {
         system: Record<string, unknown>;
         email: Record<string, unknown>;
         image: Record<string, unknown>;
-        notification: { templates: Record<string, string> };
     };
     can: { update: boolean };
 }
@@ -422,41 +420,7 @@ function ImageTab({ data: init }: { data: Record<string, unknown> }) {
     );
 }
 
-function NotificationTab({ templates }: { templates: Record<string, string> }) {
-    const { data, setData, put, processing } = useForm({
-        templates: { ...templates },
-    });
-
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        put(route('settings.update', 'notification'), { preserveScroll: true });
-    };
-
-    return (
-        <form onSubmit={submit} className="grid max-w-xl gap-4">
-            {Object.entries(data.templates).map(([type, tpl]) => (
-                <Row key={type} label={`${type} template`}>
-                    <Textarea
-                        value={tpl}
-                        onChange={(e) =>
-                            setData('templates', {
-                                ...data.templates,
-                                [type]: e.target.value,
-                            })
-                        }
-                    />
-                </Row>
-            ))}
-            <div>
-                <Button type="submit" disabled={processing}>
-                    Save notification settings
-                </Button>
-            </div>
-        </form>
-    );
-}
-
-const SETTINGS_TABS = ['system', 'email', 'image', 'notification'];
+const SETTINGS_TABS = ['system', 'email', 'image'];
 
 // Restore the active tab from the URL (?tab=) so a refresh keeps the user on it.
 function initialTab(): string {
@@ -490,9 +454,6 @@ export default function Index({ settings }: Props) {
                             <TabsTrigger value="system">System</TabsTrigger>
                             <TabsTrigger value="email">Email</TabsTrigger>
                             <TabsTrigger value="image">Image</TabsTrigger>
-                            <TabsTrigger value="notification">
-                                Notifications
-                            </TabsTrigger>
                         </TabsList>
                         <TabsContent value="system">
                             <SystemTab data={settings.system} />
@@ -502,11 +463,6 @@ export default function Index({ settings }: Props) {
                         </TabsContent>
                         <TabsContent value="image">
                             <ImageTab data={settings.image} />
-                        </TabsContent>
-                        <TabsContent value="notification">
-                            <NotificationTab
-                                templates={settings.notification.templates}
-                            />
                         </TabsContent>
                     </Tabs>
                 </CardContent>

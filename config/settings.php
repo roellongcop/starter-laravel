@@ -2,7 +2,6 @@
 
 use App\Settings\EmailSettings;
 use App\Settings\ImageSettings;
-use App\Settings\NotificationSettings;
 use App\Settings\SystemSettings;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelSettings\SettingsCasts\DataCast;
@@ -21,7 +20,6 @@ return [
         SystemSettings::class,
         EmailSettings::class,
         ImageSettings::class,
-        NotificationSettings::class,
     ],
 
     /*

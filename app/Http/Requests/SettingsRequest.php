@@ -35,10 +35,6 @@ class SettingsRequest extends BaseFormRequest
                 'square_logo_token' => ['nullable', 'string', 'exists:files,token'],
                 'landscape_logo_token' => ['nullable', 'string', 'exists:files,token'],
             ],
-            'notification' => [
-                'templates' => ['array'],
-                'templates.*' => ['nullable', 'string', 'max:1000'],
-            ],
             default => [],
         };
     }

@@ -7,7 +7,6 @@ use App\Mail\TestMail;
 use App\Models\File;
 use App\Settings\EmailSettings;
 use App\Settings\ImageSettings;
-use App\Settings\NotificationSettings;
 use App\Settings\SystemSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
@@ -23,7 +22,6 @@ class SettingsController extends Controller
         'system' => SystemSettings::class,
         'email' => EmailSettings::class,
         'image' => ImageSettings::class,
-        'notification' => NotificationSettings::class,
     ];
 
     public function index(): Response
@@ -35,7 +33,6 @@ class SettingsController extends Controller
                 'system' => app(SystemSettings::class)->toArray(),
                 'email' => $this->emailForDisplay(),
                 'image' => $this->imageForDisplay(),
-                'notification' => app(NotificationSettings::class)->toArray(),
             ],
             'can' => ['update' => request()->user()->can('settings.update')],
         ]);

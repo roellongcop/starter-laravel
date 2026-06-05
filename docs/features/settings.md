@@ -10,8 +10,7 @@ toggles) through typed forms, and make each one actually change behavior at the 
 ## Key files
 
 - `app/Settings/*Settings.php` — the spatie/laravel-settings classes (`SystemSettings`,
-  `EmailSettings`, `ImageSettings`, `NotificationSettings`); `SystemSettings::group()` =
-  `'system'`.
+  `EmailSettings`, `ImageSettings`); `SystemSettings::group()` = `'system'`.
 - `database/settings/2026_06_03_000000_create_admin_settings.php` — the seeded defaults.
 - `app/Http/Controllers/SettingsController.php` — group-keyed show/update.
 - `app/Http/Requests/SettingsRequest.php` — per-group validation.

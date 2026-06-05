@@ -22,8 +22,7 @@ it('renders all settings groups', function (): void {
             ->component('Settings/Index')
             ->has('settings.system')
             ->has('settings.email')
-            ->has('settings.image')
-            ->has('settings.notification'));
+            ->has('settings.image'));
 });
 
 it('persists a system settings update', function (): void {
