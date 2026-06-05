@@ -60,6 +60,9 @@ Laravel 12 + Inertia + React + TypeScript + Tailwind + shadcn/ui. Services (see
 `scheduler`, `mariadb` (database queue/session/cache), `phpmyadmin`, `seaweedfs` (+ a
 one-shot `seaweedfs-init` that creates the S3 buckets).
 
+**Debugging:** Laravel Telescope (dev-only, local only, developer-gated) at `/telescope` for
+requests/queries/logs — see `docs/infrastructure/services-and-stack.md` § "Debugging — Telescope".
+
 ## Architecture & cross-cutting conventions
 
 These rules are implemented once and obeyed everywhere — understand them before adding a resource.

@@ -57,6 +57,15 @@ always stream through gated controller actions, never a public URL.**
 `*Status` enum, capture failures into `error_message`, and notify on completion. Work below
 `config('keen.*_sync_threshold')` runs synchronously.
 
+**Debugging — Telescope.** `laravel/telescope` is a **dev-only** dependency (`composer --dev` +
+`extra.laravel.dont-discover`) registered by hand in `AppServiceProvider::register()` only when
+`APP_ENV=local`, so it never ships to production (a `--no-dev` build doesn't even have the classes).
+The dashboard lives at **`http://localhost:8080/telescope`** — requests (with timing), DB queries
+(bindings + duration), exceptions, logs, jobs, mail, cache, and `dump()` output. Outside local it's
+gated to the **developer role** (`viewTelescope` in `TelescopeServiceProvider`, matching the
+`Gate::before` god-mode). `TELESCOPE_ENABLED` toggles recording (forced `false` in `phpunit.xml`);
+`telescope:prune` is scheduled daily in `routes/console.php`.
+
 ## Decisions & why
 
 - [ADR 0001 — Docker-only workflow](../decisions/0001-docker-only-workflow.md).

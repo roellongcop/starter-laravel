@@ -81,6 +81,11 @@ via CSS variables + a `data-theme` attribute.
 | `seaweedfs`      | S3-compatible object storage                           |
 | `seaweedfs-init` | One-shot sidecar that creates the S3 buckets           |
 
+**Debugging:** [Laravel Telescope](https://laravel.com/docs/telescope) is installed dev-only and
+registered only in `APP_ENV=local`. Browse to **http://localhost:8080/telescope** to inspect
+requests (with timing), DB queries, logs, jobs, mail, and exceptions. Outside local it's gated to the
+`developer` role.
+
 ### Storage disks
 
 `SESSION_DRIVER`, `QUEUE_CONNECTION`, and `CACHE_STORE` all use the database. Four
