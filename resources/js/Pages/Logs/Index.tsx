@@ -56,11 +56,11 @@ export default function Index({ logs, filters }: Props) {
                 <Input
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    placeholder="Filter by model type…"
+                    placeholder="Search Model"
                     className="w-72"
                 />
                 <Button type="submit" variant="secondary">
-                    Filter
+                    Search
                 </Button>
             </form>
 
