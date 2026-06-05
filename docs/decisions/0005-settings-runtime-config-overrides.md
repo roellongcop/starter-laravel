@@ -35,6 +35,12 @@ table may not exist during early migrations (fail safe to config-file defaults).
   Inertia middleware share it — no duplicate query.
 - Validation (`SettingsRequest`) must keep values safe to apply blindly (e.g. `timezone`
   rule, `pagination_size` clamp) since the override has no second guard.
+- `EmailSettings` follows the same boot-override pattern via `applyEmailSettings()`, but
+  **SMTP-gated**: it only writes `config('mail.*')` when `config('mail.default') === 'smtp'`,
+  so dev's `log` mailer is untouched and prod opts in with `MAIL_MAILER=smtp`. It also
+  **layers on env** — host/port/credentials are overridden only when `smtp_host` is set
+  (seeded empty), so env (`MAIL_HOST=mailpit` in dev) is the base and the Email tab is the
+  production override, mirroring how a storage disk's env driver is the base for s3 config.
 
 ## Related
 

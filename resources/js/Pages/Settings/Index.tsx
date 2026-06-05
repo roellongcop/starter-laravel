@@ -1,5 +1,5 @@
-import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/Components/InputError';
 import PageHeader from '@/Components/PageHeader';
@@ -167,9 +167,22 @@ function EmailTab({ data: init }: { data: Record<string, unknown> }) {
         smtp_encryption: String(init.smtp_encryption ?? ''),
     });
 
+    const [testing, setTesting] = useState(false);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         put(route('settings.update', 'email'), { preserveScroll: true });
+    };
+
+    // Sends a test email to the current user using the *saved* settings (toasts
+    // success/error via the shared flash bag). Save before testing.
+    const sendTest = () => {
+        setTesting(true);
+        router.post(
+            route('settings.email.test'),
+            {},
+            { preserveScroll: true, onFinish: () => setTesting(false) },
+        );
     };
 
     return (
@@ -274,9 +287,17 @@ function EmailTab({ data: init }: { data: Record<string, unknown> }) {
                     </SelectContent>
                 </Select>
             </Row>
-            <div>
+            <div className="flex gap-2">
                 <Button type="submit" disabled={processing}>
                     Save email settings
+                </Button>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={sendTest}
+                    disabled={testing}
+                >
+                    {testing ? 'Sending…' : 'Send test email'}
                 </Button>
             </div>
         </form>

@@ -41,6 +41,37 @@ wrapped in `try/catch (\Throwable)` so a missing settings table during early mig
 falls back to config-file defaults. `SystemSettings` is a scoped binding, so the provider
 and the Inertia middleware share one instance — no duplicate query.
 
+### Email group
+
+`EmailSettings` (`from_address`, `from_name`, `smtp_host`, `smtp_port`, `smtp_username`,
+`smtp_password` (encrypted), `smtp_encryption`) drives the SMTP mailer via
+`AppServiceProvider::applyEmailSettings()` — but **only when SMTP is the active transport**
+(`config('mail.default') === 'smtp'`):
+
+| Field | Applied to |
+| ----- | ---------- |
+| `from_address` / `from_name` | `config('mail.from.*')` |
+| `smtp_host` / `smtp_port`    | `config('mail.mailers.smtp.host'/'port')` |
+| `smtp_username` / `smtp_password` | `config('mail.mailers.smtp.username'/'password')` — only when set, so empty DB defaults don't clobber env |
+| `smtp_encryption` (`tls`/`ssl`) | `config('mail.mailers.smtp.scheme')` — `ssl`→`smtps`, `tls`→`smtp` |
+
+In dev (`MAIL_MAILER=log`/`array`) `applyEmailSettings()` returns early and the env mail
+config is left untouched. **To use these settings in production, set `MAIL_MAILER=smtp`** —
+then the stored host/port/credentials/from/encryption override env. The "blank password =
+keep" behavior is handled in `SettingsController` (a blank field is unset before save so the
+encrypted value is retained).
+
+**Send test email.** The Email tab has a button (`POST settings.email.test` →
+`SettingsController::testEmail`, gated by `settings.update`) that mails a `TestMail` to the
+current admin using the configured transport. It tests the **saved** settings (applied to
+config at boot) — save before testing. Success/failure surfaces via the flash→toast bag.
+
+**Who else sends mail:** the public contact form (`ContactController::store`) mails a
+`ContactMessage` to `EmailSettings::from_address` with Reply-To set to the visitor (and still
+logs the submission for audit); export/import "ready" notifications use the `mail` channel.
+All of them ride the same configured transport — so with the dev default they land in Mailpit
+(`http://localhost:8025`).
+
 ## Decisions & why
 
 - [ADR 0005 — Settings as runtime config overrides](../decisions/0005-settings-runtime-config-overrides.md):
@@ -59,6 +90,10 @@ and the Inertia middleware share one instance — no duplicate query.
   IP) can lock everyone out. See [Visitor & IP](visitor-and-ip.md).
 - After changing a setting, a cached config can mask config-shaped overrides: `php artisan
   config:clear`.
+- Mail transport is env-driven like storage disks: `MAIL_MAILER` switches `log` ↔ `smtp`
+  (Mailpit) the way `*_DISK_DRIVER` switches `local` ↔ `s3`. Dev defaults to `smtp` → Mailpit
+  (inbox at `http://localhost:8025`); the EmailSettings override is **dormant** until an admin
+  sets `smtp_host` (env is the base layer). The tests cover config application, not delivery.
 
 ## Related
 

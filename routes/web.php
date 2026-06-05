@@ -75,6 +75,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('settings/{group}', [SettingsController::class, 'update'])->name('settings.update');
+    Route::post('settings/email/test', [SettingsController::class, 'testEmail'])->name('settings.email.test');
 
     Route::post('themes/bulk', [ThemeController::class, 'bulk'])->name('themes.bulk');
     Route::resource('themes', ThemeController::class);

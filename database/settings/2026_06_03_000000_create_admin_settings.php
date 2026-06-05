@@ -19,7 +19,9 @@ return new class extends SettingsMigration
         // Email
         $this->migrator->add('email.from_address', 'hello@example.com');
         $this->migrator->add('email.from_name', 'Keen Admin');
-        $this->migrator->add('email.smtp_host', '127.0.0.1');
+        // Empty by default: the EmailSettings override stays dormant and env
+        // (MAIL_HOST=mailpit in dev) drives mail until an admin configures real SMTP.
+        $this->migrator->add('email.smtp_host', '');
         $this->migrator->add('email.smtp_port', 2525);
         $this->migrator->add('email.smtp_username', null);
         $this->migrator->addEncrypted('email.smtp_password', null);

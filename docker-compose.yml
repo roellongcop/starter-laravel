@@ -109,6 +109,19 @@ services:
       - mariadb
     networks: [appnet]
 
+  # Local SMTP sink with a web inbox — the mail analogue of SeaweedFS. Mail goes
+  # here whenever MAIL_MAILER=smtp + MAIL_HOST=mailpit (the dev default).
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    environment:
+      # Accept any/insecure AUTH so the Email tab's optional creds aren't rejected in dev.
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025" # web inbox (SMTP 1025 stays internal on appnet)
+    networks: [appnet]
+
   seaweedfs:
     image: chrislusf/seaweedfs:latest
     restart: unless-stopped

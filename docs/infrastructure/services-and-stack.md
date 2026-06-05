@@ -29,10 +29,21 @@ Services (`docker-compose.yml`):
 | `scheduler`      | `schedule:work`                                            |
 | `mariadb`        | MariaDB 10.11 — DB sessions + queue + cache                |
 | `phpmyadmin`     | DB admin UI                                                |
+| `mailpit`        | local SMTP sink + web inbox (dev email)                    |
 | `seaweedfs`      | S3-compatible object storage                               |
 | `seaweedfs-init` | one-shot sidecar that creates the S3 buckets               |
 
-Ports: app `8080`, phpMyAdmin `8081`, Vite `5173`, SeaweedFS filer `8888`, S3 API `8333`.
+Ports: app `8080`, phpMyAdmin `8081`, Mailpit inbox `8025`, Vite `5173`, SeaweedFS filer
+`8888`, S3 API `8333`.
+
+**Mail.** The transport is environment-driven, mirroring storage: `MAIL_MAILER` switches
+`log` ↔ `smtp` the way `*_DISK_DRIVER` switches `local` ↔ `s3`, with **Mailpit** as the
+always-on SMTP backend (the analogue of SeaweedFS). Dev defaults to `smtp` → Mailpit
+(`MAIL_HOST=mailpit`, `MAIL_PORT=1025`; inbox at `:8025`); `log` writes to `storage/logs`.
+This is a **two-layer** model: env is the base, and the Settings → Email tab
+(`applyEmailSettings()`) overrides SMTP host/port/credentials/from **only when filled in**
+(the seeded `smtp_host` is empty, so the override is dormant until an admin configures real
+SMTP for prod). Mailpit's SMTP listens on `1025` internally on `appnet` — no host mapping.
 
 **Storage disks.** `SESSION_DRIVER`, `QUEUE_CONNECTION`, `CACHE_STORE` all use the database.
 Four non-public disks — `backups`, `exports`, `imports`, `uploads` — live under

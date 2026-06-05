@@ -16,7 +16,7 @@ export GID := $(shell id -g)
 .DEFAULT_GOAL := help
 .PHONY: help build up down down-v refresh restart install setup shell migrate \
         fresh seed queue dev assets test pint stan lint is-mergeable logs ps tinker \
-        ide-helper wait-db key storage-link clean hooks
+        ide-helper wait-db key storage-link clean hooks mail
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -105,6 +105,10 @@ queue: ## Run a queue worker in the foreground
 
 dev: ## Run the Vite dev server (dev profile)
 	$(DC) up node
+
+mail: ## Print the Mailpit inbox URL (dev email)
+	@port=$$(grep -E '^MAILPIT_PORT=' .env 2>/dev/null | cut -d= -f2); \
+	echo "Mailpit inbox: http://localhost:$${port:-8025}"
 
 assets: ## Build production assets
 	$(NODE_RUN) npm run build

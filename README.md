@@ -23,6 +23,7 @@ Then open:
 | ------------ | ---------------------------------- |
 | App          | http://localhost:8080              |
 | phpMyAdmin   | http://localhost:8081              |
+| Mailpit (email inbox)          | http://localhost:8025    |
 | Vite (dev)   | http://localhost:5173 (`make dev`) |
 | SeaweedFS filer (browse files) | http://localhost:8888    |
 | SeaweedFS S3 API               | http://localhost:8333    |
@@ -76,6 +77,7 @@ via CSS variables + a `data-theme` attribute.
 | `scheduler`      | `schedule:work`                                        |
 | `mariadb`        | MariaDB 10.11 (database sessions + queue + cache)      |
 | `phpmyadmin`     | DB admin UI                                            |
+| `mailpit`        | Local SMTP sink + web inbox (dev email)                |
 | `seaweedfs`      | S3-compatible object storage                           |
 | `seaweedfs-init` | One-shot sidecar that creates the S3 buckets           |
 
@@ -87,6 +89,16 @@ non-public disks — `backups`, `exports`, `imports`, `uploads` — live under
 `s3` (SeaweedFS) via their `*_DISK_DRIVER` env var. All generated artifacts are nested under a
 `YYYY/MM/` folder (via the `dated_path()` helper). Downloads always go through gated controller
 actions, never a public URL.
+
+### Email
+
+Mail transport is environment-driven the same way disks are: `MAIL_MAILER` switches `log` ↔
+`smtp` like `*_DISK_DRIVER` switches `local` ↔ `s3`. Dev defaults to `smtp` → **Mailpit**, so
+all app mail (password resets, export/import notices) lands in the inbox at
+http://localhost:8025; set `MAIL_MAILER=log` to write to `storage/logs` instead. When `smtp`
+is active, the **Settings → Email** tab overrides host/credentials/from — but only once filled
+in (env is the base; the tab is the production override). Configure the tab and set
+`MAIL_MAILER=smtp` in prod to point at a real SMTP server.
 
 ## Make targets
 
