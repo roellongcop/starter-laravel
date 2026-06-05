@@ -36,6 +36,8 @@ interface Props {
     /** Lock the crop box to this ratio (e.g. 1 for square avatars). Omit = free. */
     aspectRatio?: number;
     title?: string;
+    /** File-input accept filter (callers declare accepted types here). */
+    accept?: string;
 }
 
 const hasCamera =
@@ -64,6 +66,7 @@ export default function ImagePicker({
     onPicked,
     aspectRatio,
     title = 'Choose image',
+    accept = 'image/*',
 }: Props) {
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     // MIME of the image being cropped — drives the export format so PNG
@@ -160,7 +163,7 @@ export default function ImagePicker({
                         </TabsList>
 
                         <TabsContent value="upload">
-                            <UploadTab onImage={loadImage} />
+                            <UploadTab onImage={loadImage} accept={accept} />
                         </TabsContent>
                         <TabsContent value="existing">
                             <ExistingTab
@@ -183,8 +186,10 @@ export default function ImagePicker({
 
 function UploadTab({
     onImage,
+    accept,
 }: {
     onImage: (src: string, mime: string) => void;
+    accept: string;
 }) {
     const onFile = (file?: File) => {
         if (!file) return;
@@ -200,7 +205,7 @@ function UploadTab({
             <span className="text-sm">Click to choose an image</span>
             <input
                 type="file"
-                accept="image/*"
+                accept={accept}
                 className="hidden"
                 onChange={(e) => onFile(e.target.files?.[0])}
             />

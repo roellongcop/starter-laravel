@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SettingsRequest;
 use App\Mail\TestMail;
+use App\Models\File;
 use App\Settings\EmailSettings;
 use App\Settings\ImageSettings;
 use App\Settings\NotificationSettings;
@@ -33,7 +34,7 @@ class SettingsController extends Controller
             'settings' => [
                 'system' => app(SystemSettings::class)->toArray(),
                 'email' => $this->emailForDisplay(),
-                'image' => app(ImageSettings::class)->toArray(),
+                'image' => $this->imageForDisplay(),
                 'notification' => app(NotificationSettings::class)->toArray(),
             ],
             'can' => ['update' => request()->user()->can('settings.update')],
@@ -93,5 +94,34 @@ class SettingsController extends Controller
         $data['smtp_password'] = '';
 
         return $data;
+    }
+
+    /**
+     * Brand image tokens plus a resolved preview URL per slot (null when unset).
+     *
+     * @return array<string, mixed>
+     */
+    protected function imageForDisplay(): array
+    {
+        $image = app(ImageSettings::class);
+
+        return [
+            'favicon_token' => $image->favicon_token,
+            'square_logo_token' => $image->square_logo_token,
+            'landscape_logo_token' => $image->landscape_logo_token,
+            'favicon_url' => $this->fileUrl($image->favicon_token),
+            'square_logo_url' => $this->fileUrl($image->square_logo_token),
+            'landscape_logo_url' => $this->fileUrl($image->landscape_logo_token),
+        ];
+    }
+
+    /** Resolve a File token to a gated, resized preview URL (null when missing). */
+    protected function fileUrl(?string $token, int $width = 200): ?string
+    {
+        if (blank($token)) {
+            return null;
+        }
+
+        return File::where('token', $token)->first()?->imageUrl($width);
     }
 }

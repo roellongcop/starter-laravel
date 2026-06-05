@@ -1,6 +1,7 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
+import ImagePicker, { PickedImage } from '@/Components/ImagePicker';
 import InputError from '@/Components/InputError';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
@@ -304,11 +305,85 @@ function EmailTab({ data: init }: { data: Record<string, unknown> }) {
     );
 }
 
+// A single brand-image slot: preview + pick (via <ImagePicker>) + remove. The
+// picker uploads immediately and returns { token, url }; we store the token in
+// the form and use the url for an instant preview.
+function BrandSlot({
+    label,
+    hint,
+    initialUrl,
+    aspectRatio,
+    onChange,
+}: {
+    label: string;
+    hint: string;
+    initialUrl: string | null;
+    aspectRatio?: number;
+    onChange: (token: string | null) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const [preview, setPreview] = useState<string | null>(initialUrl);
+
+    const picked = (image: PickedImage) => {
+        setPreview(image.url);
+        onChange(image.token);
+    };
+
+    const remove = () => {
+        setPreview(null);
+        onChange(null);
+    };
+
+    return (
+        <div className="grid gap-2">
+            <Label>{label}</Label>
+            <p className="text-sm text-muted-foreground">{hint}</p>
+            <div className="flex items-center gap-4">
+                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-md border bg-muted/30">
+                    {preview ? (
+                        <img
+                            src={preview}
+                            alt={label}
+                            className="max-h-full max-w-full object-contain"
+                        />
+                    ) : (
+                        <span className="text-xs text-muted-foreground">
+                            None
+                        </span>
+                    )}
+                </div>
+                <div className="flex gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setOpen(true)}
+                    >
+                        {preview ? 'Change' : 'Choose'}
+                    </Button>
+                    {preview && (
+                        <Button type="button" variant="ghost" onClick={remove}>
+                            Remove
+                        </Button>
+                    )}
+                </div>
+            </div>
+            <ImagePicker
+                open={open}
+                onOpenChange={setOpen}
+                onPicked={picked}
+                aspectRatio={aspectRatio}
+                title={`Choose ${label.toLowerCase()}`}
+            />
+        </div>
+    );
+}
+
 function ImageTab({ data: init }: { data: Record<string, unknown> }) {
-    const { data, setData, put, processing, errors } = useForm({
-        max_width: Number(init.max_width ?? 2000),
-        max_height: Number(init.max_height ?? 2000),
-        allowed_types: (init.allowed_types as string[]) ?? [],
+    const { setData, put, processing } = useForm({
+        favicon_token: (init.favicon_token as string | null) ?? null,
+        square_logo_token: (init.square_logo_token as string | null) ?? null,
+        landscape_logo_token:
+            (init.landscape_logo_token as string | null) ?? null,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -317,56 +392,27 @@ function ImageTab({ data: init }: { data: Record<string, unknown> }) {
     };
 
     return (
-        <form onSubmit={submit} className="grid max-w-xl gap-4">
-            <div className="grid grid-cols-2 gap-4">
-                <Row
-                    label="Max width (px)"
-                    htmlFor="max_width"
-                    error={errors.max_width}
-                >
-                    <Input
-                        id="max_width"
-                        type="number"
-                        value={data.max_width}
-                        onChange={(e) =>
-                            setData('max_width', Number(e.target.value))
-                        }
-                    />
-                </Row>
-                <Row
-                    label="Max height (px)"
-                    htmlFor="max_height"
-                    error={errors.max_height}
-                >
-                    <Input
-                        id="max_height"
-                        type="number"
-                        value={data.max_height}
-                        onChange={(e) =>
-                            setData('max_height', Number(e.target.value))
-                        }
-                    />
-                </Row>
-            </div>
-            <Row
-                label="Allowed types (comma separated)"
-                htmlFor="allowed_types"
-                error={errors.allowed_types}
-            >
-                <Input
-                    id="allowed_types"
-                    value={data.allowed_types.join(', ')}
-                    onChange={(e) =>
-                        setData(
-                            'allowed_types',
-                            e.target.value
-                                .split(',')
-                                .map((s) => s.trim())
-                                .filter(Boolean),
-                        )
-                    }
-                />
-            </Row>
+        <form onSubmit={submit} className="grid max-w-xl gap-6">
+            <BrandSlot
+                label="Favicon"
+                hint="Square image shown in the browser tab."
+                initialUrl={(init.favicon_url as string | null) ?? null}
+                aspectRatio={1}
+                onChange={(token) => setData('favicon_token', token)}
+            />
+            <BrandSlot
+                label="Square logo"
+                hint="Square logo shown in the app header."
+                initialUrl={(init.square_logo_url as string | null) ?? null}
+                aspectRatio={1}
+                onChange={(token) => setData('square_logo_token', token)}
+            />
+            <BrandSlot
+                label="Landscape logo"
+                hint="Wide logo shown on the login screen."
+                initialUrl={(init.landscape_logo_url as string | null) ?? null}
+                onChange={(token) => setData('landscape_logo_token', token)}
+            />
             <div>
                 <Button type="submit" disabled={processing}>
                     Save image settings
@@ -410,7 +456,26 @@ function NotificationTab({ templates }: { templates: Record<string, string> }) {
     );
 }
 
+const SETTINGS_TABS = ['system', 'email', 'image', 'notification'];
+
+// Restore the active tab from the URL (?tab=) so a refresh keeps the user on it.
+function initialTab(): string {
+    if (typeof window === 'undefined') return 'system';
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    return tab && SETTINGS_TABS.includes(tab) ? tab : 'system';
+}
+
 export default function Index({ settings }: Props) {
+    const [tab, setTab] = useState(initialTab);
+
+    const onTabChange = (value: string) => {
+        setTab(value);
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', value);
+        // replaceState (not Inertia) so the choice survives refresh without a visit.
+        window.history.replaceState({}, '', url);
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Settings" />
@@ -420,7 +485,7 @@ export default function Index({ settings }: Props) {
             />
             <Card>
                 <CardContent className="pt-6">
-                    <Tabs defaultValue="system">
+                    <Tabs value={tab} onValueChange={onTabChange}>
                         <TabsList>
                             <TabsTrigger value="system">System</TabsTrigger>
                             <TabsTrigger value="email">Email</TabsTrigger>

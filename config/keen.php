@@ -43,11 +43,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Image upload allowlist
+    |--------------------------------------------------------------------------
+    |
+    | Extensions accepted by image uploads (the <ImagePicker> via /media and the
+    | image branch of the Files uploader). A code-level constant, not an editable
+    | setting — the upload component declares accepted types.
+    |
+    */
+
+    'image_extensions' => ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Files admin upload allowlist
     |--------------------------------------------------------------------------
     |
     | Extensions the Files admin uploader (/files/create) accepts on top of the
-    | editable image types (ImageSettings::allowed_types).
+    | image types (keen.image_extensions).
     |
     */
 

@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\File;
 use App\Models\Theme;
+use App\Settings\ImageSettings;
 use App\Settings\SystemSettings;
 use App\Support\Navigation;
 use Illuminate\Http\Request;
@@ -63,6 +65,10 @@ class HandleInertiaRequests extends Middleware
             // App-wide settings + active theme tokens (lazily evaluated; the
             // theme/settings tables may not exist during early migrations).
             'settings' => fn () => $this->appSettings(),
+            // Public brand image URLs (favicon + logos) for the head/layouts. Its
+            // own top-level prop, not under `settings`, so the Settings page's own
+            // `settings` page-prop can't shadow it.
+            'brand' => fn () => $this->brandAssets(),
             'theme' => fn () => $this->activeThemeTokens(),
             // Always-prop so partial reloads (router.reload({ only: [...] }))
             // re-evaluate it: the one-shot session value is already gone, so the
@@ -121,6 +127,38 @@ class HandleInertiaRequests extends Middleware
         } catch (\Throwable) {
             return ['system' => ['app_name' => config('app.name'), 'default_theme' => 'system', 'auto_logout_seconds' => 0]];
         }
+    }
+
+    /**
+     * Public brand image URLs (null when unset). Each points at the public
+     * `brand.show` route with a short cache-buster derived from the file token,
+     * so changing an image yields a new URL despite the immutable cache headers.
+     *
+     * @return array<string, string|null>
+     */
+    protected function brandAssets(): array
+    {
+        try {
+            $image = app(ImageSettings::class);
+
+            return [
+                'favicon_url' => $this->brandUrl('favicon', $image->favicon_token),
+                'square_logo_url' => $this->brandUrl('square-logo', $image->square_logo_token),
+                'landscape_logo_url' => $this->brandUrl('landscape-logo', $image->landscape_logo_token),
+            ];
+        } catch (\Throwable) {
+            return ['favicon_url' => null, 'square_logo_url' => null, 'landscape_logo_url' => null];
+        }
+    }
+
+    /** Build a public brand URL for a slot, or null when its token is unset/missing. */
+    protected function brandUrl(string $slot, ?string $token): ?string
+    {
+        if (blank($token) || ! File::where('token', $token)->exists()) {
+            return null;
+        }
+
+        return route('brand.show', ['slot' => $slot, 'v' => substr($token, 0, 12)]);
     }
 
     /**

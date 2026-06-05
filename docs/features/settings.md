@@ -72,6 +72,22 @@ logs the submission for audit); export/import "ready" notifications use the `mai
 All of them ride the same configured transport — so with the dev default they land in Mailpit
 (`http://localhost:8025`).
 
+### Image group — brand assets
+
+`ImageSettings` holds three **File tokens**: `favicon_token`, `square_logo_token`,
+`landscape_logo_token`. The Image tab uploads each via `<ImagePicker>` (→ `media.store` →
+`{token,url}`) and stores the token. They're served by a **public** route
+`GET /brand/{favicon|square-logo|landscape-logo}` (`BrandController` → `ImageStreamer`) so the
+favicon and the login-screen logo load without auth — unlike the gated `media.img`. URLs are
+shared as a dedicated `brand` Inertia prop (`{favicon_url, square_logo_url,
+landscape_logo_url}`, cache-busted by token); the layouts render the favicon via `<Head>`, the
+square logo in the header, and the landscape logo on the login screen, each falling back to the
+bundled `<ApplicationLogo>` SVG.
+
+Accepted image extensions are **not** a setting — they live in `config('keen.image_extensions')`
+(read by `StoreMediaRequest`/`StoreFileRequest`) and the `<ImagePicker accept>` prop. The old
+`max_width`/`max_height` fields were unused and were removed.
+
 ## Decisions & why
 
 - [ADR 0005 — Settings as runtime config overrides](../decisions/0005-settings-runtime-config-overrides.md):

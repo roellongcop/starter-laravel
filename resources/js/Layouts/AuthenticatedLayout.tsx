@@ -8,7 +8,7 @@ import Sidebar from '@/Components/Sidebar';
 import ThemeStyle from '@/Components/ThemeStyle';
 import ThemeToggle from '@/Components/ThemeToggle';
 import { useIdleLogout } from '@/hooks/use-idle-logout';
-import { Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 
 export default function Authenticated({
@@ -18,6 +18,7 @@ export default function Authenticated({
     const { props } = usePage();
     const user = props.auth.user;
     const appName = props.settings.system.app_name;
+    const brand = props.brand;
 
     useIdleLogout();
 
@@ -26,6 +27,11 @@ export default function Authenticated({
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+            {brand.favicon_url && (
+                <Head>
+                    <link rel="icon" href={brand.favicon_url} />
+                </Head>
+            )}
             <ThemeStyle />
             <nav className="border-b border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -33,7 +39,15 @@ export default function Authenticated({
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                                    {brand.square_logo_url ? (
+                                        <img
+                                            src={brand.square_logo_url}
+                                            alt={appName}
+                                            className="block h-9 w-auto"
+                                        />
+                                    ) : (
+                                        <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                                    )}
                                 </Link>
                             </div>
 

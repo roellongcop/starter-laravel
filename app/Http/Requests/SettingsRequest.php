@@ -31,10 +31,9 @@ class SettingsRequest extends BaseFormRequest
                 'smtp_encryption' => ['nullable', 'in:tls,ssl'],
             ],
             'image' => [
-                'max_width' => ['required', 'integer', 'min:1'],
-                'max_height' => ['required', 'integer', 'min:1'],
-                'allowed_types' => ['array'],
-                'allowed_types.*' => ['string', 'max:10'],
+                'favicon_token' => ['nullable', 'string', 'exists:files,token'],
+                'square_logo_token' => ['nullable', 'string', 'exists:files,token'],
+                'landscape_logo_token' => ['nullable', 'string', 'exists:files,token'],
             ],
             'notification' => [
                 'templates' => ['array'],

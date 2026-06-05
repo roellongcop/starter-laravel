@@ -6,12 +6,14 @@ use Spatie\LaravelSettings\Settings;
 
 class ImageSettings extends Settings
 {
-    public int $max_width;
+    /** File token of the uploaded favicon (null = use the default). */
+    public ?string $favicon_token = null;
 
-    public int $max_height;
+    /** File token of the uploaded square (icon) logo. */
+    public ?string $square_logo_token = null;
 
-    /** @var array<int, string> */
-    public array $allowed_types;
+    /** File token of the uploaded landscape (wide) logo. */
+    public ?string $landscape_logo_token = null;
 
     public static function group(): string
     {

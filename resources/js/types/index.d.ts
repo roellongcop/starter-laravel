@@ -176,6 +176,11 @@ export type PageProps<
             auto_logout_seconds: number;
         };
     };
+    brand: {
+        favicon_url: string | null;
+        square_logo_url: string | null;
+        landscape_logo_url: string | null;
+    };
     theme: ThemeTokens | null;
     flash: {
         success?: string | null;
