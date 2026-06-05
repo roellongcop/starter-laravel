@@ -51,7 +51,7 @@ export default function Index({ logs, filters }: Props) {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search URL…"
-                    className="w-72"
+                    className="w-64"
                 />
                 <Button type="submit" variant="secondary">
                     Search

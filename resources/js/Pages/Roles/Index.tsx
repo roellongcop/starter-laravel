@@ -69,7 +69,7 @@ export default function Index({ roles, filters }: Props) {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search roles…"
-                    className="w-72"
+                    className="w-64"
                 />
                 <Button type="submit" variant="secondary">
                     Search

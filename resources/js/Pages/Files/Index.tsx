@@ -81,7 +81,7 @@ export default function Index({ files, filters }: Props) {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search name or tag…"
-                    className="w-72"
+                    className="w-64"
                 />
                 <Button type="submit" variant="secondary">
                     Search

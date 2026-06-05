@@ -57,7 +57,7 @@ export default function Index({ logs, filters }: Props) {
                     value={type}
                     onChange={(e) => setType(e.target.value)}
                     placeholder="Search Model"
-                    className="w-72"
+                    className="w-64"
                 />
                 <Button type="submit" variant="secondary">
                     Search

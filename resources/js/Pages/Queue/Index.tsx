@@ -56,7 +56,7 @@ export default function Index({ stats, pending, failed, can }: Props) {
                                 variant="outline"
                                 onClick={() => post('queue.retry')}
                             >
-                                Retry all failed
+                                Retry failed
                             </Button>
                             <Button
                                 variant="outline"
@@ -95,7 +95,7 @@ export default function Index({ stats, pending, failed, can }: Props) {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="min-w-0 rounded-lg border bg-card text-card-foreground shadow-sm">
                     <div className="border-b px-4 py-2 font-medium">
                         Pending jobs
                     </div>
@@ -131,7 +131,7 @@ export default function Index({ stats, pending, failed, can }: Props) {
                     </Table>
                 </div>
 
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="min-w-0 rounded-lg border bg-card text-card-foreground shadow-sm">
                     <div className="border-b px-4 py-2 font-medium">
                         Failed jobs
                     </div>

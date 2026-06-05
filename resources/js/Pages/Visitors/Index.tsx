@@ -50,7 +50,7 @@ export default function Index({ visitors, filters }: Props) {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search IP / browser / OS…"
-                    className="w-72"
+                    className="w-64"
                 />
                 <Button type="submit" variant="secondary">
                     Search
