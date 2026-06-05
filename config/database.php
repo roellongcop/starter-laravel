@@ -67,9 +67,21 @@ return [
             // pass --skip-ssl so DB backups can connect.
             'dump' => [
                 'skip_ssl' => (bool) env('DB_BACKUP_SKIP_SSL', true),
-                // Keep the backups metadata table out of dumps so restoring an
-                // older archive never erases the record of which backups exist.
-                'exclude_tables' => ['backups'],
+                // Tables kept OUT of dumps (mariadb-dump --ignore-table), so a
+                // restore's `mysql < dump.sql` never drops/recreates them:
+                //  - backups: restoring an older archive must not erase the
+                //    record of which backups exist;
+                //  - jobs/job_batches/failed_jobs: the restore itself runs on
+                //    the database queue — dropping `jobs` mid-restore destroys
+                //    the table the worker is running from (and 500s /queue);
+                //  - sessions: don't log the operator out (and others) mid-restore;
+                //  - cache/cache_locks: transient, never worth restoring.
+                'exclude_tables' => [
+                    'backups',
+                    'jobs', 'job_batches', 'failed_jobs',
+                    'sessions',
+                    'cache', 'cache_locks',
+                ],
             ],
         ],
 
@@ -96,9 +108,21 @@ return [
             // pass --skip-ssl so DB backups can connect.
             'dump' => [
                 'skip_ssl' => (bool) env('DB_BACKUP_SKIP_SSL', true),
-                // Keep the backups metadata table out of dumps so restoring an
-                // older archive never erases the record of which backups exist.
-                'exclude_tables' => ['backups'],
+                // Tables kept OUT of dumps (mariadb-dump --ignore-table), so a
+                // restore's `mysql < dump.sql` never drops/recreates them:
+                //  - backups: restoring an older archive must not erase the
+                //    record of which backups exist;
+                //  - jobs/job_batches/failed_jobs: the restore itself runs on
+                //    the database queue — dropping `jobs` mid-restore destroys
+                //    the table the worker is running from (and 500s /queue);
+                //  - sessions: don't log the operator out (and others) mid-restore;
+                //  - cache/cache_locks: transient, never worth restoring.
+                'exclude_tables' => [
+                    'backups',
+                    'jobs', 'job_batches', 'failed_jobs',
+                    'sessions',
+                    'cache', 'cache_locks',
+                ],
             ],
         ],
 

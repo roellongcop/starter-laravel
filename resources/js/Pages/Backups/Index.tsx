@@ -157,7 +157,8 @@ export default function Index({ backups, can }: Props) {
                                                 <AlertCircle className="h-4 w-4 text-destructive" />
                                             </Button>
                                         )}
-                                        {b.status === 'Generated' && (
+                                        {(b.status === 'Generated' ||
+                                            b.status === 'Restored') && (
                                             <Button
                                                 size="icon"
                                                 variant="ghost"

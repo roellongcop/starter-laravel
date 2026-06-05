@@ -6,6 +6,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,29 +20,39 @@ class QueueController extends Controller
     {
         $this->authorize('queue.index');
 
-        $pending = DB::table('jobs')
-            ->orderByDesc('id')->limit(25)->get()
-            ->map(fn ($j) => [
-                'id' => $j->id,
-                'queue' => $j->queue,
-                'name' => $this->displayName($j->payload),
-                'attempts' => $j->attempts,
-            ]);
+        // The queue tables are excluded from backup dumps, but a restore (or a
+        // half-finished migration) can briefly leave them absent — degrade to
+        // an empty queue instead of 500ing.
+        $hasJobs = Schema::hasTable('jobs');
+        $hasFailed = Schema::hasTable('failed_jobs');
 
-        $failed = DB::table('failed_jobs')
-            ->orderByDesc('id')->limit(25)->get()
-            ->map(fn ($j) => [
-                'id' => $j->id,
-                'uuid' => $j->uuid,
-                'queue' => $j->queue,
-                'name' => $this->displayName($j->payload),
-                'failed_at' => $j->failed_at,
-            ]);
+        $pending = $hasJobs
+            ? DB::table('jobs')
+                ->orderByDesc('id')->limit(25)->get()
+                ->map(fn ($j) => [
+                    'id' => $j->id,
+                    'queue' => $j->queue,
+                    'name' => $this->displayName($j->payload),
+                    'attempts' => $j->attempts,
+                ])
+            : collect();
+
+        $failed = $hasFailed
+            ? DB::table('failed_jobs')
+                ->orderByDesc('id')->limit(25)->get()
+                ->map(fn ($j) => [
+                    'id' => $j->id,
+                    'uuid' => $j->uuid,
+                    'queue' => $j->queue,
+                    'name' => $this->displayName($j->payload),
+                    'failed_at' => $j->failed_at,
+                ])
+            : collect();
 
         return Inertia::render('Queue/Index', [
             'stats' => [
-                'pending' => DB::table('jobs')->count(),
-                'failed' => DB::table('failed_jobs')->count(),
+                'pending' => $hasJobs ? DB::table('jobs')->count() : 0,
+                'failed' => $hasFailed ? DB::table('failed_jobs')->count() : 0,
             ],
             'pending' => $pending,
             'failed' => $failed,
