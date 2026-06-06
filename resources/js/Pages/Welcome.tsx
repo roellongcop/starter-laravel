@@ -3,6 +3,7 @@ import {
     ArrowRight,
     ArrowUpRight,
     Code2,
+    Gamepad2,
     Github,
     Linkedin,
     Mail,
@@ -10,8 +11,9 @@ import {
     Phone,
     Send,
     Server,
+    Smartphone,
 } from 'lucide-react';
-import { FormEventHandler, ReactNode } from 'react';
+import { FormEventHandler, ReactNode, useState } from 'react';
 
 import InputError from '@/Components/InputError';
 import { useTheme } from '@/Components/ThemeProvider';
@@ -19,6 +21,7 @@ import YinYang from '@/Components/YinYang';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
+import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
@@ -123,7 +126,33 @@ const GITHUB_PROJECTS = [
     'Project Management System',
     'Barangay Information System',
     'Health Care Management System',
-    'Patrol Mobile Application',
+];
+
+const MOBILE_APPS = [
+    {
+        name: 'Patroller App',
+        Icon: Smartphone,
+        stack: ['Ionic', 'Angular', 'Capacitor', 'Maps'],
+        blurb: 'Field patrol & biodiversity app — start and log patrols, track trees and animals, browse a searchable flora & fauna library, and follow patrol routes on a real-time map (with offline sync).',
+        shots: [
+            '/portfolio/patroller/1.jpg',
+            '/portfolio/patroller/2.jpg',
+            '/portfolio/patroller/3.jpg',
+            '/portfolio/patroller/4.jpg',
+        ],
+    },
+    {
+        name: 'Pokémon Game',
+        Icon: Gamepad2,
+        stack: ['React Native', 'PokéAPI'],
+        blurb: 'A Pokédex catcher game powered by the PokéAPI — browse wild Pokémon, dive into stats, abilities and moves, then "capture" them to your collection and climb the top-catcher leaderboard.',
+        shots: [
+            '/portfolio/pokemon/1.jpg',
+            '/portfolio/pokemon/2.jpg',
+            '/portfolio/pokemon/3.jpg',
+            '/portfolio/pokemon/4.jpg',
+        ],
+    },
 ];
 
 const SOCIALS = {
@@ -194,6 +223,7 @@ export default function Welcome({
 }: PageProps<Props>) {
     const { toggleTheme } = useTheme();
     const user = auth.user;
+    const [lightbox, setLightbox] = useState<string | null>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -534,7 +564,60 @@ export default function Welcome({
                             ))}
                         </div>
 
-                        <Reveal className="mt-10">
+                        <Reveal className="mt-12">
+                            <h3 className="mb-4 font-mono text-sm uppercase tracking-widest text-muted-foreground">
+                                Mobile apps
+                            </h3>
+                            <div className="grid gap-4 lg:grid-cols-2">
+                                {MOBILE_APPS.map((app) => (
+                                    <Card key={app.name}>
+                                        <CardContent className="pt-6">
+                                            <div className="flex items-center gap-2">
+                                                <app.Icon className="h-5 w-5" />
+                                                <h4 className="font-semibold">
+                                                    {app.name}
+                                                </h4>
+                                            </div>
+                                            <div className="mt-3 flex flex-wrap gap-2">
+                                                {app.stack.map((s) => (
+                                                    <Badge
+                                                        key={s}
+                                                        variant="secondary"
+                                                        className="font-normal"
+                                                    >
+                                                        {s}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                            <p className="mt-3 text-sm text-muted-foreground">
+                                                {app.blurb}
+                                            </p>
+                                            <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+                                                {app.shots.map((src, i) => (
+                                                    <button
+                                                        key={src}
+                                                        onClick={() =>
+                                                            setLightbox(src)
+                                                        }
+                                                        className="shrink-0 overflow-hidden rounded-2xl border border-border transition-transform hover:-translate-y-1"
+                                                        aria-label={`View ${app.name} screenshot ${i + 1}`}
+                                                    >
+                                                        <img
+                                                            src={src}
+                                                            alt={`${app.name} screenshot ${i + 1}`}
+                                                            loading="lazy"
+                                                            className="h-72 w-auto object-cover"
+                                                        />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </Reveal>
+
+                        <Reveal className="mt-12">
                             <h3 className="mb-4 font-mono text-sm uppercase tracking-widest text-muted-foreground">
                                 More on GitHub
                             </h3>
@@ -792,6 +875,25 @@ export default function Welcome({
                     </div>
                 </div>
             </footer>
+
+            {/* Screenshot lightbox */}
+            <Dialog
+                open={lightbox !== null}
+                onOpenChange={(o) => !o && setLightbox(null)}
+            >
+                <DialogContent className="max-w-md border-none bg-transparent p-0 shadow-none">
+                    <DialogTitle className="sr-only">
+                        App screenshot
+                    </DialogTitle>
+                    {lightbox && (
+                        <img
+                            src={lightbox}
+                            alt="App screenshot"
+                            className="mx-auto max-h-[85vh] w-auto rounded-2xl border border-border"
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
