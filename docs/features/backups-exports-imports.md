@@ -21,6 +21,9 @@ everyone but the operator while it runs.
 - `app/Http/Middleware/EnforceRestoreMode.php` — serves 503 during a restore.
 - `config/database.php` — backup dump config (`dump.skip_ssl`, `dump.exclude_tables`).
 - `app/Support/helpers.php` `dated_path()` — nests artifacts under `YYYY/MM/`.
+- `app/Console/Commands/{RunScheduledBackup,PruneBackups,MonitorBackups}` + `routes/console.php` —
+  the unattended backup automation (`backups:run` / `backups:prune` / `backups:monitor`), run by the
+  `scheduler` service.
 
 ## How it works
 
@@ -64,6 +67,19 @@ everyone but the operator while it runs.
   times."* Raise both together if a job ever needs a longer timeout.
 - **Paths.** Generated artifacts (backups/exports/imports) are nested under `YYYY/MM/` via
   `dated_path()`, matching uploads. `CreateBackupJob` relocates the spatie archive there.
+- **Scheduled automation** (the `scheduler` service, `php artisan schedule:work`). Three custom
+  commands wired in `routes/console.php`:
+  - `backups:run` — **daily 02:00**. Creates a `Pending` row and dispatches `CreateBackupJob`, i.e.
+    the exact UI flow, so scheduled and manual backups share the grid, status tracking, and relocation.
+  - `backups:prune` — **weekly, Sun 03:00**. Retention over the `backups` **table** (the source of
+    truth) — deletes `Generated`/`Failed` rows + their archives older than
+    `config('keen.backup_keep_days')` (env `BACKUP_KEEP_DAYS`, default 30), **always keeping the most
+    recent generated** so it can never leave you with none. spatie's `backup:clean` is unusable here:
+    it scans the folder the archives are *relocated out of*.
+  - `backups:monitor` — **daily 08:00** (after the nightly run). If no `Generated` backup completed
+    within `config('keen.backup_alert_after_hours')` (env `BACKUP_ALERT_AFTER_HOURS`, default 24), it
+    sends an in-app `AdminNotification` (Warning, linking to `/backups`) to every `developer`-role
+    user. A custom check because spatie's `backup:monitor` scans the wrong folder/disk.
 - **Restore.** `RestoreBackupJob` extracts the `.sql` dump from the archive into a temp workdir
   (recursively cleaned afterwards) and imports it via the `mysql` client. Before importing it sets the
   `RestoreSentinel`; `EnforceRestoreMode` then returns **503** to everyone except the operator who
@@ -87,6 +103,12 @@ everyone but the operator while it runs.
   `mariadb-dump`/`mariadb` (`docker/app/Dockerfile`).
 - The auth route names in `EnforceRestoreMode::$allowed` must stay in sync with the real auth routes,
   or an operator can lock themselves out mid-restore.
+- **Testing the schedule.** Run a scheduled entry on demand (in the `app` container) with
+  `php artisan schedule:test --name='backups:run'` — or `make backup` / `make backup-prune` /
+  `make backup-monitor`. To watch the *loop* fire on its own, temporarily set the cadence to
+  `->everyMinute()` and tail `docker compose logs -f scheduler`, then revert. Don't set a near-future
+  `dailyAt(...)` to test: the schedule runs in `config('app.timezone')` (UTC), not your wall clock,
+  so it won't fire when you expect.
 
 ## Related
 

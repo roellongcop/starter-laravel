@@ -16,7 +16,8 @@ export GID := $(shell id -g)
 .DEFAULT_GOAL := help
 .PHONY: help build up down down-v refresh restart install setup shell migrate \
         fresh seed queue dev assets test pint stan lint is-mergeable logs ps tinker \
-        ide-helper wait-db key storage-link clean hooks mail fix
+        ide-helper wait-db key storage-link clean hooks mail fix \
+        backup backup-prune backup-monitor schedule-list
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -102,6 +103,18 @@ seed: ## Run database seeders
 
 queue: ## Run a queue worker in the foreground
 	$(APP) php artisan queue:work --tries=3
+
+backup: ## Queue a database backup now (same flow as the nightly scheduled job)
+	$(APP) php artisan schedule:test --name='backups:run'
+
+backup-prune: ## Delete backups older than the retention window (keeps the latest generated)
+	$(APP) php artisan backups:prune
+
+backup-monitor: ## Alert developers in-app if no successful backup is within the threshold
+	$(APP) php artisan backups:monitor
+
+schedule-list: ## List every scheduled task and when it next runs
+	$(APP) php artisan schedule:list
 
 dev: ## Run the Vite dev server (dev profile)
 	$(DC) up node

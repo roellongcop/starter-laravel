@@ -125,6 +125,12 @@ Generated artifacts (backups/exports/imports) are nested under `YYYY/MM/` like u
 `CreateBackupJob` relocates the archive under `YYYY/MM/`; `RestoreBackupJob` extracts to a temp
 workdir it recursively cleans.
 
+**Scheduled tasks** live in `routes/console.php`, run by the `scheduler` service. Backups are
+automated by `backups:run`/`backups:prune`/`backups:monitor` (nightly/weekly/daily) operating over
+the `backups` **table** — spatie's `backup:clean`/`backup:monitor` are **not** used (they scan the
+folder archives are relocated out of). Run/test any via `make backup`/`backup-prune`/`backup-monitor`.
+Deep dive: `docs/features/backups-exports-imports.md`.
+
 **User feedback**: controllers `->with('success'|'error', …)`; `HandleInertiaRequests` shares `flash`
 as an `Inertia::always()` prop so partial reloads (`router.reload({ only: [...] })`) re-evaluate the
 one-shot bag to null instead of re-toasting it; `app.tsx` turns it into toasts globally

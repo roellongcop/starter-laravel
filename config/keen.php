@@ -87,4 +87,31 @@ return [
 
     'file_document_extensions' => ['pdf', 'doc', 'docx', 'csv', 'xls', 'xlsx'],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Backup retention window
+    |--------------------------------------------------------------------------
+    |
+    | The weekly `backups:prune` command deletes Generated/Failed backups (rows +
+    | archives) older than this many days, always keeping the most recent
+    | generated backup. spatie's backup:clean is unusable here because
+    | CreateBackupJob relocates archives out of the folder spatie scans.
+    |
+    */
+
+    'backup_keep_days' => (int) env('BACKUP_KEEP_DAYS', 30),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Backup staleness alert
+    |--------------------------------------------------------------------------
+    |
+    | The daily `backups:monitor` command alerts developers (in-app) when no
+    | Generated backup has completed within this many hours — a custom health
+    | check, since spatie's backup:monitor can't see our relocated archives.
+    |
+    */
+
+    'backup_alert_after_hours' => (int) env('BACKUP_ALERT_AFTER_HOURS', 24),
+
 ];

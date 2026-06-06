@@ -72,10 +72,7 @@ class BackupController extends Controller
     {
         $this->authorize('delete', $backup);
 
-        if ($backup->filename) {
-            Storage::disk($backup->disk)->delete($backup->filename);
-        }
-        $backup->delete();
+        $backup->deleteWithFile();
 
         return back()->with('success', 'Backup deleted.');
     }

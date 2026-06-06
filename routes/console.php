@@ -14,3 +14,10 @@ Artisan::command('inspire', function () {
 if (app()->environment('local') && class_exists(Telescope::class)) {
     Schedule::command('telescope:prune --hours=48')->daily();
 }
+
+// Unattended backups: nightly DB backup (dispatched to the queue, like the admin
+// UI) and a weekly retention prune. Times are in config('app.timezone').
+Schedule::command('backups:run')->dailyAt('02:00');
+Schedule::command('backups:prune')->weeklyOn(0, '03:00');
+// Alert developers a few hours after the nightly run if it didn't produce a backup.
+Schedule::command('backups:monitor')->dailyAt('08:00');

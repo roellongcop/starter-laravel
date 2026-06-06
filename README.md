@@ -59,7 +59,8 @@ A complete admin back-office, all gated by a declared permission registry
   Visit Logs** (cookie tracking), **Queue** monitor (retry/clear).
 - **Backups** (spatie/laravel-backup, with captured failure reasons + restore), **My Exports**
   (csv/xls/xlsx/pdf), **My Imports** (upload→preview→process) — all via queued jobs with status
-  tracking + gated downloads.
+  tracking + gated downloads. Backups also run **unattended** on the scheduler (nightly create,
+  weekly prune, daily staleness alert).
 
 Cross-cutting conventions: every domain table carries an audit footer
 (`record_status`/`created_by`/`updated_by`); lists use **keyset (cursor) pagination**;
