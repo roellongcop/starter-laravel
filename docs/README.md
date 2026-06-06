@@ -65,5 +65,7 @@ from the map below.
   allow/deny. ✅ written
 - [Notifications, sessions & audit](features/notifications-sessions-audit.md) — bell,
   sessions, audit log, toasts/idle-logout. ✅ written
+- [Mobile API auth](features/mobile-api-auth.md) — stateless Sanctum bearer-token
+  login/me/logout for the `/api/v1` surface. ✅ written
 
 > Fill a room when you next touch that area — leave it better-documented than you found it.
