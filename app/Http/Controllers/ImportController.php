@@ -21,14 +21,20 @@ class ImportController extends Controller
     {
         $this->authorize('viewAny', UserImport::class);
 
+        $search = trim((string) $request->string('search'));
+
         $imports = UserImport::query()
             ->where('user_id', $request->user()->id)
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('resource', 'like', "%{$search}%")
+                ->orWhere('filename', 'like', "%{$search}%")))
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
 
         return Inertia::render('Imports/Index', [
             'imports' => cursorResponse($imports, fn (UserImport $i) => $this->row($i)),
+            'filters' => ['search' => $search],
             'can' => ['create' => $request->user()->can('imports.create')],
         ]);
     }

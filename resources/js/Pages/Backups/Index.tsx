@@ -6,7 +6,7 @@ import {
     RotateCcw,
     Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
@@ -21,6 +21,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
+import { Input } from '@/Components/ui/input';
 import {
     Table,
     TableBody,
@@ -34,6 +35,7 @@ import { type AdminBackup, type CursorResponse } from '@/types';
 
 interface Props {
     backups: CursorResponse<AdminBackup>;
+    filters: { search: string };
     can: { create: boolean; restore: boolean; delete: boolean };
 }
 
@@ -49,12 +51,22 @@ function humanSize(bytes: number | null): string {
     return `${n.toFixed(1)} ${units[i]}`;
 }
 
-export default function Index({ backups, can }: Props) {
+export default function Index({ backups, filters, can }: Props) {
+    const [search, setSearch] = useState(filters.search);
     const [confirm, setConfirm] = useState<null | {
         action: 'restore' | 'delete';
         backup: AdminBackup;
     }>(null);
     const [errorDetail, setErrorDetail] = useState<AdminBackup | null>(null);
+
+    const submitSearch: FormEventHandler = (e) => {
+        e.preventDefault();
+        router.get(
+            route('backups.index'),
+            { search },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    };
 
     const run = () => {
         if (!confirm) return;
@@ -100,6 +112,18 @@ export default function Index({ backups, can }: Props) {
                     </>
                 }
             />
+
+            <form onSubmit={submitSearch} className="mb-4 flex gap-2">
+                <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search filename…"
+                    className="w-64"
+                />
+                <Button type="submit" variant="secondary">
+                    Search
+                </Button>
+            </form>
 
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>

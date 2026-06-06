@@ -18,9 +18,14 @@ class SessionController extends Controller
     {
         $this->authorize('sessions.index');
 
+        $search = trim((string) $request->string('search'));
+
         $sessions = DB::table('sessions')
             ->leftJoin('users', 'sessions.user_id', '=', 'users.id')
             ->select('sessions.id', 'sessions.ip_address', 'sessions.user_agent', 'sessions.last_activity', 'users.name as user_name')
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('users.name', 'like', "%{$search}%")
+                ->orWhere('sessions.ip_address', 'like', "%{$search}%")))
             ->orderByDesc('sessions.last_activity')
             ->orderBy('sessions.id')
             ->cursorPaginate(config('keen.pagination_size'))
@@ -30,6 +35,7 @@ class SessionController extends Controller
 
         return Inertia::render('Sessions/Index', [
             'sessions' => cursorResponse($sessions, fn ($s) => $this->row($s, $currentId)),
+            'filters' => ['search' => $search],
             'can' => ['delete' => $request->user()->can('sessions.show')],
         ]);
     }

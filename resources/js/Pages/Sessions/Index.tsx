@@ -1,11 +1,12 @@
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import CursorPager from '@/Components/CursorPager';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import {
     Table,
     TableBody,
@@ -19,11 +20,22 @@ import { type AdminSession, type CursorResponse } from '@/types';
 
 interface Props {
     sessions: CursorResponse<AdminSession>;
+    filters: { search: string };
     can: { delete: boolean };
 }
 
-export default function Index({ sessions, can }: Props) {
+export default function Index({ sessions, filters, can }: Props) {
+    const [search, setSearch] = useState(filters.search);
     const [revoking, setRevoking] = useState<AdminSession | null>(null);
+
+    const submitSearch: FormEventHandler = (e) => {
+        e.preventDefault();
+        router.get(
+            route('sessions.index'),
+            { search },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    };
 
     const revoke = () => {
         if (!revoking) return;
@@ -40,6 +52,18 @@ export default function Index({ sessions, can }: Props) {
                 title="Sessions"
                 description="Active database sessions."
             />
+
+            <form onSubmit={submitSearch} className="mb-4 flex gap-2">
+                <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search user or IP…"
+                    className="w-64"
+                />
+                <Button type="submit" variant="secondary">
+                    Search
+                </Button>
+            </form>
 
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>

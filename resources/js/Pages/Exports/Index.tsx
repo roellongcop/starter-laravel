@@ -1,11 +1,13 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Download, Plus, RefreshCw } from 'lucide-react';
+import { FormEventHandler, useState } from 'react';
 
 import Can from '@/Components/Can';
 import CursorPager from '@/Components/CursorPager';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import {
     Table,
     TableBody,
@@ -19,10 +21,22 @@ import { type AdminExport, type CursorResponse } from '@/types';
 
 interface Props {
     exports: CursorResponse<AdminExport>;
+    filters: { search: string };
     can: { create: boolean };
 }
 
-export default function Index({ exports }: Props) {
+export default function Index({ exports, filters }: Props) {
+    const [search, setSearch] = useState(filters.search);
+
+    const submitSearch: FormEventHandler = (e) => {
+        e.preventDefault();
+        router.get(
+            route('exports.index'),
+            { search },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="My Exports" />
@@ -48,6 +62,18 @@ export default function Index({ exports }: Props) {
                     </>
                 }
             />
+
+            <form onSubmit={submitSearch} className="mb-4 flex gap-2">
+                <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search resource or format…"
+                    className="w-64"
+                />
+                <Button type="submit" variant="secondary">
+                    Search
+                </Button>
+            </form>
 
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>

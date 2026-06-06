@@ -14,7 +14,10 @@ class NotificationController extends Controller
     {
         $this->authorize('notifications.index');
 
+        $search = trim((string) $request->string('search'));
+
         $notifications = $request->user()->notifications()
+            ->when($search !== '', fn ($q) => $q->where('data', 'like', "%{$search}%"))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->cursorPaginate(config('keen.pagination_size'))
@@ -22,6 +25,7 @@ class NotificationController extends Controller
 
         return Inertia::render('Notifications/Index', [
             'notifications' => cursorResponse($notifications, fn (DatabaseNotification $n) => $this->row($n)),
+            'filters' => ['search' => $search],
         ]);
     }
 

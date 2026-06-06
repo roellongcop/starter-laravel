@@ -20,14 +20,20 @@ class ExportController extends Controller
     {
         $this->authorize('viewAny', UserExport::class);
 
+        $search = trim((string) $request->string('search'));
+
         $exports = UserExport::query()
             ->where('user_id', $request->user()->id)
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
+                ->where('resource', 'like', "%{$search}%")
+                ->orWhere('format', 'like', "%{$search}%")))
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
 
         return Inertia::render('Exports/Index', [
             'exports' => cursorResponse($exports, fn (UserExport $e) => $this->row($e)),
+            'filters' => ['search' => $search],
             'can' => ['create' => $request->user()->can('exports.create')],
         ]);
     }

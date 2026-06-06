@@ -19,13 +19,17 @@ class BackupController extends Controller
     {
         $this->authorize('viewAny', Backup::class);
 
+        $search = trim((string) $request->string('search'));
+
         $backups = Backup::query()
+            ->when($search !== '', fn ($q) => $q->where('filename', 'like', "%{$search}%"))
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
 
         return Inertia::render('Backups/Index', [
             'backups' => cursorResponse($backups, fn (Backup $b) => $this->row($b)),
+            'filters' => ['search' => $search],
             'can' => [
                 'create' => $request->user()->can('backups.create'),
                 'restore' => $request->user()->can('backups.update'),
