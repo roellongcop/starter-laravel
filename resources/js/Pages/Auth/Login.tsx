@@ -1,11 +1,12 @@
-import Checkbox from '@/Components/Checkbox';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+
+import InputError from '@/Components/InputError';
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import GuestLayout from '@/Layouts/GuestLayout';
 
 export default function Login({
     status,
@@ -32,86 +33,81 @@ export default function Login({
         <GuestLayout>
             <Head title="Log in" />
 
+            <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+            <p className="mb-6 mt-1 text-sm text-muted-foreground">
+                Log in to continue to the dashboard.
+            </p>
+
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mb-4 rounded-md border bg-muted px-4 py-3 text-sm">
                     {status}
                 </div>
             )}
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
+                    <Label htmlFor="email">Email</Label>
+                    <Input
                         id="email"
                         type="email"
                         name="email"
                         value={data.email}
-                        className="mt-1 block w-full"
+                        className="mt-1"
                         autoComplete="username"
-                        isFocused={true}
+                        autoFocus
                         onChange={(e) => setData('email', e.target.value)}
                     />
-
-                    <InputError message={errors.email} className="mt-2" />
+                    <InputError message={errors.email} className="mt-1" />
                 </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
+                <div>
+                    <Label htmlFor="password">Password</Label>
+                    <Input
                         id="password"
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full"
+                        className="mt-1"
                         autoComplete="current-password"
                         onChange={(e) => setData('password', e.target.value)}
                     />
-
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError message={errors.password} className="mt-1" />
                 </div>
 
-                <div className="mt-4 block">
-                    <label className="flex items-center">
-                        <Checkbox
-                            name="remember"
-                            checked={data.remember}
-                            onChange={(e) =>
-                                setData(
-                                    'remember',
-                                    (e.target.checked || false) as false,
-                                )
-                            }
-                        />
-                        <span className="ms-2 text-sm text-gray-600 dark:text-gray-400">
-                            Remember me
-                        </span>
-                    </label>
+                <div className="flex items-center gap-2">
+                    <Checkbox
+                        id="remember"
+                        checked={data.remember}
+                        onCheckedChange={(v) => setData('remember', v === true)}
+                    />
+                    <Label
+                        htmlFor="remember"
+                        className="text-sm font-normal text-muted-foreground"
+                    >
+                        Remember me
+                    </Label>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    {canResetPassword && (
+                <Button type="submit" className="w-full" disabled={processing}>
+                    Log in
+                </Button>
+
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    {canResetPassword ? (
                         <Link
                             href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
+                            className="transition-colors hover:text-foreground"
                         >
                             Forgot your password?
                         </Link>
+                    ) : (
+                        <span />
                     )}
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
-                </div>
-
-                <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                    Need help?{' '}
                     <Link
                         href={route('contact')}
-                        className="rounded-md underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:hover:text-gray-100"
+                        className="transition-colors hover:text-foreground"
                     >
-                        Contact us
+                        Contact
                     </Link>
                 </div>
             </form>

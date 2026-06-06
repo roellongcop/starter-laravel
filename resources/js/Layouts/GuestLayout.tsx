@@ -1,38 +1,55 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import ThemeStyle from '@/Components/ThemeStyle';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 
+import { useTheme } from '@/Components/ThemeProvider';
+import ThemeStyle from '@/Components/ThemeStyle';
+import YinYang from '@/Components/YinYang';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
+
 export default function Guest({ children }: PropsWithChildren) {
     const brand = usePage().props.brand;
-    // Prefer the wide logo here, then the square one, else the bundled SVG.
-    const logoUrl = brand.landscape_logo_url ?? brand.square_logo_url;
+    const { toggleTheme } = useTheme();
 
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0 dark:bg-gray-900">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10 text-foreground">
             {brand.favicon_url && (
                 <Head>
                     <link rel="icon" href={brand.favicon_url} />
                 </Head>
             )}
             <ThemeStyle />
-            <div>
-                <Link href="/">
-                    {logoUrl ? (
-                        <img
-                            src={logoUrl}
-                            alt="Logo"
-                            className="h-20 w-auto object-contain"
-                        />
-                    ) : (
-                        <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
-                    )}
-                </Link>
+
+            <div className="absolute right-4 top-4">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleTheme}
+                    title="Toggle yin / yang"
+                    aria-label="Toggle light and dark theme"
+                >
+                    <YinYang className="h-5 w-5" />
+                </Button>
             </div>
 
-            <div className="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg dark:bg-gray-800">
-                {children}
-            </div>
+            <Link
+                href="/"
+                className="flex items-center gap-2 text-lg font-bold tracking-tight"
+            >
+                <YinYang className="h-10 w-10" />
+                <span>RL</span>
+            </Link>
+
+            <Card className="mt-6 w-full sm:max-w-md">
+                <CardContent className="pt-6">{children}</CardContent>
+            </Card>
+
+            <Link
+                href="/"
+                className="mt-6 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+                ← Back to portfolio
+            </Link>
         </div>
     );
 }

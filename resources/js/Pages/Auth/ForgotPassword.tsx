@@ -1,11 +1,12 @@
-import InputError from '@/Components/InputError';
-import PrimaryButton from '@/Components/PrimaryButton';
-import SecondaryButton from '@/Components/SecondaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
-import { type PageProps } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+
+import InputError from '@/Components/InputError';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import GuestLayout from '@/Layouts/GuestLayout';
+import { type PageProps } from '@/types';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     const { flash } = usePage<PageProps>().props;
@@ -27,51 +28,59 @@ export default function ForgotPassword({ status }: { status?: string }) {
         <GuestLayout>
             <Head title="Forgot Password" />
 
-            <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                Forgot your password? No problem. Just let us know your email
-                address and we will email you a password reset link that will
-                allow you to choose a new one. You can also peek at your
-                password hint as a reminder.
-            </div>
+            <h1 className="text-2xl font-bold tracking-tight">
+                Forgot password
+            </h1>
+            <p className="mb-6 mt-1 text-sm text-muted-foreground">
+                Enter your email and we'll send a reset link. You can also peek
+                at your password hint as a reminder.
+            </p>
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600 dark:text-green-400">
+                <div className="mb-4 rounded-md border bg-muted px-4 py-3 text-sm">
                     {status}
                 </div>
             )}
 
             {flash?.hint && (
-                <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+                <div className="mb-4 rounded-md border bg-muted px-4 py-3 text-sm">
                     <span className="font-medium">Password hint:</span>{' '}
                     {flash.hint}
                 </div>
             )}
 
-            <form onSubmit={submit}>
-                <TextInput
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('email', e.target.value)}
-                />
+            <form onSubmit={submit} className="space-y-4">
+                <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        name="email"
+                        value={data.email}
+                        className="mt-1"
+                        autoFocus
+                        onChange={(e) => setData('email', e.target.value)}
+                    />
+                    <InputError message={errors.email} className="mt-1" />
+                </div>
 
-                <InputError message={errors.email} className="mt-2" />
-
-                <div className="mt-4 flex items-center justify-end gap-2">
-                    <SecondaryButton
+                <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button
                         type="button"
+                        variant="outline"
                         disabled={processing}
                         onClick={showHint}
+                        className="sm:flex-1"
                     >
                         Show password hint
-                    </SecondaryButton>
-
-                    <PrimaryButton disabled={processing}>
-                        Email Password Reset Link
-                    </PrimaryButton>
+                    </Button>
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="sm:flex-1"
+                    >
+                        Email reset link
+                    </Button>
                 </div>
             </form>
         </GuestLayout>
