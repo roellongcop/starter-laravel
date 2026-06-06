@@ -82,6 +82,7 @@ gated to the **developer role** (`viewTelescope` in `TelescopeServiceProvider`, 
 
 ## Related
 
+- [Deployment](deployment.md) — taking this stack to a VPS or shared cPanel hosting.
 - [CI & hooks](ci-and-hooks.md)
 - [Backups, exports & imports](../features/backups-exports-imports.md)
 - [Files & media](../features/files-and-media.md)

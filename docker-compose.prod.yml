@@ -1,0 +1,52 @@
+# Production override for a Docker-capable VPS. Layer it on top of the base file:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# What it changes vs. the dev stack (see docs/infrastructure/deployment.md):
+#   - restart: always (survive host reboots, not just crashes)
+#   - stops publishing the database, SeaweedFS, and phpMyAdmin ports to the host —
+#     only nginx is reachable, and you front *that* with a TLS reverse proxy
+#   - parks phpMyAdmin behind a "debug" profile so it isn't started by default
+#
+# The app code is still bind-mounted from the host, so deploy = `git pull` on the
+# host + `composer install --no-dev --optimize-autoloader` + `npm run build` +
+# `php artisan migrate --force` + `php artisan optimize` (full runbook in the doc).
+services:
+  app:
+    restart: always
+
+  nginx:
+    restart: always
+    # Front this with a reverse proxy (Caddy/Traefik/host-nginx + certbot) for TLS;
+    # the container itself only speaks :80. Override APP_PORT to bind to localhost,
+    # e.g. APP_PORT=127.0.0.1:8080 so only the proxy can reach it.
+
+  queue:
+    restart: always
+
+  scheduler:
+    restart: always
+
+  mariadb:
+    restart: always
+    # Don't expose the database to the host/internet — the app reaches it on the
+    # internal appnet as mariadb:3306.
+    ports: !reset []
+
+  seaweedfs:
+    restart: always
+    # Object storage stays internal; the app reaches it at http://seaweedfs:8333.
+    ports: !reset []
+
+  # Production sends mail via real SMTP, so the local Mailpit sink isn't needed.
+  # Park it behind the "debug" profile so it isn't started (and its inbox isn't
+  # exposed) by default.
+  mailpit:
+    profiles: ["debug"]
+    restart: always
+
+  # phpMyAdmin is a convenience, not a production service. Keep it off by default;
+  # start it only when you need it:  docker compose --profile debug up -d phpmyadmin
+  phpmyadmin:
+    profiles: ["debug"]
+    restart: always

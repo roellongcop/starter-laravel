@@ -131,6 +131,12 @@ the `backups` **table** — spatie's `backup:clean`/`backup:monitor` are **not**
 folder archives are relocated out of). Run/test any via `make backup`/`backup-prune`/`backup-monitor`.
 Deep dive: `docs/features/backups-exports-imports.md`.
 
+**Deploying.** On a Docker VPS the `queue`/`scheduler` services run as-is — layer
+`docker-compose.prod.yml` on top (`-f docker-compose.yml -f docker-compose.prod.yml`) to harden
+config + lock down ports. On shared cPanel hosting there are no daemons: flip `*_DISK_DRIVER=local`,
+seed from `.env.cpanel.example`, and drive the scheduler + queue from cron. Runbook:
+`docs/infrastructure/deployment.md`.
+
 **User feedback**: controllers `->with('success'|'error', …)`; `HandleInertiaRequests` shares `flash`
 as an `Inertia::always()` prop so partial reloads (`router.reload({ only: [...] })`) re-evaluate the
 one-shot bag to null instead of re-toasting it; `app.tsx` turns it into toasts globally
