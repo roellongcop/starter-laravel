@@ -9,6 +9,7 @@ use App\Settings\EmailSettings;
 use App\Settings\SystemSettings;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,6 +34,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Behind an HTTPS proxy/tunnel nginx is reached over plain HTTP,
+        // so generated asset/route URLs would be http:// and the browser blocks them as mixed content.
+        // Force https when APP_URL is https; harmless for local http dev.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
+
         Vite::prefetch(concurrency: 3);
 
         $this->registerAuditColumnsMacro();
