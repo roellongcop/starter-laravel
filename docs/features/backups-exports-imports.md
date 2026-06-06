@@ -13,7 +13,7 @@ everyone but the operator while it runs.
 
 - `app/Jobs/{CreateBackupJob,RestoreBackupJob}` + export/import jobs — queued workers that flip a
   `*Status` enum and capture failures into `error_message`.
-- `app/Jobs/{GenerateExportJob,ProcessImportJob}` — the **sync/small** single-file path.
+- `app/Jobs/GenerateExportJob` — the export **sync/small** single-file path (imports always queue).
 - `app/Jobs/{DispatchExportJob,ExportShardJob,FinalizeExportJob}` and
   `{DispatchImportJob,ImportShardJob,FinalizeImportJob}` — the **sharded** path for large jobs.
 - `app/Http/Controllers/{BackupController,ExportController,ImportController}.php` — the resources.
@@ -27,8 +27,11 @@ everyone but the operator while it runs.
 - **Status tracking.** Each job flips a `*Status` enum (Pending → Processing → Completed/Failed) and
   writes any exception into the `error_message` column, which the grid surfaces. Completion fires a
   notification.
-- **Sync vs queue.** Exports/imports below `config('keen.*_sync_threshold')` run synchronously
-  (instant download) via `GenerateExportJob`/`ProcessImportJob`; above it they queue.
+- **Sync vs queue.** Exports below `config('keen.export_sync_threshold')` run synchronously
+  (instant download) via `GenerateExportJob`; above it they queue. **Imports always queue** via
+  `DispatchImportJob` — the preview page only samples the first rows (`UsersPreview` + `WithLimit`)
+  and the process action just enqueues, so the request never parses the whole upload (counting a
+  100k-row file in-request was the bottleneck). The real total is tallied in the background.
 - **Sharding (large jobs).** A queued export/import is split into shards of
   `config('keen.export_shard_size')` / `import_shard_size` rows (default 5000) and run as a
   `Bus::batch`. A coordinator (`Dispatch{Export,Import}Job`) builds the shards — exports by id-range
@@ -46,7 +49,7 @@ everyone but the operator while it runs.
   **real users-table column names** as headers — `id, name, email, username, user_status, password,
   password_hint, created_at, updated_at` — so a downloaded file can be re-uploaded straight through
   the import (Excel's `slug` heading formatter keys rows by these). The import
-  (`UsersImport::importRow`, shared by `ProcessImportJob` and `ImportShardJob`) upserts on `email`
+  (`UsersImport::importRow`, used by `ImportShardJob`) upserts on `email`
   and consumes `name`/`email`/`username`/`user_status`/`password`/`password_hint` (it also still
   accepts a legacy `status` header). The exported `password` is the **bcrypt hash**; re-importing
   preserves it because Laravel's `hashed` cast skips already-hashed values, so logins survive a

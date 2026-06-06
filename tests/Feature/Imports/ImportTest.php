@@ -3,7 +3,6 @@
 use App\Enums\SystemRole;
 use App\Enums\UserImportStatus;
 use App\Jobs\DispatchImportJob;
-use App\Jobs\ProcessImportJob;
 use App\Models\User;
 use App\Models\UserImport;
 use App\Notifications\ImportCompleteNotification;
@@ -37,8 +36,8 @@ it('uploads a file and creates a pending import then previews it', function (): 
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('Imports/Preview')
-            ->where('rowCount', 1)
-            ->where('headings', ['name', 'email']));
+            ->where('headings', ['name', 'email'])
+            ->where('rows', fn ($rows) => count($rows) === 1));
 });
 
 it('processes an import, creating users and counting failures', function (): void {
@@ -56,7 +55,7 @@ it('processes an import, creating users and counting failures', function (): voi
         'status' => UserImportStatus::Pending,
     ]);
 
-    (new ProcessImportJob($import))->handle();
+    (new DispatchImportJob($import, notify: false))->handle();
 
     $import->refresh();
     expect($import->status)->toBe(UserImportStatus::Done)
@@ -92,8 +91,61 @@ it('lets the owner download the original file but forbids others / 404s when mis
     $this->get(route('imports.download', $import))->assertNotFound();
 });
 
+it('discards a pending import, removing the row and its file', function (): void {
+    Storage::fake('imports');
+    $owner = actingAsRole(SystemRole::Developer);
+
+    Storage::disk('imports')->put('2026/06/users.csv', "name,email\nAda,ada@example.com\n");
+    $import = UserImport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'resource' => 'users',
+        'filename' => '2026/06/users.csv',
+        'status' => UserImportStatus::Pending,
+    ]);
+
+    $this->delete(route('imports.destroy', $import))
+        ->assertRedirect(route('imports.index'))
+        ->assertSessionHas('success');
+
+    expect(UserImport::count())->toBe(0)
+        ->and(Storage::disk('imports')->exists('2026/06/users.csv'))->toBeFalse();
+});
+
+it('owner-gates import deletion', function (): void {
+    Storage::fake('imports');
+    $owner = actingAsRole(SystemRole::Developer);
+
+    $import = UserImport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'resource' => 'users',
+        'filename' => 'users.csv',
+        'status' => UserImportStatus::Pending,
+    ]);
+
+    $this->actingAs(User::factory()->create());
+    $this->delete(route('imports.destroy', $import))->assertForbidden();
+    expect(UserImport::whereKey($import->id)->exists())->toBeTrue();
+});
+
+it('refuses to delete a running import', function (): void {
+    Storage::fake('imports');
+    $owner = actingAsRole(SystemRole::Developer);
+
+    $import = UserImport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'resource' => 'users',
+        'filename' => 'users.csv',
+        'status' => UserImportStatus::Running,
+    ]);
+
+    $this->delete(route('imports.destroy', $import))->assertStatus(409);
+    expect(UserImport::whereKey($import->id)->exists())->toBeTrue();
+});
+
 it('routes a large import through the sharded dispatcher', function (): void {
-    config(['keen.import_sync_threshold' => 0]); // force the queued path
     Bus::fake();
     Storage::fake('imports');
     $owner = actingAsRole(SystemRole::Developer);
@@ -113,7 +165,6 @@ it('routes a large import through the sharded dispatcher', function (): void {
 });
 
 it('queues a large import via the process route and notifies', function (): void {
-    config(['keen.import_sync_threshold' => 0]); // force the queued path
     Notification::fake();
     Storage::fake('imports');
     $owner = actingAsRole(SystemRole::Developer);
@@ -134,7 +185,7 @@ it('queues a large import via the process route and notifies', function (): void
 });
 
 it('shards a large import, tallies counts, and merges one error report', function (): void {
-    config(['keen.import_sync_threshold' => 0, 'keen.import_shard_size' => 2]);
+    config(['keen.import_shard_size' => 2]);
     Notification::fake();
     Storage::fake('imports');
     $owner = actingAsRole(SystemRole::Developer);

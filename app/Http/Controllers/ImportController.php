@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserImportStatus;
 use App\Http\Requests\StoreImportRequest;
-use App\Imports\UsersImport;
+use App\Imports\UsersPreview;
 use App\Jobs\DispatchImportJob;
-use App\Jobs\ProcessImportJob;
 use App\Models\UserImport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,14 +68,13 @@ class ImportController extends Controller
         $this->authorize('view', $import);
         abort_unless($import->user_id === $request->user()->id, 403);
 
-        $sheets = Excel::toArray(new UsersImport, $import->filename, 'imports');
-        $rows = collect($sheets[0] ?? []);
+        // Sample only the first rows (WithLimit) — never parse the whole upload here.
+        $rows = collect(Excel::toArray(new UsersPreview, $import->filename, 'imports')[0] ?? []);
 
         return Inertia::render('Imports/Preview', [
             'import' => $this->row($import),
             'headings' => array_keys((array) $rows->first()),
-            'rows' => $rows->take(10)->values(),
-            'rowCount' => $rows->count(),
+            'rows' => $rows->values(),
         ]);
     }
 
@@ -85,21 +83,28 @@ class ImportController extends Controller
         $this->authorize('create', UserImport::class);
         abort_unless($import->user_id === $request->user()->id, 403);
 
-        // Small imports run inline; larger ones queue + notify on completion.
-        $sheets = Excel::toArray(new UsersImport, $import->filename, 'imports');
-        $count = count($sheets[0] ?? []);
-
-        if ($count <= config('keen.import_sync_threshold')) {
-            ProcessImportJob::dispatchSync($import, notify: false);
-
-            return redirect()->route('imports.index')->with('success', 'Import processed.');
-        }
-
-        // Larger imports shard into ~5k-row slices processed as a batch.
+        // Always queue: parsing/counting happens in the background coordinator, so the
+        // request returns instantly even for 100k-row files. The list shows live progress.
         DispatchImportJob::dispatch($import);
 
         return redirect()->route('imports.index')
             ->with('success', 'Import queued — you will be notified when it finishes.');
+    }
+
+    /** Discard an import: drop its uploaded file + error report, then the record. */
+    public function destroy(Request $request, UserImport $import): RedirectResponse
+    {
+        $this->authorize('delete', $import);
+        abort_unless($import->user_id === $request->user()->id, 403);
+        abort_if($import->status === UserImportStatus::Running, 409, 'Cannot delete a running import.');
+
+        foreach (array_filter([$import->filename, $import->error_report_path]) as $path) {
+            Storage::disk('imports')->delete($path);
+        }
+        $import->delete();
+
+        // Cancel comes from this row's preview page, so redirect to the list (not back()).
+        return redirect()->route('imports.index')->with('success', 'Import discarded.');
     }
 
     /** Stream the originally uploaded import file back to its owner. */

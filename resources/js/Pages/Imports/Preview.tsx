@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
@@ -18,15 +18,9 @@ interface Props {
     import: AdminImport;
     headings: string[];
     rows: Record<string, unknown>[];
-    rowCount: number;
 }
 
-export default function Preview({
-    import: imp,
-    headings,
-    rows,
-    rowCount,
-}: Props) {
+export default function Preview({ import: imp, headings, rows }: Props) {
     const process = () => router.post(route('imports.process', imp.token));
 
     return (
@@ -34,11 +28,18 @@ export default function Preview({
             <Head title="Import Preview" />
             <PageHeader
                 title="Import Preview"
-                description={`${rowCount} rows detected — review, then process.`}
+                description="Review the first rows, then process — the full file is counted in the background."
                 actions={
                     <>
-                        <Button variant="outline" asChild>
-                            <Link href={route('imports.index')}>Cancel</Link>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                router.delete(
+                                    route('imports.destroy', imp.token),
+                                )
+                            }
+                        >
+                            Cancel
                         </Button>
                         <Button onClick={process}>Process import</Button>
                     </>

@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Storage;
  * Validates + upserts one slice (≤ keen.import_shard_size rows) of an import, then
  * atomically bumps the import's success/failed counts. Failures for the slice are
  * written to a header-less per-shard CSV that FinalizeImportJob concatenates into
- * one report. Each row is validated + upserted via UsersImport::importRow (shared
- * with the sync ProcessImportJob), keyed on email with the model's casts intact.
+ * one report. Each row is validated + upserted via UsersImport::importRow, keyed
+ * on email with the model's casts intact.
  */
 class ImportShardJob implements ShouldQueue
 {

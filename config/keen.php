@@ -16,17 +16,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Export / import sync thresholds
+    | Export sync threshold
     |--------------------------------------------------------------------------
     |
-    | Jobs at or below the threshold run synchronously (immediate download);
-    | larger ones queue (RUNNING→DONE) and notify the owner on completion.
+    | Exports at or below the threshold run synchronously (immediate download);
+    | larger ones queue (RUNNING→DONE) and notify the owner on completion. The
+    | count comes cheaply from SQL. Imports always queue — counting an upload
+    | would mean parsing the whole file in the request, which we avoid.
     |
     */
 
     'export_sync_threshold' => (int) env('EXPORT_SYNC_THRESHOLD', 100),
-
-    'import_sync_threshold' => (int) env('IMPORT_SYNC_THRESHOLD', 100),
 
     /*
     |--------------------------------------------------------------------------

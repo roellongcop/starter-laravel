@@ -12,8 +12,8 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 /**
  * Marker import used with Excel::toCollection()/toArray() so rows are keyed by
  * their (slug-formatted) header row. The actual validation/upsert/counting runs
- * in ProcessImportJob (sync) and ImportShardJob (sharded) via importRow() — kept
- * here so the two paths share one definition of the accepted columns.
+ * in ImportShardJob via importRow() — kept here so the import path has one
+ * definition of the accepted columns.
  *
  * Accepted headers are the real users-table column names, matching what
  * UsersExport emits so a spreadsheet export round-trips straight back in.

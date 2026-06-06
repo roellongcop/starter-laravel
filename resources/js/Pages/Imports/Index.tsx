@@ -1,8 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Download, FileWarning, Plus, RefreshCw } from 'lucide-react';
+import { Download, FileWarning, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { FormEventHandler, useState } from 'react';
 
 import Can from '@/Components/Can';
+import ConfirmDialog from '@/Components/ConfirmDialog';
 import CursorPager from '@/Components/CursorPager';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
@@ -28,11 +29,20 @@ interface Props {
 
 export default function Index({ imports, filters }: Props) {
     const [search, setSearch] = useState(filters.search);
+    const [confirm, setConfirm] = useState<AdminImport | null>(null);
 
     useStatusPoll(
         imports.data.map((i) => i.status),
         'imports',
     );
+
+    const remove = () => {
+        if (!confirm) return;
+        router.delete(route('imports.destroy', confirm.token), {
+            preserveScroll: true,
+        });
+        setConfirm(null);
+    };
 
     const submitSearch: FormEventHandler = (e) => {
         e.preventDefault();
@@ -167,6 +177,21 @@ export default function Index({ imports, filters }: Props) {
                                                 </a>
                                             </Button>
                                         )}
+                                        {i.status !== 'Running' && (
+                                            <Can ability="imports.delete">
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    title="Delete import"
+                                                    aria-label="Delete import"
+                                                    onClick={() =>
+                                                        setConfirm(i)
+                                                    }
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </Can>
+                                        )}
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -181,6 +206,16 @@ export default function Index({ imports, filters }: Props) {
                     prevCursor={imports.prev_cursor}
                 />
             </div>
+
+            <ConfirmDialog
+                open={confirm !== null}
+                onOpenChange={(o) => !o && setConfirm(null)}
+                title="Delete this import?"
+                description="This permanently removes the import record, its uploaded file, and any error report."
+                confirmLabel="Delete"
+                destructive
+                onConfirm={remove}
+            />
         </AuthenticatedLayout>
     );
 }

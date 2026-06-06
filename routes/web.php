@@ -138,6 +138,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('imports/{import}/preview', [ImportController::class, 'preview'])->name('imports.preview');
     Route::post('imports/{import}/process', [ImportController::class, 'process'])->name('imports.process');
     Route::get('imports/{import}/errors', [ImportController::class, 'errors'])->name('imports.errors');
+    Route::delete('imports/{import}', [ImportController::class, 'destroy'])->name('imports.destroy');
 });
 
 require __DIR__.'/auth.php';

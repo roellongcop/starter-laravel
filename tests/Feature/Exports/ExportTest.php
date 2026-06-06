@@ -5,8 +5,8 @@ use App\Enums\UserExportStatus;
 use App\Enums\UserImportStatus;
 use App\Enums\UserStatus;
 use App\Jobs\DispatchExportJob;
+use App\Jobs\DispatchImportJob;
 use App\Jobs\GenerateExportJob;
-use App\Jobs\ProcessImportJob;
 use App\Models\User;
 use App\Models\UserExport;
 use App\Models\UserImport;
@@ -206,7 +206,7 @@ it('round-trips a csv export back through the import', function (): void {
         'filename' => 'round-trip.csv',
         'status' => UserImportStatus::Pending,
     ]);
-    (new ProcessImportJob($import, notify: false))->handle();
+    (new DispatchImportJob($import, notify: false))->handle();
 
     $restored = User::where('email', 'round-trip@example.com')->first();
     expect($restored)->not->toBeNull()
