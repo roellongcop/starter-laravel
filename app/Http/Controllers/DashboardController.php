@@ -26,7 +26,10 @@ class DashboardController extends Controller
         $user = $request->user();
 
         return Inertia::render('Dashboard', [
-            'metrics' => $this->metrics($user),
+            // Deferred: the tiles are ~12 COUNT queries (incl. jobs/notifications,
+            // which grow), so the page shell + recent users paint immediately and
+            // the metrics load in a follow-up request behind a skeleton.
+            'metrics' => Inertia::defer(fn () => $this->metrics($user)),
             'recent' => [
                 'users' => User::query()->latest()->take(5)->get(['token', 'name', 'email'])
                     ->map(fn ($u) => ['token' => $u->token, 'name' => $u->name, 'email' => $u->email]),

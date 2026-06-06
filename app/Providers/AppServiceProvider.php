@@ -7,6 +7,7 @@ use App\Enums\SystemRole;
 use App\Models\User;
 use App\Settings\EmailSettings;
 use App\Settings\SystemSettings;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
@@ -34,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Surface N+1s as exceptions outside production so a missing with()/load()
+        // fails a test or dev request instead of silently shipping. No-op in prod.
+        Model::preventLazyLoading(! $this->app->isProduction());
+
         // Behind an HTTPS proxy/tunnel nginx is reached over plain HTTP,
         // so generated asset/route URLs would be http:// and the browser blocks them as mixed content.
         // Force https when APP_URL is https; harmless for local http dev.

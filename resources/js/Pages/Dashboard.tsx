@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Deferred, Head, Link } from '@inertiajs/react';
 import {
     Archive,
     Bell,
@@ -35,10 +35,31 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 interface Props {
-    metrics: DashboardMetric[];
+    metrics?: DashboardMetric[];
     recent: {
         users: { token: string; name: string; email: string }[];
     };
+}
+
+const METRICS_GRID =
+    'mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+
+function MetricsSkeleton() {
+    return (
+        <div className={METRICS_GRID}>
+            {Array.from({ length: 8 }).map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                    <CardContent className="flex items-center justify-between p-6">
+                        <div className="space-y-2">
+                            <div className="h-4 w-20 rounded bg-muted" />
+                            <div className="h-8 w-12 rounded bg-muted" />
+                        </div>
+                        <div className="h-8 w-8 rounded-full bg-muted" />
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    );
 }
 
 export default function Dashboard({ metrics, recent }: Props) {
@@ -51,28 +72,30 @@ export default function Dashboard({ metrics, recent }: Props) {
                 description="Overview of your admin resources."
             />
 
-            <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {metrics.map((m) => {
-                    const Icon = ICONS[m.icon] ?? Circle;
-                    return (
-                        <Link key={m.label} href={m.href}>
-                            <Card className="transition-colors hover:bg-accent">
-                                <CardContent className="flex items-center justify-between p-6">
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">
-                                            {m.label}
-                                        </p>
-                                        <p className="text-3xl font-semibold">
-                                            {m.count}
-                                        </p>
-                                    </div>
-                                    <Icon className="h-8 w-8 text-muted-foreground/60" />
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    );
-                })}
-            </div>
+            <Deferred data="metrics" fallback={<MetricsSkeleton />}>
+                <div className={METRICS_GRID}>
+                    {(metrics ?? []).map((m) => {
+                        const Icon = ICONS[m.icon] ?? Circle;
+                        return (
+                            <Link key={m.label} href={m.href}>
+                                <Card className="transition-colors hover:bg-accent">
+                                    <CardContent className="flex items-center justify-between p-6">
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">
+                                                {m.label}
+                                            </p>
+                                            <p className="text-3xl font-semibold">
+                                                {m.count}
+                                            </p>
+                                        </div>
+                                        <Icon className="h-8 w-8 text-muted-foreground/60" />
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </Deferred>
 
             <Card>
                 <CardHeader>

@@ -4,6 +4,10 @@ use App\Mail\ContactMessage;
 use App\Settings\EmailSettings;
 use Illuminate\Support\Facades\Mail;
 
+it('renders the contact page', function (): void {
+    $this->get('/contact')->assertOk();
+});
+
 it('mails a contact submission to the site inbox with reply-to the visitor', function (): void {
     Mail::fake();
 
