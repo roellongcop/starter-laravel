@@ -8,7 +8,7 @@ return new class extends SettingsMigration
     public function up(): void
     {
         // System
-        $this->migrator->add('system.app_name', 'Keen Admin');
+        $this->migrator->add('system.app_name', 'RL Studio');
         $this->migrator->add('system.timezone', 'UTC');
         $this->migrator->add('system.pagination_size', 20);
         $this->migrator->add('system.auto_logout_seconds', 0);
@@ -18,7 +18,7 @@ return new class extends SettingsMigration
 
         // Email
         $this->migrator->add('email.from_address', 'hello@example.com');
-        $this->migrator->add('email.from_name', 'Keen Admin');
+        $this->migrator->add('email.from_name', 'RL Studio');
         // Empty by default: the EmailSettings override stays dormant and env
         // (MAIL_HOST=mailpit in dev) drives mail until an admin configures real SMTP.
         $this->migrator->add('email.smtp_host', '');

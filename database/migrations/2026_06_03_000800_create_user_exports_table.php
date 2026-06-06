@@ -17,6 +17,11 @@ return new class extends Migration
             $table->string('resource')->default('users');
             $table->json('filters')->nullable();
             $table->unsignedBigInteger('row_count')->nullable();
+            // Progress for sharded exports: total_rows is set up front, shards
+            // bump processed_rows so the grid can show a live bar. row_count stays
+            // the final authoritative count written on completion.
+            $table->unsignedBigInteger('total_rows')->nullable();
+            $table->unsignedBigInteger('processed_rows')->default(0);
             $table->string('filename')->nullable();
             $table->string('status')->default(UserExportStatus::Pending->value);
             $table->text('error_message')->nullable();

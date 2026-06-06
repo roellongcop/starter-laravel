@@ -23,7 +23,7 @@ class MonitoringSeeder extends Seeder
                 return;
             }
 
-            $user->notify(new AdminNotification('Welcome to Keen Admin.', NotificationType::Success, '/dashboard'));
+            $user->notify(new AdminNotification('Welcome to RL Studio.', NotificationType::Success, '/dashboard'));
             $user->notify(new AdminNotification('A new user registered.', NotificationType::Info, '/users'));
             $user->notify(new AdminNotification('Backup completed.', NotificationType::System));
         });

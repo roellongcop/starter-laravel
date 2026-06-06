@@ -1,27 +1,18 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
-
-import { type Theme, useTheme } from '@/Components/ThemeProvider';
-
-const NEXT: Record<Theme, Theme> = {
-    light: 'dark',
-    dark: 'system',
-    system: 'light',
-};
+import { useTheme } from '@/Components/ThemeProvider';
+import YinYang from '@/Components/YinYang';
 
 export default function ThemeToggle() {
-    const { theme, setTheme } = useTheme();
-
-    const Icon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
+    const { toggleTheme } = useTheme();
 
     return (
         <button
             type="button"
-            onClick={() => setTheme(NEXT[theme])}
+            onClick={toggleTheme}
             className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            title={`Theme: ${theme} (click to change)`}
-            aria-label="Toggle theme"
+            title="Toggle yin / yang"
+            aria-label="Toggle light and dark theme"
         >
-            <Icon className="h-5 w-5" />
+            <YinYang className="h-5 w-5" />
         </button>
     );
 }
