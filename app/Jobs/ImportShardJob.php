@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\User;
+use App\Imports\UsersImport;
 use App\Models\UserImport;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
@@ -11,15 +11,13 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 /**
  * Validates + upserts one slice (≤ keen.import_shard_size rows) of an import, then
  * atomically bumps the import's success/failed counts. Failures for the slice are
  * written to a header-less per-shard CSV that FinalizeImportJob concatenates into
- * one report. Per-row updateOrCreate keeps the User model's password hashing and
- * email-keyed upsert intact (no batch-insert mutator bypass).
+ * one report. Each row is validated + upserted via UsersImport::importRow (shared
+ * with the sync ProcessImportJob), keyed on email with the model's casts intact.
  */
 class ImportShardJob implements ShouldQueue
 {
@@ -52,31 +50,18 @@ class ImportShardJob implements ShouldQueue
         $failures = [];
 
         foreach ($this->rows as $i => $row) {
-            $data = ['name' => $row['name'] ?? null, 'email' => $row['email'] ?? null];
+            $errors = UsersImport::importRow($row);
 
-            $validator = Validator::make($data, [
-                'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'email', 'max:255'],
-            ]);
-
-            if ($validator->fails()) {
+            if ($errors !== []) {
                 $failures[] = [
                     'row' => $this->baseRow + $i + 2, // +1 header, +1 to 1-index
-                    'email' => $data['email'],
-                    'errors' => implode('; ', $validator->errors()->all()),
+                    'email' => $row['email'] ?? null,
+                    'errors' => implode('; ', $errors),
                 ];
 
                 continue;
             }
 
-            User::updateOrCreate(
-                ['email' => $data['email']],
-                [
-                    'name' => $data['name'],
-                    'password' => $row['password'] ?? Str::random(16),
-                    'user_status' => $row['status'] ?? 'Active',
-                ],
-            );
             $success++;
         }
 

@@ -41,11 +41,14 @@ class UsersExport implements FromQuery, WithHeadings, WithMapping
     }
 
     /**
+     * Real users-table column names so a spreadsheet export round-trips straight
+     * back through the import (which keys rows by these snake_case headers).
+     *
      * @return array<int, string>
      */
     public function headings(): array
     {
-        return ['ID', 'Name', 'Email', 'Username', 'Status', 'Roles', 'Created'];
+        return ['id', 'name', 'email', 'username', 'user_status', 'password', 'password_hint', 'created_at', 'updated_at'];
     }
 
     /**
@@ -60,8 +63,10 @@ class UsersExport implements FromQuery, WithHeadings, WithMapping
             $user->email,
             $user->username,
             $user->user_status->value,
-            $user->roles->pluck('name')->implode(', '),
+            $user->password,        // bcrypt hash; the import preserves it (no re-hash)
+            $user->password_hint,
             $user->created_at?->toDateTimeString(),
+            $user->updated_at?->toDateTimeString(),
         ];
     }
 }

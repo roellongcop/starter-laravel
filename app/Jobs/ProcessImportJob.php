@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Enums\UserImportStatus;
 use App\Imports\UsersImport;
-use App\Models\User;
 use App\Models\UserImport;
 use App\Notifications\ImportCompleteNotification;
 use Illuminate\Bus\Queueable;
@@ -13,8 +12,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProcessImportJob implements ShouldQueue
@@ -40,31 +37,18 @@ class ProcessImportJob implements ShouldQueue
             $failures = [];
 
             foreach ($rows as $i => $row) {
-                $data = ['name' => $row['name'] ?? null, 'email' => $row['email'] ?? null];
+                $errors = UsersImport::importRow($row->toArray());
 
-                $validator = Validator::make($data, [
-                    'name' => ['required', 'string', 'max:255'],
-                    'email' => ['required', 'email', 'max:255'],
-                ]);
-
-                if ($validator->fails()) {
+                if ($errors !== []) {
                     $failures[] = [
                         'row' => $i + 2, // +1 header, +1 to 1-index
-                        'email' => $data['email'],
-                        'errors' => implode('; ', $validator->errors()->all()),
+                        'email' => $row['email'] ?? null,
+                        'errors' => implode('; ', $errors),
                     ];
 
                     continue;
                 }
 
-                User::updateOrCreate(
-                    ['email' => $data['email']],
-                    [
-                        'name' => $data['name'],
-                        'password' => $row['password'] ?? Str::random(16),
-                        'user_status' => $row['status'] ?? 'Active',
-                    ],
-                );
                 $success++;
             }
 

@@ -2,10 +2,14 @@
 
 use App\Enums\SystemRole;
 use App\Enums\UserExportStatus;
+use App\Enums\UserImportStatus;
+use App\Enums\UserStatus;
 use App\Jobs\DispatchExportJob;
 use App\Jobs\GenerateExportJob;
+use App\Jobs\ProcessImportJob;
 use App\Models\User;
 use App\Models\UserExport;
+use App\Models\UserImport;
 use App\Notifications\ExportReadyNotification;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -143,6 +147,75 @@ it('generates a csv file and marks the export done', function (): void {
     expect($export->status)->toBe(UserExportStatus::Done)
         ->and($export->row_count)->toBeGreaterThanOrEqual(4)
         ->and(Storage::disk('exports')->exists($export->filename))->toBeTrue();
+});
+
+it('exports spreadsheets with real column-name headers', function (): void {
+    Storage::fake('exports');
+    $owner = actingAsRole(SystemRole::Developer);
+    User::factory()->count(2)->create();
+
+    $export = UserExport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'format' => 'csv',
+        'resource' => 'users',
+        'filters' => [],
+        'status' => UserExportStatus::Pending,
+    ]);
+
+    (new GenerateExportJob($export, notify: false))->handle();
+
+    $csv = (string) Storage::disk('exports')->get($export->fresh()->filename);
+    // Real DB column names (not display labels) so the file re-imports as-is.
+    expect($csv)->toContain('"id","name","email","username","user_status","password","password_hint","created_at","updated_at"');
+});
+
+it('round-trips a csv export back through the import', function (): void {
+    Storage::fake('exports');
+    Storage::fake('imports');
+    $owner = actingAsRole(SystemRole::Developer);
+
+    $user = User::factory()->create([
+        'name' => 'Round Trip',
+        'email' => 'round-trip@example.com',
+        'username' => 'roundtrip',
+        'user_status' => UserStatus::Blocked->value,
+        'password_hint' => 'the usual',
+    ]);
+    $hash = $user->password;
+
+    // Export everyone to CSV via the sync path.
+    $export = UserExport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'format' => 'csv',
+        'resource' => 'users',
+        'filters' => [],
+        'status' => UserExportStatus::Pending,
+    ]);
+    (new GenerateExportJob($export, notify: false))->handle();
+    $csv = (string) Storage::disk('exports')->get($export->fresh()->filename);
+
+    // Drop the user, then feed the very file we exported straight back in.
+    $user->delete();
+    Storage::disk('imports')->put('round-trip.csv', $csv);
+    $import = UserImport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'resource' => 'users',
+        'filename' => 'round-trip.csv',
+        'status' => UserImportStatus::Pending,
+    ]);
+    (new ProcessImportJob($import, notify: false))->handle();
+
+    $restored = User::where('email', 'round-trip@example.com')->first();
+    expect($restored)->not->toBeNull()
+        ->and($restored->name)->toBe('Round Trip')
+        ->and($restored->username)->toBe('roundtrip')
+        ->and($restored->user_status)->toBe(UserStatus::Blocked)
+        ->and($restored->password_hint)->toBe('the usual')
+        ->and($restored->password)->toBe($hash) // preserved — the hashed cast skips re-hashing
+        ->and($import->fresh()->failed)->toBe(0);
 });
 
 it('owner-gates the token download', function (): void {
