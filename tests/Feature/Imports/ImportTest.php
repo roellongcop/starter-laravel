@@ -217,3 +217,50 @@ it('shards a large import, tallies counts, and merges one error report', functio
         ->and(substr_count($report, "\n"))->toBe(2); // header + 1 row
     Notification::assertSentTo($owner, ImportCompleteNotification::class);
 });
+
+it('assigns roles on import and fails rows naming an unknown role', function (): void {
+    Storage::fake('imports');
+    $owner = actingAsRole(SystemRole::Developer);
+
+    $csv = "name,email,roles\nGood,good@example.com,admin\nBad,bad@example.com,wizard\n";
+    Storage::disk('imports')->put('roles.csv', $csv);
+    $import = UserImport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'resource' => 'users',
+        'filename' => 'roles.csv',
+        'status' => UserImportStatus::Pending,
+    ]);
+
+    (new DispatchImportJob($import, notify: false))->handle();
+
+    $import->refresh();
+    expect($import->success)->toBe(1)
+        ->and($import->failed)->toBe(1)
+        ->and(User::where('email', 'good@example.com')->first()?->hasRole(SystemRole::Admin->value))->toBeTrue()
+        ->and(User::where('email', 'bad@example.com')->exists())->toBeFalse();
+
+    $report = (string) Storage::disk('imports')->get($import->error_report_path);
+    expect($report)->toContain('Unknown role')->toContain('wizard');
+});
+
+it('leaves existing roles intact when the import has no roles column', function (): void {
+    Storage::fake('imports');
+    $owner = actingAsRole(SystemRole::Developer);
+
+    $existing = User::factory()->create(['email' => 'keep@example.com']);
+    $existing->assignRole(SystemRole::Admin->value);
+
+    Storage::disk('imports')->put('norole.csv', "name,email\nKeep,keep@example.com\n");
+    $import = UserImport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'resource' => 'users',
+        'filename' => 'norole.csv',
+        'status' => UserImportStatus::Pending,
+    ]);
+
+    (new DispatchImportJob($import, notify: false))->handle();
+
+    expect($existing->fresh()->hasRole(SystemRole::Admin->value))->toBeTrue();
+});

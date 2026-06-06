@@ -48,7 +48,7 @@ class UsersExport implements FromQuery, WithHeadings, WithMapping
      */
     public function headings(): array
     {
-        return ['id', 'name', 'email', 'username', 'user_status', 'password', 'password_hint', 'created_at', 'updated_at'];
+        return ['id', 'name', 'email', 'username', 'user_status', 'roles', 'password', 'password_hint', 'created_at', 'updated_at'];
     }
 
     /**
@@ -63,6 +63,7 @@ class UsersExport implements FromQuery, WithHeadings, WithMapping
             $user->email,
             $user->username,
             $user->user_status->value,
+            $user->roles->pluck('name')->implode(', '),
             $user->password,        // bcrypt hash; the import preserves it (no re-hash)
             $user->password_hint,
             $user->created_at?->toDateTimeString(),

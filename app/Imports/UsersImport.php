@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Enums\UserStatus;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -21,14 +22,21 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class UsersImport implements WithHeadingRow
 {
     /**
-     * Validate one import row and upsert the user (keyed on email). Returns the
-     * list of validation error messages — empty when the row succeeded.
+     * Validate one import row and upsert the user (keyed on email), syncing roles
+     * when the row carries a `roles` column. Returns the list of validation error
+     * messages — empty when the row succeeded.
+     *
+     * Pass $validRoles (the known role names) to avoid a query per row; it falls
+     * back to looking them up when omitted.
      *
      * @param  array<string, mixed>  $row
+     * @param  array<int, string>|null  $validRoles
      * @return array<int, string>
      */
-    public static function importRow(array $row): array
+    public static function importRow(array $row, ?array $validRoles = null): array
     {
+        $validRoles ??= Role::query()->pluck('name')->all();
+
         // Accept the real column name (user_status) or the legacy 'status' header.
         $status = $row['user_status'] ?? $row['status'] ?? null;
 
@@ -52,9 +60,24 @@ class UsersImport implements WithHeadingRow
             return $validator->errors()->all();
         }
 
+        // Only touch roles when the file carries the column (so name/email-only
+        // imports never strip an existing user's roles). Reject unknown names up
+        // front so a typo fails the row instead of silently dropping access.
+        $hasRoles = array_key_exists('roles', $row);
+        $roleNames = collect(explode(',', (string) ($row['roles'] ?? '')))
+            ->map(fn ($r) => trim((string) $r))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($hasRoles && ($unknown = array_diff($roleNames, $validRoles)) !== []) {
+            return ['Unknown role(s): '.implode(', ', $unknown)];
+        }
+
         // An already-hashed password round-trips untouched (the 'hashed' cast skips
         // re-hashing); a missing password gets a random one for newly-created users.
-        User::updateOrCreate(
+        $user = User::updateOrCreate(
             ['email' => $data['email']],
             [
                 'name' => $data['name'],
@@ -64,6 +87,10 @@ class UsersImport implements WithHeadingRow
                 'user_status' => $data['user_status'] ?? UserStatus::Active->value,
             ],
         );
+
+        if ($hasRoles) {
+            $user->syncRoles($roleNames);
+        }
 
         return [];
     }

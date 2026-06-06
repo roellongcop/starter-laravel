@@ -167,7 +167,7 @@ it('exports spreadsheets with real column-name headers', function (): void {
 
     $csv = (string) Storage::disk('exports')->get($export->fresh()->filename);
     // Real DB column names (not display labels) so the file re-imports as-is.
-    expect($csv)->toContain('"id","name","email","username","user_status","password","password_hint","created_at","updated_at"');
+    expect($csv)->toContain('"id","name","email","username","user_status","roles","password","password_hint","created_at","updated_at"');
 });
 
 it('round-trips a csv export back through the import', function (): void {
@@ -182,6 +182,7 @@ it('round-trips a csv export back through the import', function (): void {
         'user_status' => UserStatus::Blocked->value,
         'password_hint' => 'the usual',
     ]);
+    $user->assignRole(SystemRole::Admin->value);
     $hash = $user->password;
 
     // Export everyone to CSV via the sync path.
@@ -214,6 +215,7 @@ it('round-trips a csv export back through the import', function (): void {
         ->and($restored->username)->toBe('roundtrip')
         ->and($restored->user_status)->toBe(UserStatus::Blocked)
         ->and($restored->password_hint)->toBe('the usual')
+        ->and($restored->hasRole(SystemRole::Admin->value))->toBeTrue() // roles round-trip
         ->and($restored->password)->toBe($hash) // preserved — the hashed cast skips re-hashing
         ->and($import->fresh()->failed)->toBe(0);
 });

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Imports\UsersImport;
+use App\Models\Role;
 use App\Models\UserImport;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
@@ -49,8 +50,11 @@ class ImportShardJob implements ShouldQueue
         $success = 0;
         $failures = [];
 
+        // Resolve the known role names once per shard, not per row.
+        $validRoles = Role::query()->pluck('name')->all();
+
         foreach ($this->rows as $i => $row) {
-            $errors = UsersImport::importRow($row);
+            $errors = UsersImport::importRow($row, $validRoles);
 
             if ($errors !== []) {
                 $failures[] = [

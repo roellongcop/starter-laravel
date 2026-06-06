@@ -46,14 +46,17 @@ everyone but the operator while it runs.
   `processed_rows`/`success`/`failed` atomically, and the Exports/Imports grids auto-poll
   (`useStatusPoll`) to show a live progress bar.
 - **Round-trippable spreadsheets.** `csv/xls/xlsx` exports (`app/Exports/UsersExport.php`) emit the
-  **real users-table column names** as headers — `id, name, email, username, user_status, password,
-  password_hint, created_at, updated_at` — so a downloaded file can be re-uploaded straight through
-  the import (Excel's `slug` heading formatter keys rows by these). The import
+  **real users-table column names** as headers — `id, name, email, username, user_status, roles,
+  password, password_hint, created_at, updated_at` — so a downloaded file can be re-uploaded straight
+  through the import (Excel's `slug` heading formatter keys rows by these). The import
   (`UsersImport::importRow`, used by `ImportShardJob`) upserts on `email`
-  and consumes `name`/`email`/`username`/`user_status`/`password`/`password_hint` (it also still
-  accepts a legacy `status` header). The exported `password` is the **bcrypt hash**; re-importing
-  preserves it because Laravel's `hashed` cast skips already-hashed values, so logins survive a
-  round-trip. PDF stays a human-readable report (its own blade), not a round-trip format.
+  and consumes `name`/`email`/`username`/`user_status`/`password`/`password_hint`/`roles` (it also
+  still accepts a legacy `status` header). `roles` is a comma-separated list of role names; the import
+  `syncRoles()`s them so a round-trip restores access exactly — a row naming an **unknown role fails**
+  and is reported, and a file **without** a `roles` column leaves existing roles untouched. The
+  exported `password` is the **bcrypt hash**; re-importing preserves it because Laravel's `hashed`
+  cast skips already-hashed values, so logins survive a round-trip. PDF stays a human-readable report
+  (its own blade), not a round-trip format.
 - **Queue `retry_after` invariant.** These jobs declare long `$timeout`s (`Finalize*Job` = 600s) and
   `$tries = 1` (fail loudly, no retry). The queue connection's `retry_after` (`config/queue.php`, default
   **700s**) must stay **larger than the longest job timeout** — otherwise a still-running job is treated
