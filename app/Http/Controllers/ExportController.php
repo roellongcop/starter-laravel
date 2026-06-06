@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\UserExportStatus;
 use App\Exports\UsersExport;
 use App\Http\Requests\StoreExportRequest;
+use App\Jobs\DispatchExportJob;
 use App\Jobs\GenerateExportJob;
 use App\Models\UserExport;
 use Illuminate\Http\RedirectResponse;
@@ -71,7 +72,8 @@ class ExportController extends Controller
             return redirect()->route('exports.index')->with('success', 'Export ready.');
         }
 
-        GenerateExportJob::dispatch($export);
+        // Larger exports shard into ~5k-row files processed as a batch, then zip.
+        DispatchExportJob::dispatch($export);
 
         return redirect()->route('exports.index')
             ->with('success', 'Export queued — you will be notified when it is ready.');
@@ -102,6 +104,8 @@ class ExportController extends Controller
             'format' => $e->format,
             'resource' => $e->resource,
             'row_count' => $e->row_count,
+            'total_rows' => $e->total_rows,
+            'processed_rows' => $e->processed_rows,
             'status' => $e->status->value,
             'error_message' => $e->error_message,
             'created_at' => $e->created_at?->toIso8601String(),

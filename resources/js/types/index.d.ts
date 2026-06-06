@@ -262,6 +262,8 @@ export interface AdminExport {
     format: string;
     resource: string;
     row_count: number | null;
+    total_rows: number | null;
+    processed_rows: number;
     status: string;
     error_message: string | null;
     created_at: string | null;

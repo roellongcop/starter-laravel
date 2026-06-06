@@ -30,6 +30,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Export / import shard sizes
+    |--------------------------------------------------------------------------
+    |
+    | Queued (above-threshold) jobs are split into shards of this many rows, each
+    | processed by its own batched job. Export shards become one file apiece and
+    | are zipped together on completion; import shards validate + upsert their
+    | slice. Keeping shards small (≤ ~5k) sidesteps the .xls 65,536-row format cap
+    | and keeps each job well under its timeout. PDF uses a smaller dedicated size
+    | (export_pdf_shard_size) because DomPDF renders a whole shard in memory rather
+    | than streaming it, so a 5k-row shard would run long enough to be re-attempted.
+    |
+    */
+
+    'export_shard_size' => (int) env('EXPORT_SHARD_SIZE', 5000),
+
+    'export_pdf_shard_size' => (int) env('EXPORT_PDF_SHARD_SIZE', 1000),
+
+    'import_shard_size' => (int) env('IMPORT_SHARD_SIZE', 5000),
+
+    /*
+    |--------------------------------------------------------------------------
     | Document upload allowlist
     |--------------------------------------------------------------------------
     |

@@ -15,6 +15,8 @@ use Illuminate\Support\Carbon;
  * @property UserExportStatus $status
  * @property array<string, mixed>|null $filters
  * @property int|null $row_count
+ * @property int|null $total_rows
+ * @property int $processed_rows
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -30,6 +32,8 @@ class UserExport extends BaseModel
         'resource',
         'filters',
         'row_count',
+        'total_rows',
+        'processed_rows',
         'filename',
         'status',
         'error_message',

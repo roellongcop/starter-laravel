@@ -13,6 +13,9 @@ everyone but the operator while it runs.
 
 - `app/Jobs/{CreateBackupJob,RestoreBackupJob}` + export/import jobs — queued workers that flip a
   `*Status` enum and capture failures into `error_message`.
+- `app/Jobs/{GenerateExportJob,ProcessImportJob}` — the **sync/small** single-file path.
+- `app/Jobs/{DispatchExportJob,ExportShardJob,FinalizeExportJob}` and
+  `{DispatchImportJob,ImportShardJob,FinalizeImportJob}` — the **sharded** path for large jobs.
 - `app/Http/Controllers/{BackupController,ExportController,ImportController}.php` — the resources.
 - `app/Support/RestoreSentinel.php` — the file-based "restore in progress" flag.
 - `app/Http/Middleware/EnforceRestoreMode.php` — serves 503 during a restore.
@@ -25,7 +28,25 @@ everyone but the operator while it runs.
   writes any exception into the `error_message` column, which the grid surfaces. Completion fires a
   notification.
 - **Sync vs queue.** Exports/imports below `config('keen.*_sync_threshold')` run synchronously
-  (instant download); above it they queue.
+  (instant download) via `GenerateExportJob`/`ProcessImportJob`; above it they queue.
+- **Sharding (large jobs).** A queued export/import is split into shards of
+  `config('keen.export_shard_size')` / `import_shard_size` rows (default 5000) and run as a
+  `Bus::batch`. A coordinator (`Dispatch{Export,Import}Job`) builds the shards — exports by id-range
+  windows, imports by row slices — each shard job handles one slice, and a `Finalize{Export,Import}Job`
+  runs on batch completion. **Exports** write one file per shard and the finalizer zips them into a
+  single `.zip` download (so an `.xls` shard never approaches the 65,536-row format cap). **PDF uses a
+  smaller dedicated shard size** (`config('keen.export_pdf_shard_size')`, default 1000) because DomPDF
+  renders the whole shard into memory at once rather than streaming it like the spreadsheet writers — a
+  5k-row PDF shard runs long enough that the queue assumes the worker died and re-attempts it.
+  **Imports** validate + `updateOrCreate` their slice (preserving password hashing)
+  and write a per-shard error CSV; the finalizer concatenates them into one report. Shards bump
+  `processed_rows`/`success`/`failed` atomically, and the Exports/Imports grids auto-poll
+  (`useStatusPoll`) to show a live progress bar.
+- **Queue `retry_after` invariant.** These jobs declare long `$timeout`s (`Finalize*Job` = 600s) and
+  `$tries = 1` (fail loudly, no retry). The queue connection's `retry_after` (`config/queue.php`, default
+  **700s**) must stay **larger than the longest job timeout** — otherwise a still-running job is treated
+  as abandoned, released, and re-reserved, failing immediately with *"has been attempted too many
+  times."* Raise both together if a job ever needs a longer timeout.
 - **Paths.** Generated artifacts (backups/exports/imports) are nested under `YYYY/MM/` via
   `dated_path()`, matching uploads. `CreateBackupJob` relocates the spatie archive there.
 - **Restore.** `RestoreBackupJob` extracts the `.sql` dump from the archive into a temp workdir

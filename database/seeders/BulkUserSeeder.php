@@ -34,7 +34,7 @@ class BulkUserSeeder extends Seeder
     /** Rows per factory batch — keeps memory flat for larger counts. */
     private const CHUNK = 500;
 
-    private const DEFAULT_COUNT = 10_000;
+    private const DEFAULT_COUNT = 50_000;
 
     public function setCount(int $count): static
     {

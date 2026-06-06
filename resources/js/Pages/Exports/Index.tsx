@@ -17,6 +17,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useStatusPoll } from '@/hooks/use-status-poll';
 import { type AdminExport, type CursorResponse } from '@/types';
 
 interface Props {
@@ -27,6 +28,11 @@ interface Props {
 
 export default function Index({ exports, filters }: Props) {
     const [search, setSearch] = useState(filters.search);
+
+    useStatusPoll(
+        exports.data.map((e) => e.status),
+        'exports',
+    );
 
     const submitSearch: FormEventHandler = (e) => {
         e.preventDefault();
@@ -106,7 +112,27 @@ export default function Index({ exports, filters }: Props) {
                                 <TableCell className="uppercase">
                                     {e.format}
                                 </TableCell>
-                                <TableCell>{e.row_count ?? '—'}</TableCell>
+                                <TableCell>
+                                    {e.status === 'Running' && e.total_rows ? (
+                                        <div className="space-y-1">
+                                            <div className="text-xs text-muted-foreground">
+                                                {e.processed_rows.toLocaleString()}{' '}
+                                                /{' '}
+                                                {e.total_rows.toLocaleString()}
+                                            </div>
+                                            <div className="h-1.5 w-24 overflow-hidden rounded bg-muted">
+                                                <div
+                                                    className="h-full bg-primary"
+                                                    style={{
+                                                        width: `${Math.min(100, Math.round((e.processed_rows / e.total_rows) * 100))}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        (e.row_count ?? '—')
+                                    )}
+                                </TableCell>
                                 <TableCell>
                                     <StatusBadge status={e.status} />
                                     {e.error_message && (

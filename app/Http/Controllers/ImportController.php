@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\UserImportStatus;
 use App\Http\Requests\StoreImportRequest;
 use App\Imports\UsersImport;
+use App\Jobs\DispatchImportJob;
 use App\Jobs\ProcessImportJob;
 use App\Models\UserImport;
 use Illuminate\Http\RedirectResponse;
@@ -94,7 +95,8 @@ class ImportController extends Controller
             return redirect()->route('imports.index')->with('success', 'Import processed.');
         }
 
-        ProcessImportJob::dispatch($import);
+        // Larger imports shard into ~5k-row slices processed as a batch.
+        DispatchImportJob::dispatch($import);
 
         return redirect()->route('imports.index')
             ->with('success', 'Import queued — you will be notified when it finishes.');

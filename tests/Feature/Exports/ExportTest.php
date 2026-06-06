@@ -2,6 +2,7 @@
 
 use App\Enums\SystemRole;
 use App\Enums\UserExportStatus;
+use App\Jobs\DispatchExportJob;
 use App\Jobs\GenerateExportJob;
 use App\Models\User;
 use App\Models\UserExport;
@@ -30,13 +31,27 @@ it('runs a small export synchronously', function (): void {
     Bus::assertDispatchedSync(GenerateExportJob::class);
 });
 
+it('routes a large export through the sharded dispatcher', function (): void {
+    config(['keen.export_sync_threshold' => 0]); // force the queued path
+    Bus::fake();
+    actingAsRole(SystemRole::Developer);
+
+    $this->post(route('exports.store'), [
+        'format' => 'csv',
+        'resource' => 'users',
+        'filters' => ['search' => ''],
+    ])->assertRedirect(route('exports.index'));
+
+    Bus::assertDispatched(DispatchExportJob::class);
+});
+
 it('queues a large export and notifies on completion', function (): void {
     config(['keen.export_sync_threshold' => 0]); // force the queued path
     Notification::fake();
     Storage::fake('exports');
     $owner = actingAsRole(SystemRole::Developer);
 
-    // sync queue driver runs the dispatched job immediately.
+    // sync queue driver runs the dispatched job (+ its batch) immediately.
     $this->post(route('exports.store'), [
         'format' => 'csv',
         'resource' => 'users',
@@ -45,6 +60,67 @@ it('queues a large export and notifies on completion', function (): void {
 
     expect(UserExport::first()->status)->toBe(UserExportStatus::Done);
     Notification::assertSentTo($owner, ExportReadyNotification::class);
+});
+
+it('shards a large xls export into a single zip and marks it done', function (): void {
+    // Small shard size so a handful of users spans multiple shards; xls proves the
+    // 65,536-row format cap can never be reached (each shard holds ≤ shard_size).
+    config(['keen.export_sync_threshold' => 0, 'keen.export_shard_size' => 2]);
+    Storage::fake('exports');
+    actingAsRole(SystemRole::Developer);
+    User::factory()->count(5)->create();
+
+    $this->post(route('exports.store'), [
+        'format' => 'xls',
+        'resource' => 'users',
+        'filters' => ['search' => ''],
+    ])->assertRedirect(route('exports.index'));
+
+    $export = UserExport::first();
+    expect($export->status)->toBe(UserExportStatus::Done)
+        ->and($export->filename)->toEndWith('.zip')
+        ->and($export->total_rows)->toBeGreaterThanOrEqual(6)
+        ->and($export->row_count)->toBe($export->total_rows)
+        ->and(Storage::disk('exports')->exists($export->filename))->toBeTrue();
+
+    // The zip holds one part file per shard.
+    $tmp = (string) tempnam(sys_get_temp_dir(), 'exp');
+    file_put_contents($tmp, (string) Storage::disk('exports')->get($export->filename));
+    $zip = new ZipArchive;
+    $zip->open($tmp);
+    expect($zip->numFiles)->toBeGreaterThan(1);
+    $zip->close();
+    unlink($tmp);
+});
+
+it('shards a large pdf export into a single zip and marks it done', function (): void {
+    // PDF renders a whole shard in memory, so it uses its own smaller shard size; a tiny
+    // size here spans a handful of users across multiple shards. Guards the regression where
+    // an oversized PDF shard ran long enough for the queue to re-attempt and fail it.
+    config(['keen.export_sync_threshold' => 0, 'keen.export_pdf_shard_size' => 2]);
+    Storage::fake('exports');
+    actingAsRole(SystemRole::Developer);
+    User::factory()->count(5)->create();
+
+    $this->post(route('exports.store'), [
+        'format' => 'pdf',
+        'resource' => 'users',
+        'filters' => ['search' => ''],
+    ])->assertRedirect(route('exports.index'));
+
+    $export = UserExport::first();
+    expect($export->status)->toBe(UserExportStatus::Done)
+        ->and($export->filename)->toEndWith('.zip')
+        ->and(Storage::disk('exports')->exists($export->filename))->toBeTrue();
+
+    // The zip holds one PDF part file per shard.
+    $tmp = (string) tempnam(sys_get_temp_dir(), 'exp');
+    file_put_contents($tmp, (string) Storage::disk('exports')->get($export->filename));
+    $zip = new ZipArchive;
+    $zip->open($tmp);
+    expect($zip->numFiles)->toBeGreaterThan(1);
+    $zip->close();
+    unlink($tmp);
 });
 
 it('generates a csv file and marks the export done', function (): void {

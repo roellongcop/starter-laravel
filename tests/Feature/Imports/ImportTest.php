@@ -2,6 +2,7 @@
 
 use App\Enums\SystemRole;
 use App\Enums\UserImportStatus;
+use App\Jobs\DispatchImportJob;
 use App\Jobs\ProcessImportJob;
 use App\Models\User;
 use App\Models\UserImport;
@@ -9,6 +10,7 @@ use App\Notifications\ImportCompleteNotification;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
@@ -90,6 +92,26 @@ it('lets the owner download the original file but forbids others / 404s when mis
     $this->get(route('imports.download', $import))->assertNotFound();
 });
 
+it('routes a large import through the sharded dispatcher', function (): void {
+    config(['keen.import_sync_threshold' => 0]); // force the queued path
+    Bus::fake();
+    Storage::fake('imports');
+    $owner = actingAsRole(SystemRole::Developer);
+
+    Storage::disk('imports')->put('users.csv', "name,email\nGrace Hopper,grace@example.com\n");
+    $import = UserImport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'resource' => 'users',
+        'filename' => 'users.csv',
+        'status' => UserImportStatus::Pending,
+    ]);
+
+    $this->post(route('imports.process', $import))->assertRedirect(route('imports.index'));
+
+    Bus::assertDispatched(DispatchImportJob::class);
+});
+
 it('queues a large import via the process route and notifies', function (): void {
     config(['keen.import_sync_threshold' => 0]); // force the queued path
     Notification::fake();
@@ -108,5 +130,39 @@ it('queues a large import via the process route and notifies', function (): void
     $this->post(route('imports.process', $import))->assertRedirect(route('imports.index'));
 
     expect($import->fresh()->status)->toBe(UserImportStatus::Done);
+    Notification::assertSentTo($owner, ImportCompleteNotification::class);
+});
+
+it('shards a large import, tallies counts, and merges one error report', function (): void {
+    config(['keen.import_sync_threshold' => 0, 'keen.import_shard_size' => 2]);
+    Notification::fake();
+    Storage::fake('imports');
+    $owner = actingAsRole(SystemRole::Developer);
+
+    // 4 data rows across 2 shards; one row is invalid (missing email).
+    $csv = "name,email\nA,a@example.com\nB,b@example.com\nBad,\nC,c@example.com\n";
+    Storage::disk('imports')->put('users.csv', $csv);
+    $import = UserImport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'resource' => 'users',
+        'filename' => 'users.csv',
+        'status' => UserImportStatus::Pending,
+    ]);
+
+    (new DispatchImportJob($import))->handle();
+
+    $import->refresh();
+    expect($import->status)->toBe(UserImportStatus::Done)
+        ->and($import->total)->toBe(4)
+        ->and($import->success)->toBe(3)
+        ->and($import->failed)->toBe(1)
+        ->and($import->error_report_path)->not->toBeNull()
+        ->and(User::where('email', 'c@example.com')->exists())->toBeTrue();
+
+    // One merged report: single header + the single failing row (file line 4).
+    $report = (string) Storage::disk('imports')->get($import->error_report_path);
+    expect($report)->toContain('row,email,errors')
+        ->and(substr_count($report, "\n"))->toBe(2); // header + 1 row
     Notification::assertSentTo($owner, ImportCompleteNotification::class);
 });

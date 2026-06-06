@@ -17,6 +17,7 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useStatusPoll } from '@/hooks/use-status-poll';
 import { type AdminImport, type CursorResponse } from '@/types';
 
 interface Props {
@@ -27,6 +28,11 @@ interface Props {
 
 export default function Index({ imports, filters }: Props) {
     const [search, setSearch] = useState(filters.search);
+
+    useStatusPoll(
+        imports.data.map((i) => i.status),
+        'imports',
+    );
 
     const submitSearch: FormEventHandler = (e) => {
         e.preventDefault();
@@ -112,6 +118,16 @@ export default function Index({ imports, filters }: Props) {
                                 </TableCell>
                                 <TableCell>
                                     <StatusBadge status={i.status} />
+                                    {i.status === 'Running' && i.total > 0 && (
+                                        <div className="mt-1 h-1.5 w-24 overflow-hidden rounded bg-muted">
+                                            <div
+                                                className="h-full bg-primary"
+                                                style={{
+                                                    width: `${Math.min(100, Math.round(((i.success + i.failed) / i.total) * 100))}%`,
+                                                }}
+                                            />
+                                        </div>
+                                    )}
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-1">
