@@ -4,7 +4,6 @@ use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\EnforceIpRules;
 use App\Http\Middleware\EnforceRestoreMode;
 use App\Http\Middleware\HandleInertiaRequests;
-use App\Http\Middleware\TrackVisitor;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -28,7 +27,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             EnforceRestoreMode::class,
             EnforceIpRules::class,
-            TrackVisitor::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);

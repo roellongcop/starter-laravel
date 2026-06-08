@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\AuthEvent;
 use App\Enums\SystemRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
+use App\Models\LoginHistory;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +23,8 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $user = $request->authenticate();
+
+        LoginHistory::record($user, AuthEvent::Login, $request->ip(), $request->userAgent());
 
         return $this->tokenResponse($user, (string) $request->string('device_name'));
     }
@@ -40,6 +44,8 @@ class AuthController extends Controller
         $user->assignRole(SystemRole::User->value);
 
         event(new Registered($user));
+
+        LoginHistory::record($user, AuthEvent::Login, $request->ip(), $request->userAgent());
 
         return $this->tokenResponse($user, (string) $request->string('device_name'), 201);
     }
@@ -65,6 +71,8 @@ class AuthController extends Controller
         /** @var User $user */
         $user = $request->user();
 
+        LoginHistory::record($user, AuthEvent::Logout, $request->ip(), $request->userAgent());
+
         $user->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out.']);
@@ -77,6 +85,8 @@ class AuthController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
+
+        LoginHistory::record($user, AuthEvent::Logout, $request->ip(), $request->userAgent());
 
         $user->tokens()->delete();
 

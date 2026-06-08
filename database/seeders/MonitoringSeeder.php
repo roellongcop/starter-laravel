@@ -4,8 +4,6 @@ namespace Database\Seeders;
 
 use App\Enums\NotificationType;
 use App\Models\User;
-use App\Models\VisitLog;
-use App\Models\Visitor;
 use App\Notifications\AdminNotification;
 use Illuminate\Database\Seeder;
 
@@ -27,13 +25,5 @@ class MonitoringSeeder extends Seeder
             $user->notify(new AdminNotification('A new user registered.', NotificationType::Info, '/users'));
             $user->notify(new AdminNotification('Backup completed.', NotificationType::System));
         });
-
-        // Sample visitor activity (only on a near-empty table).
-        if (Visitor::query()->count() === 0) {
-            Visitor::factory()
-                ->count(8)
-                ->create()
-                ->each(fn (Visitor $v) => VisitLog::factory()->count(3)->create(['visitor_id' => $v->id]));
-        }
     }
 }

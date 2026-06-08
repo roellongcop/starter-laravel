@@ -54,7 +54,6 @@ function SystemTab({ data: init }: { data: Record<string, unknown> }) {
         timezone: String(init.timezone ?? 'UTC'),
         pagination_size: Number(init.pagination_size ?? 20),
         auto_logout_seconds: Number(init.auto_logout_seconds ?? 0),
-        enable_visitor: Boolean(init.enable_visitor),
         whitelist_ip_only: Boolean(init.whitelist_ip_only),
         default_theme: String(init.default_theme ?? 'system'),
     });
@@ -132,13 +131,6 @@ function SystemTab({ data: init }: { data: Record<string, unknown> }) {
                     </SelectContent>
                 </Select>
             </Row>
-            <label className="flex items-center justify-between rounded-md border p-3">
-                <span className="text-sm">Enable visitor tracking</span>
-                <Switch
-                    checked={data.enable_visitor}
-                    onCheckedChange={(c) => setData('enable_visitor', c)}
-                />
-            </label>
             <label className="flex items-center justify-between rounded-md border p-3">
                 <span className="text-sm">Whitelisted IPs only</span>
                 <Switch

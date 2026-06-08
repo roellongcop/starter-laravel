@@ -11,6 +11,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\IpController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\LoginHistoryController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -20,8 +21,6 @@ use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ThemeController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\VisitLogController;
-use App\Http\Controllers\VisitorController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -105,10 +104,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('logs', [LogController::class, 'index'])->name('logs.index');
     Route::get('logs/{log}', [LogController::class, 'show'])->name('logs.show');
 
-    // Visitors / visit logs (read-only)
-    Route::get('visitors', [VisitorController::class, 'index'])->name('visitors.index');
-    Route::get('visitors/{visitor}', [VisitorController::class, 'show'])->name('visitors.show');
-    Route::get('visit-logs', [VisitLogController::class, 'index'])->name('visit-logs.index');
+    // Login history (read-only)
+    Route::get('login-history', [LoginHistoryController::class, 'index'])->name('login-history.index');
 
     // Queue monitor
     Route::get('queue', [QueueController::class, 'index'])->name('queue.index');

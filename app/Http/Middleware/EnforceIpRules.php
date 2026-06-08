@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /**
  * Allow/deny requests by client IP using the Ip table (blacklist always;
  * whitelist when whitelist_ip_only). Inert by default; note the TrustProxies
- * caveat in docs/features/visitor-and-ip.md.
+ * caveat in docs/features/ip-rules.md.
  */
 class EnforceIpRules
 {

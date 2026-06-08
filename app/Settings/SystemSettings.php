@@ -14,8 +14,6 @@ class SystemSettings extends Settings
 
     public int $auto_logout_seconds;
 
-    public bool $enable_visitor;
-
     public bool $whitelist_ip_only;
 
     /** light | dark | system */

@@ -2,13 +2,18 @@
 
 namespace App\Providers;
 
+use App\Enums\AuthEvent;
 use App\Enums\RecordStatus;
 use App\Enums\SystemRole;
+use App\Models\LoginHistory;
 use App\Models\User;
 use App\Settings\EmailSettings;
 use App\Settings\SystemSettings;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
@@ -61,6 +66,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Pulse dashboard (/pulse) is developer-only, matching the Telescope gate.
         Gate::define('viewPulse', fn (User $user): bool => $user->hasRole(SystemRole::Developer->value));
+
+        // Record session (web) sign-ins/outs to login_history. The stateless API
+        // never fires these events, so it records its own (see Api\V1\AuthController).
+        Event::listen(Login::class, fn (Login $e) => LoginHistory::record($e->user, AuthEvent::Login, request()->ip(), request()->userAgent()));
+        Event::listen(Logout::class, fn (Logout $e) => LoginHistory::record($e->user, AuthEvent::Logout, request()->ip(), request()->userAgent()));
     }
 
     /**

@@ -91,8 +91,8 @@ wrong password, throttled) yield `422` with Laravel's standard `{ "message", "er
 ## Gotchas
 
 - `api.php` is registered in `bootstrap/app.php` and is **not** in the `web` middleware group, so
-  there's no session, CSRF, IP-rules, or visitor-tracking middleware on these routes — that's
-  intentional for a stateless API.
+  there's no session, CSRF, or IP-rules middleware on these routes — that's intentional for a
+  stateless API.
 - Always send `Accept: application/json` so Laravel returns JSON (422/401) instead of a redirect.
 - Adding a `v2` later: add `->prefix('v2')` + an `Api\V2` controller; keep `v1` intact.
 

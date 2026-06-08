@@ -63,8 +63,7 @@ from the map below.
 - [Backups, exports & imports](features/backups-exports-imports.md) — queued jobs, status
   tracking, the restore gate. ✅ written
 - [Theming](features/theming.md) — CSS-variable light/dark + admin token palettes. ✅ written
-- [Visitor tracking & IP rules](features/visitor-and-ip.md) — cookie logging + IP
-  allow/deny. ✅ written
+- [IP rules](features/ip-rules.md) — whitelist/blacklist IP allow/deny. ✅ written
 - [Notifications, sessions & audit](features/notifications-sessions-audit.md) — bell,
   sessions, audit log, toasts/idle-logout. ✅ written
 - [Mobile API auth](features/mobile-api-auth.md) — stateless Sanctum bearer-token

@@ -222,23 +222,15 @@ export interface AdminAudit {
     user_agent?: string | null;
 }
 
-export interface AdminVisitor {
-    token: string;
-    cookie_id: string;
+export interface AdminLoginHistory {
+    id: number;
+    event: string;
+    user: string;
+    email: string | null;
     ip_address: string | null;
-    browser: string | null;
-    os: string | null;
-    device: string | null;
-    visit_count: number;
-    last_visit_at: string | null;
-    created_at: string | null;
-}
-
-export interface AdminVisitLog {
-    token: string;
-    visitor_ip?: string | null;
-    url: string | null;
-    action: string;
+    browser: string;
+    os: string;
+    device: string;
     created_at: string | null;
 }
 

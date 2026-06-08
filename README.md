@@ -55,8 +55,8 @@ A complete admin back-office, all gated by a declared permission registry
 - **Files** — multi-file uploads (images + pdf/doc/docx/csv/xls/xlsx) via medialibrary on a
   private disk, gated download/preview, in-app viewer; plus self-service **My Documents**.
 - **IP Lists** — whitelist/blacklist enforced by middleware (`whitelist_ip_only`).
-- **Notifications** (bell + list), **Sessions** (revoke), **Audit Logs**, **Visitors /
-  Visit Logs** (cookie tracking), **Queue** monitor (retry/clear).
+- **Notifications** (bell + list), **Sessions** (revoke), **Audit Logs**, **Queue** monitor
+  (retry/clear).
 - **Backups** (spatie/laravel-backup, with captured failure reasons + restore), **My Exports**
   (csv/xls/xlsx/pdf), **My Imports** (upload→preview→process) — all via queued jobs with status
   tracking + gated downloads. Backups also run **unattended** on the scheduler (nightly create,

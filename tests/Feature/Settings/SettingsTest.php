@@ -34,7 +34,6 @@ it('persists a system settings update', function (): void {
         'timezone' => 'UTC',
         'pagination_size' => 30,
         'auto_logout_seconds' => 0,
-        'enable_visitor' => true,
         'whitelist_ip_only' => false,
         'default_theme' => 'dark',
     ])->assertRedirect();
@@ -155,7 +154,6 @@ it('validates settings input', function (): void {
         'timezone' => 'Not/AZone',
         'pagination_size' => 0,
         'auto_logout_seconds' => -5,
-        'enable_visitor' => true,
         'whitelist_ip_only' => false,
         'default_theme' => 'neon',
     ])->assertSessionHasErrors(['app_name', 'timezone', 'pagination_size', 'auto_logout_seconds', 'default_theme']);
@@ -171,7 +169,6 @@ it('forbids updating settings without the permission', function (): void {
         'timezone' => 'UTC',
         'pagination_size' => 20,
         'auto_logout_seconds' => 0,
-        'enable_visitor' => true,
         'whitelist_ip_only' => false,
         'default_theme' => 'system',
     ])->assertForbidden();

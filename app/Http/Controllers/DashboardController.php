@@ -10,7 +10,6 @@ use App\Models\Theme;
 use App\Models\User;
 use App\Models\UserExport;
 use App\Models\UserImport;
-use App\Models\Visitor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -112,7 +111,6 @@ class DashboardController extends Controller
         $add('files.index', 'Files', 'Files', File::count(), route('files.index', absolute: false));
         $add('ips.index', 'IP Lists', 'Network', Ip::count(), route('ips.index', absolute: false));
         $add('themes.index', 'Themes', 'Palette', Theme::count(), route('themes.index', absolute: false));
-        $add('visitors.index', 'Visitors', 'Footprints', Visitor::count(), route('visitors.index', absolute: false));
         $add('backups.index', 'Backups', 'Archive', Backup::count(), route('backups.index', absolute: false));
         $add('exports.index', 'My Exports', 'Download', UserExport::where('user_id', $user->id)->count(), route('exports.index', absolute: false));
         $add('imports.index', 'My Imports', 'Upload', UserImport::where('user_id', $user->id)->count(), route('imports.index', absolute: false));

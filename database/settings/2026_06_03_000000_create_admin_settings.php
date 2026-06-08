@@ -12,7 +12,6 @@ return new class extends SettingsMigration
         $this->migrator->add('system.timezone', 'UTC');
         $this->migrator->add('system.pagination_size', 20);
         $this->migrator->add('system.auto_logout_seconds', 0);
-        $this->migrator->add('system.enable_visitor', true);
         $this->migrator->add('system.whitelist_ip_only', false);
         $this->migrator->add('system.default_theme', 'system');
 

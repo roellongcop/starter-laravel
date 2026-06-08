@@ -17,7 +17,7 @@ toggles) through typed forms, and make each one actually change behavior at the 
 - `resources/js/Pages/Settings/Index.tsx` — the tabbed form.
 - **Consumers:** `app/Providers/AppServiceProvider.php` (`applySystemSettings()`),
   `app/Http/Middleware/HandleInertiaRequests.php` (`appSettings()`),
-  `app/Http/Middleware/{TrackVisitor,EnforceIpRules}.php`,
+  `app/Http/Middleware/EnforceIpRules.php`,
   `resources/js/hooks/use-idle-logout.ts`, `resources/js/Components/ThemeProvider.tsx`.
 
 ## How it works
@@ -32,7 +32,6 @@ layer (see [ADR 0005](../decisions/0005-settings-runtime-config-overrides.md)). 
 | `timezone`            | ✅ | `AppServiceProvider::applySystemSettings()` → `config(['app.timezone'])` + `date_default_timezone_set()`. |
 | `pagination_size`     | ✅ | `applySystemSettings()` → `config(['keen.pagination_size'])`; the 16 list controllers read that config key unchanged. |
 | `auto_logout_seconds` | ✅ | Shared via Inertia; the `use-idle-logout` hook (mounted in `AuthenticatedLayout`) warns then `router.post(route('logout'))`. `0` = off. |
-| `enable_visitor`      | ✅ | `TrackVisitor` middleware records visitors only when true. |
 | `whitelist_ip_only`   | ✅ | `EnforceIpRules` middleware 403s non-whitelisted IPs when true. |
 
 `applySystemSettings()` runs in `boot()` (after config loads, before controllers) and is
@@ -102,7 +101,7 @@ Accepted image extensions are **not** a setting — they live in `config('keen.i
   brief heads-up, not a persistent countdown.
 - `whitelist_ip_only` matches `$request->ip()`, which behind nginx is the **proxy** IP unless
   `TrustProxies` is configured — turning it on without that (or without whitelisting the proxy
-  IP) can lock everyone out. See [Visitor & IP](visitor-and-ip.md).
+  IP) can lock everyone out. See [IP rules](ip-rules.md).
 - After changing a setting, a cached config can mask config-shaped overrides: `php artisan
   config:clear`.
 - Mail transport is env-driven like storage disks: `MAIL_MAILER` switches `log` ↔ `smtp`
@@ -112,6 +111,6 @@ Accepted image extensions are **not** a setting — they live in `config('keen.i
 
 ## Related
 
-- [Visitor tracking & IP rules](visitor-and-ip.md) · [Theming](theming.md)
+- [IP rules](ip-rules.md) · [Theming](theming.md)
 - [ADR 0005](../decisions/0005-settings-runtime-config-overrides.md)
 - `CLAUDE.md` § "User feedback" / Settings

@@ -6,7 +6,6 @@ use App\Models\Ip;
 use App\Models\Role;
 use App\Models\Theme;
 use App\Models\User;
-use App\Models\Visitor;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 
@@ -32,7 +31,6 @@ it('renders every page route with a 200', function (): void {
     $theme = Theme::factory()->create();
     $file = File::factory()->create(['owner_id' => auth()->id()]);
     $ip = Ip::factory()->create();
-    $visitor = Visitor::factory()->create();
     $role = Role::query()->firstOrFail();
 
     /** @var array<int, array{0: string, 1: array<int, mixed>}> $pages */
@@ -45,8 +43,7 @@ it('renders every page route with a 200', function (): void {
         ['notifications.index', []],
         ['sessions.index', []],
         ['logs.index', []],
-        ['visitors.index', []],
-        ['visit-logs.index', []],
+        ['login-history.index', []],
         ['queue.index', []],
         ['backups.index', []],
         ['exports.index', []],
@@ -72,7 +69,6 @@ it('renders every page route with a 200', function (): void {
         ['ips.create', []],
         ['ips.show', [$ip]],
         ['ips.edit', [$ip]],
-        ['visitors.show', [$visitor]],
     ];
 
     foreach ($pages as [$name, $params]) {

@@ -18,8 +18,8 @@ reading `SystemSettings` directly:
   `config()` overrides** in `AppServiceProvider::applySystemSettings()`, called from
   `boot()` — after config loads, before any controller/middleware. The 16 controllers keep
   reading `config('keen.pagination_size')`; nothing about them changes.
-- **Request-gating settings** (`enable_visitor`, `whitelist_ip_only`) are read by
-  **middleware** (`TrackVisitor`, `EnforceIpRules`).
+- **Request-gating settings** (`whitelist_ip_only`) are read by **middleware**
+  (`EnforceIpRules`).
 - **Frontend-behavior settings** (`default_theme`, `auto_logout_seconds`) are **shared via
   Inertia** (`HandleInertiaRequests::appSettings()` → `settings.system.*`) and consumed in
   React (`ThemeProvider`, the `use-idle-logout` hook).

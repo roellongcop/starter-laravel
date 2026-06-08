@@ -37,8 +37,7 @@ return [
     'readonly' => [
         'sessions',
         'logs',
-        'visitors',
-        'visit-logs',
+        'login-history',
     ],
 
     // Resources with bespoke ability sets

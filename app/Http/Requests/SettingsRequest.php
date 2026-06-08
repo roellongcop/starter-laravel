@@ -17,7 +17,6 @@ class SettingsRequest extends BaseFormRequest
                 'timezone' => ['required', 'timezone'],
                 'pagination_size' => ['required', 'integer', 'min:1', 'max:200'],
                 'auto_logout_seconds' => ['required', 'integer', 'min:0'],
-                'enable_visitor' => ['required', 'boolean'],
                 'whitelist_ip_only' => ['required', 'boolean'],
                 'default_theme' => ['required', 'in:light,dark,system'],
             ],

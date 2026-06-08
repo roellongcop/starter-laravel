@@ -1,8 +1,9 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
 import CursorPager from '@/Components/CursorPager';
 import PageHeader from '@/Components/PageHeader';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import {
@@ -14,21 +15,26 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminVisitor, type CursorResponse } from '@/types';
+import { type AdminLoginHistory, type CursorResponse } from '@/types';
 
 interface Props {
-    visitors: CursorResponse<AdminVisitor>;
-    filters: { search: string };
+    history: CursorResponse<AdminLoginHistory>;
+    filters: { search: string; event: string };
 }
 
-export default function Index({ visitors, filters }: Props) {
+const eventColor: Record<string, 'default' | 'secondary'> = {
+    login: 'default',
+    logout: 'secondary',
+};
+
+export default function Index({ history, filters }: Props) {
     const [search, setSearch] = useState(filters.search);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         router.get(
-            route('visitors.index'),
-            { search },
+            route('login-history.index'),
+            { search, event: filters.event },
             {
                 preserveState: true,
                 preserveScroll: true,
@@ -39,17 +45,17 @@ export default function Index({ visitors, filters }: Props) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Visitors" />
+            <Head title="Login History" />
             <PageHeader
-                title="Visitors"
-                description="Tracked anonymous visitors."
+                title="Login History"
+                description="Read-only record of user sign-ins and sign-outs."
             />
 
             <form onSubmit={submit} className="mb-4 flex gap-2">
                 <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search IP / browser / OS…"
+                    placeholder="Search user or IP"
                     className="w-64"
                 />
                 <Button type="submit" variant="secondary">
@@ -61,53 +67,59 @@ export default function Index({ visitors, filters }: Props) {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead>Event</TableHead>
+                            <TableHead>User</TableHead>
                             <TableHead>IP</TableHead>
                             <TableHead>Browser / OS</TableHead>
                             <TableHead>Device</TableHead>
-                            <TableHead>Visits</TableHead>
-                            <TableHead>Last visit</TableHead>
-                            <TableHead className="text-right">View</TableHead>
+                            <TableHead>When</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {visitors.data.length === 0 && (
+                        {history.data.length === 0 && (
                             <TableRow>
                                 <TableCell
                                     colSpan={6}
                                     className="text-center text-muted-foreground"
                                 >
-                                    No visitors.
+                                    No login history yet.
                                 </TableCell>
                             </TableRow>
                         )}
-                        {visitors.data.map((v) => (
-                            <TableRow key={v.token}>
-                                <TableCell className="font-mono text-sm">
-                                    {v.ip_address}
+                        {history.data.map((h) => (
+                            <TableRow key={h.id}>
+                                <TableCell>
+                                    <Badge
+                                        variant={
+                                            eventColor[h.event] ?? 'outline'
+                                        }
+                                    >
+                                        {h.event}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                    {h.user}
+                                    {h.email && (
+                                        <span className="block text-xs text-muted-foreground">
+                                            {h.email}
+                                        </span>
+                                    )}
                                 </TableCell>
                                 <TableCell className="text-sm text-muted-foreground">
-                                    {v.browser} / {v.os}
+                                    {h.ip_address ?? '—'}
                                 </TableCell>
-                                <TableCell>{v.device}</TableCell>
-                                <TableCell>{v.visit_count}</TableCell>
                                 <TableCell className="text-sm text-muted-foreground">
-                                    {v.last_visit_at
+                                    {h.browser} / {h.os}
+                                </TableCell>
+                                <TableCell className="text-sm text-muted-foreground">
+                                    {h.device}
+                                </TableCell>
+                                <TableCell className="text-sm text-muted-foreground">
+                                    {h.created_at
                                         ? new Date(
-                                              v.last_visit_at,
+                                              h.created_at,
                                           ).toLocaleString()
                                         : '—'}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button size="sm" variant="ghost" asChild>
-                                        <Link
-                                            href={route(
-                                                'visitors.show',
-                                                v.token,
-                                            )}
-                                        >
-                                            Logs
-                                        </Link>
-                                    </Button>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -117,8 +129,8 @@ export default function Index({ visitors, filters }: Props) {
 
             <div className="mt-4">
                 <CursorPager
-                    nextCursor={visitors.next_cursor}
-                    prevCursor={visitors.prev_cursor}
+                    nextCursor={history.next_cursor}
+                    prevCursor={history.prev_cursor}
                 />
             </div>
         </AuthenticatedLayout>
