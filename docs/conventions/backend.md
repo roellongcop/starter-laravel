@@ -59,5 +59,6 @@ static analysis and formatting never break the build.
 ## Related
 
 - [Frontend conventions](frontend.md)
+- [Commenting conventions](comments.md)
 - [CI & hooks](../infrastructure/ci-and-hooks.md)
 - `CLAUDE.md` § "Architecture & cross-cutting conventions"

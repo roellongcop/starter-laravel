@@ -72,4 +72,5 @@ stack top but a different query string, it replaces the top (matching the browse
 ## Related
 
 - [Backend conventions](backend.md)
+- [Commenting conventions](comments.md)
 - `CLAUDE.md` § "Conventions when editing"

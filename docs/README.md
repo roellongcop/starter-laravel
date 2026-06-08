@@ -40,6 +40,8 @@ from the map below.
   `BaseModel` traits, Larastan `@property` rules, `cursorResponse()`.
 - [Frontend](conventions/frontend.md) — React/TS, shadcn primitives, Prettier import
   ordering + `eslint --fix`, `<BackButton>`/nav history, `<Can>` gating.
+- [Comments](conventions/comments.md) — comment the *why*, not the *what*; what to
+  keep vs delete, and the cleanup baseline.
 
 ### Infrastructure — *how it's wired*
 

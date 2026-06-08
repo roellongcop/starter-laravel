@@ -17,7 +17,6 @@ use Spatie\LaravelSettings\Settings;
 
 class SettingsController extends Controller
 {
-    /** group => settings class */
     protected const GROUPS = [
         'system' => SystemSettings::class,
         'email' => EmailSettings::class,

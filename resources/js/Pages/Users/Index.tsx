@@ -183,20 +183,6 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                         placeholder="Search name, email, username…"
                         className="w-64"
                     />
-                    {/*<Input*/}
-                    {/*    type="date"*/}
-                    {/*    value={dateFrom}*/}
-                    {/*    onChange={(e) => setDateFrom(e.target.value)}*/}
-                    {/*    className="w-40"*/}
-                    {/*    aria-label="Created from"*/}
-                    {/*/>*/}
-                    {/*<Input*/}
-                    {/*    type="date"*/}
-                    {/*    value={dateTo}*/}
-                    {/*    onChange={(e) => setDateTo(e.target.value)}*/}
-                    {/*    className="w-40"*/}
-                    {/*    aria-label="Created to"*/}
-                    {/*/>*/}
                     <Button type="submit" variant="secondary">
                         Search
                     </Button>

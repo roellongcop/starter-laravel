@@ -248,7 +248,6 @@ export default function Welcome({
         <div className="min-h-screen bg-background text-foreground">
             <Head title="Roel R. Longcop — Full Stack Software Developer" />
 
-            {/* Header */}
             <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur">
                 <div className="container flex h-16 items-center justify-between">
                     <button
@@ -315,7 +314,6 @@ export default function Welcome({
             </header>
 
             <main>
-                {/* Hero */}
                 <section className="container grid items-center gap-12 py-20 md:grid-cols-2 md:py-28">
                     <Reveal>
                         <Badge variant="outline" className="mb-5 font-mono">
@@ -398,7 +396,6 @@ export default function Welcome({
                     </Reveal>
                 </section>
 
-                {/* About */}
                 <section id="about" className="border-t border-border/60 py-20">
                     <div className="container">
                         <Reveal>
@@ -423,7 +420,6 @@ export default function Welcome({
                     </div>
                 </section>
 
-                {/* Skills — the yin-yang split */}
                 <section
                     id="skills"
                     className="border-t border-border/60 py-20"
@@ -437,7 +433,6 @@ export default function Welcome({
                         </Reveal>
                         <Reveal delay={100}>
                             <div className="grid overflow-hidden rounded-2xl border border-border shadow-sm md:grid-cols-2">
-                                {/* Yin — backend */}
                                 <div className="bg-black p-8 text-white sm:p-10">
                                     <div className="mb-6 flex items-center gap-3">
                                         <Server className="h-5 w-5" />
@@ -459,7 +454,6 @@ export default function Welcome({
                                         ))}
                                     </div>
                                 </div>
-                                {/* Yang — frontend */}
                                 <div className="bg-white p-8 text-black sm:p-10">
                                     <div className="mb-6 flex items-center gap-3">
                                         <Code2 className="h-5 w-5" />
@@ -486,7 +480,6 @@ export default function Welcome({
                     </div>
                 </section>
 
-                {/* Experience */}
                 <section className="border-t border-border/60 py-20">
                     <div className="container">
                         <Reveal>
@@ -530,7 +523,6 @@ export default function Welcome({
                     </div>
                 </section>
 
-                {/* Work */}
                 <section id="work" className="border-t border-border/60 py-20">
                     <div className="container">
                         <Reveal>
@@ -655,7 +647,6 @@ export default function Welcome({
                     </div>
                 </section>
 
-                {/* Explore the backend (client invitation) */}
                 <section className="border-t border-border/60 py-20">
                     <div className="container">
                         <Reveal>
@@ -718,7 +709,6 @@ export default function Welcome({
                     </div>
                 </section>
 
-                {/* Contact */}
                 <section
                     id="contact"
                     className="border-t border-border/60 py-20"
@@ -840,7 +830,6 @@ export default function Welcome({
                 </section>
             </main>
 
-            {/* Footer */}
             <footer className="border-t border-border/60 py-10">
                 <div className="container flex flex-col items-center justify-between gap-4 sm:flex-row">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -881,7 +870,6 @@ export default function Welcome({
                 </div>
             </footer>
 
-            {/* Screenshot lightbox */}
             <Dialog
                 open={lightbox !== null}
                 onOpenChange={(o) => !o && setLightbox(null)}
