@@ -9,7 +9,7 @@ import ThemeToggle from '@/Components/ThemeToggle';
 import YinYang from '@/Components/YinYang';
 import { useIdleLogout } from '@/hooks/use-idle-logout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState } from 'react';
+import { PropsWithChildren, ReactNode, useEffect, useState } from 'react';
 
 export default function Authenticated({
     header,
@@ -24,6 +24,21 @@ export default function Authenticated({
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+
+    // Lock background scroll while the mobile menu overlay is open so the page
+    // behind it doesn't scroll instead of the menu.
+    useEffect(() => {
+        if (!showingNavigationDropdown) {
+            return;
+        }
+
+        const original = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        return () => {
+            document.body.style.overflow = original;
+        };
+    }, [showingNavigationDropdown]);
 
     return (
         <div className="min-h-screen bg-background text-foreground">
@@ -146,13 +161,10 @@ export default function Authenticated({
                         </div>
                     </div>
                 </div>
+            </nav>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' md:hidden'
-                    }
-                >
+            {showingNavigationDropdown && (
+                <div className="fixed inset-x-0 bottom-0 top-16 z-30 overflow-y-auto overscroll-contain border-t border-border bg-background md:hidden">
                     <div className="px-2 pb-3 pt-2">
                         <Sidebar />
                     </div>
@@ -181,7 +193,7 @@ export default function Authenticated({
                         </div>
                     </div>
                 </div>
-            </nav>
+            )}
 
             <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 sm:px-6 lg:px-8">
                 <aside className="hidden w-60 shrink-0 py-6 md:block">
