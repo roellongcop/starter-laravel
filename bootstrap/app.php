@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AssignRequestId;
+use App\Http\Middleware\EnforceIdleTimeout;
 use App\Http\Middleware\EnforceIpRules;
 use App\Http\Middleware\EnforceRestoreMode;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             EnforceRestoreMode::class,
             EnforceIpRules::class,
+            EnforceIdleTimeout::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);

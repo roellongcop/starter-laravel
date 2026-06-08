@@ -18,6 +18,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\SessionHeartbeatController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ThemeController;
 use App\Http\Controllers\UserController;
@@ -47,6 +48,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Pinged by the client `useIdleLogout` hook on real activity so the
+    // server-side EnforceIdleTimeout treats an actively-used (but not
+    // navigating) session as alive.
+    Route::post('session/heartbeat', SessionHeartbeatController::class)->name('session.heartbeat');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

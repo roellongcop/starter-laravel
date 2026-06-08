@@ -6,10 +6,15 @@ import ThemeStyle from '@/Components/ThemeStyle';
 import YinYang from '@/Components/YinYang';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
+import { useIdleLogout } from '@/hooks/use-idle-logout';
 
 export default function Guest({ children }: PropsWithChildren) {
     const brand = usePage().props.brand;
     const { toggleTheme } = useTheme();
+
+    // A logged-in user can still browse guest pages (e.g. /contact); enforce
+    // idle logout here too. No-ops for actual guests.
+    useIdleLogout();
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10 text-foreground">

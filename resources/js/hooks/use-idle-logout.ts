@@ -1,5 +1,8 @@
 // Auto-logout after inactivity, driven by the `auto_logout_seconds` SystemSetting
-// (0 = off). Side-effect only — mount once in AuthenticatedLayout.
+// (0 = off). Side-effect only — safe to mount on any page (it no-ops for guests
+// and when the timeout is off). The server-side EnforceIdleTimeout middleware is
+// the real boundary; this hook adds the warning toast + proactive redirect and
+// heartbeats the server so an active-but-not-navigating session stays alive.
 // See docs/features/notifications-sessions-audit.md.
 import { router, usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
@@ -20,19 +23,28 @@ const ACTIVITY_EVENTS = [
 const RESET_THROTTLE_MS = 1000;
 
 export function useIdleLogout(): void {
-    const seconds = usePage().props.settings.system.auto_logout_seconds;
+    const page = usePage();
+    const seconds = page.props.settings.system.auto_logout_seconds;
+    // Null at runtime for guests (despite the non-null type); the hook no-ops
+    // for them so it's safe to mount on public pages like `/` and `/contact`.
+    const userToken = page.props.auth.user?.token;
     // Guards against a double POST if activity races the firing logout timer.
     const loggingOut = useRef(false);
 
     useEffect(() => {
-        if (!seconds || seconds <= 0) return;
+        if (!seconds || seconds <= 0 || !userToken) return;
 
         // Warn the user shortly before the cutoff (capped at 30s, and never
         // longer than half the window so tiny timeouts still warn sensibly).
         const warnWindow = Math.min(30, Math.floor(seconds / 2));
+        // Bump the server's idle clock on activity, throttled well within the
+        // window so an actively-used page isn't logged out server-side.
+        const heartbeatThrottleMs =
+            Math.max(15, Math.floor(seconds / 3)) * 1000;
         let warnTimer: ReturnType<typeof setTimeout> | undefined;
         let logoutTimer: ReturnType<typeof setTimeout> | undefined;
         let lastReset = 0;
+        let lastHeartbeat = 0;
 
         const clearTimers = (): void => {
             if (warnTimer) clearTimeout(warnTimer);
@@ -62,6 +74,12 @@ export function useIdleLogout(): void {
 
         const onActivity = (): void => {
             const now = Date.now();
+
+            if (now - lastHeartbeat >= heartbeatThrottleMs) {
+                lastHeartbeat = now;
+                window.axios.post(route('session.heartbeat')).catch(() => {});
+            }
+
             if (now - lastReset < RESET_THROTTLE_MS) return;
             lastReset = now;
             schedule();
@@ -78,5 +96,5 @@ export function useIdleLogout(): void {
                 window.removeEventListener(event, onActivity),
             );
         };
-    }, [seconds]);
+    }, [seconds, userToken]);
 }

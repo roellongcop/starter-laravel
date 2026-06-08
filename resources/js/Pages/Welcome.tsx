@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
+import { useIdleLogout } from '@/hooks/use-idle-logout';
 import { useReveal } from '@/hooks/use-reveal';
 import { cn } from '@/lib/utils';
 import { type PageProps } from '@/types';
@@ -224,6 +225,10 @@ export default function Welcome({
     const { toggleTheme } = useTheme();
     const user = auth.user;
     const [lightbox, setLightbox] = useState<string | null>(null);
+
+    // This page has no layout, so mount the idle-logout watcher directly. A
+    // logged-in visitor on `/` would otherwise never be timed out client-side.
+    useIdleLogout();
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
