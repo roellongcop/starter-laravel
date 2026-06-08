@@ -88,7 +88,7 @@ export default function Index({ logs, filters }: Props) {
                             </TableRow>
                         )}
                         {logs.data.map((a) => (
-                            <TableRow key={a.id}>
+                            <TableRow key={a.token}>
                                 <TableCell>
                                     <Badge
                                         variant={
@@ -116,7 +116,9 @@ export default function Index({ logs, filters }: Props) {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <Button size="sm" variant="ghost" asChild>
-                                        <Link href={route('logs.show', a.id)}>
+                                        <Link
+                                            href={route('logs.show', a.token)}
+                                        >
                                             Details
                                         </Link>
                                     </Button>

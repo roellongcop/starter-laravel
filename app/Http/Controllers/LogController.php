@@ -47,6 +47,7 @@ class LogController extends Controller
                 'old_values' => $log->old_values,
                 'new_values' => $log->new_values,
                 'url' => $log->url,
+                'referrer' => $log->referrer,
                 'user_agent' => $log->user_agent,
             ],
         ]);
@@ -58,7 +59,7 @@ class LogController extends Controller
     protected function row(Audit $a): array
     {
         return [
-            'id' => $a->id,
+            'token' => $a->token,
             'event' => $a->event,
             'auditable_type' => class_basename((string) $a->auditable_type),
             'auditable_id' => $a->auditable_id,

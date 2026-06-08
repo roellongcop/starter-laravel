@@ -2,8 +2,10 @@
 
 use App\Enums\SystemRole;
 use App\Models\User;
+use App\Models\UserMeta;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use OwenIt\Auditing\Models\Audit;
 
 beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);
@@ -59,6 +61,77 @@ it('updates a user and re-syncs meta', function (): void {
     expect($user->name)->toBe('Renamed')
         ->and($user->user_status->value)->toBe('Blocked')
         ->and($user->meta()->pluck('key')->all())->toBe(['new']);
+});
+
+it('does not audit unchanged meta on save', function (): void {
+    // owen-it skips auditing under `php artisan test` unless console auditing is on.
+    config(['audit.console' => true]);
+
+    $user = User::factory()->create();
+    $user->meta()->create(['key' => 'rank', 'value' => 'Captain']);
+
+    $metaAudits = fn (): int => Audit::where('auditable_type', UserMeta::class)->count();
+    $before = $metaAudits();
+
+    // Re-submit the identical meta — nothing about the custom field changed.
+    $this->patch(route('users.update', $user), [
+        'name' => $user->name,
+        'email' => $user->email,
+        'user_status' => 'Active',
+        'roles' => [],
+        'meta' => [['key' => 'rank', 'value' => 'Captain']],
+    ])->assertRedirect(route('users.show', $user));
+
+    expect($metaAudits())->toBe($before);
+
+    // Actually changing the value records exactly one `updated` audit.
+    $this->patch(route('users.update', $user), [
+        'name' => $user->name,
+        'email' => $user->email,
+        'user_status' => 'Active',
+        'roles' => [],
+        'meta' => [['key' => 'rank', 'value' => 'Rear Admiral']],
+    ])->assertRedirect(route('users.show', $user));
+
+    expect($metaAudits())->toBe($before + 1)
+        ->and(Audit::where('auditable_type', UserMeta::class)->latest('id')->value('event'))->toBe('updated')
+        ->and($user->meta()->where('key', 'rank')->value('value'))->toBe('Rear Admiral');
+});
+
+it('audits role changes on a user', function (): void {
+    // owen-it skips auditing under `php artisan test` unless console auditing is on.
+    config(['audit.console' => true]);
+
+    $user = User::factory()->create();
+    $user->assignRole(SystemRole::Admin->value);
+
+    $roleAudits = fn () => Audit::where('auditable_type', User::class)
+        ->where('event', 'roles-synced');
+
+    // Changing the role set records one `roles-synced` audit with old/new roles.
+    $this->patch(route('users.update', $user), [
+        'name' => $user->name,
+        'email' => $user->email,
+        'user_status' => 'Active',
+        'roles' => [SystemRole::User->value],
+        'meta' => [],
+    ])->assertRedirect(route('users.show', $user));
+
+    $audit = $roleAudits()->latest('id')->first();
+    expect($roleAudits()->count())->toBe(1)
+        ->and($audit->old_values)->toBe(['roles' => [SystemRole::Admin->value]])
+        ->and($audit->new_values)->toBe(['roles' => [SystemRole::User->value]]);
+
+    // Re-submitting the same role set adds no further audit.
+    $this->patch(route('users.update', $user), [
+        'name' => $user->name,
+        'email' => $user->email,
+        'user_status' => 'Active',
+        'roles' => [SystemRole::User->value],
+        'meta' => [],
+    ])->assertRedirect(route('users.show', $user));
+
+    expect($roleAudits()->count())->toBe(1);
 });
 
 it('searches users by name/email', function (): void {

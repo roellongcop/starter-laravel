@@ -40,15 +40,47 @@ it('lists audit logs with parsed browser/os', function (): void {
             ->where('logs.data.0.browser', 'Chrome'));
 });
 
-it('shows an audit with old/new values', function (): void {
+it('shows an audit with old/new values, bound by token not id', function (): void {
     actingAsRole(SystemRole::Developer);
     $audit = makeAudit();
 
-    $this->get(route('logs.show', $audit->id))
+    expect($audit->token)->not->toBeEmpty();
+
+    // route() uses the model's route key (token), and the numeric id must not resolve.
+    $this->get(route('logs.show', $audit))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('Logs/Show')
             ->where('log.new_values.name', 'New'));
+
+    $this->get('/logs/'.$audit->id)->assertNotFound();
+});
+
+it('captures the originating page (referrer) on audited writes', function (): void {
+    // owen-it skips auditing under `php artisan test` unless console auditing is on.
+    config(['audit.console' => true]);
+    actingAsRole(SystemRole::Developer);
+
+    $user = User::factory()->create();
+    $page = 'http://localhost:8080/users/'.$user->token.'/edit';
+
+    // The write hits /users/{token} (recorded as `url`) but originates from the edit
+    // page (recorded as `referrer`) — mirroring an upload fired from a form.
+    $this->withHeader('referer', $page)
+        ->patch(route('users.update', $user), [
+            'name' => 'Renamed',
+            'email' => $user->email,
+            'user_status' => 'Active',
+            'roles' => [],
+            'meta' => [],
+        ])->assertRedirect(route('users.show', $user));
+
+    $audit = Audit::where('auditable_type', User::class)
+        ->where('auditable_id', $user->id)
+        ->where('event', 'updated')
+        ->latest('id')->first();
+
+    expect($audit->referrer)->toBe($page);
 });
 
 it('redirects guests away from logs', function (): void {

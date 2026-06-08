@@ -12,8 +12,10 @@ use App\Policies\BasePolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Inertia\Inertia;
 use Inertia\Response;
+use OwenIt\Auditing\Events\AuditCustom;
 
 class UserController extends Controller
 {
@@ -74,7 +76,7 @@ class UserController extends Controller
                 'name', 'email', 'username', 'password', 'password_hint', 'user_status',
             ]));
 
-            $user->syncRoles($request->array('roles'));
+            $this->syncRoles($user, $request->array('roles'));
             $this->syncMeta($user, $request->array('meta'));
             $this->syncAvatar($user, $request);
 
@@ -147,7 +149,7 @@ class UserController extends Controller
             }
 
             $user->update($data);
-            $user->syncRoles($request->array('roles'));
+            $this->syncRoles($user, $request->array('roles'));
             $this->syncMeta($user, $request->array('meta'));
             $this->syncAvatar($user, $request);
         });
@@ -188,19 +190,58 @@ class UserController extends Controller
     }
 
     /**
+     * Sync the user's roles, recording a custom audit entry when the set changes.
+     *
+     * spatie's syncRoles only touches the model_has_roles pivot — which owen-it does
+     * not audit — so role changes would otherwise go untracked. We keep syncRoles for
+     * its name resolution + permission-cache clearing and emit a manual audit on diff.
+     *
+     * @param  array<int, string>  $roles
+     */
+    protected function syncRoles(User $user, array $roles): void
+    {
+        $before = $user->roles()->orderBy('name')->pluck('name')->all();
+
+        $user->syncRoles($roles);
+
+        $after = $user->roles()->orderBy('name')->pluck('name')->all();
+
+        if ($before === $after) {
+            return;
+        }
+
+        $user->auditEvent = 'roles-synced';
+        $user->isCustomEvent = true;
+        $user->auditCustomOld = ['roles' => $before];
+        $user->auditCustomNew = ['roles' => $after];
+
+        Event::dispatch(new AuditCustom($user));
+    }
+
+    /**
      * Replace the user's meta rows with the submitted key/value set.
      *
      * @param  array<int, array{key?: string, value?: ?string}>  $meta
      */
     protected function syncMeta(User $user, array $meta): void
     {
-        $user->meta()->delete();
+        $keep = [];
 
         foreach ($meta as $row) {
             if (! empty($row['key'])) {
-                $user->meta()->create(['key' => $row['key'], 'value' => $row['value'] ?? null]);
+                // updateOrCreate only persists (and audits) when the row is new or its
+                // value actually changed — Eloquent skips the UPDATE when nothing is
+                // dirty — so an unchanged save no longer emits spurious meta audits.
+                $user->meta()->updateOrCreate(
+                    ['key' => $row['key']],
+                    ['value' => $row['value'] ?? null],
+                );
+                $keep[] = $row['key'];
             }
         }
+
+        // Remove only the keys the form no longer includes (audits a real deletion).
+        $user->meta()->whereNotIn('key', $keep)->delete();
     }
 
     /**

@@ -33,11 +33,11 @@ export default function Show({ log }: { log: AdminAudit }) {
             <Head title="Audit Detail" />
             <PageHeader
                 title={`${log.event} ${log.auditable_type} #${log.auditable_id}`}
-                description={`${log.user} · ${log.browser} / ${log.os} / ${log.device}`}
+                description={`${log.user} · ${log.browser} / ${log.os} / ${log.device}${log.tags ? ` | ${log.tags}` : ''}`}
                 actions={<BackButton fallback={route('logs.index')} />}
             />
 
-            <div className="mb-6 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mb-6 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-2">
                 <div>
                     <span className="text-muted-foreground">URL</span>
                     <div className="break-all">{log.url || '—'}</div>
@@ -47,8 +47,8 @@ export default function Show({ log }: { log: AdminAudit }) {
                     <div>{log.ip_address || '—'}</div>
                 </div>
                 <div>
-                    <span className="text-muted-foreground">Tags</span>
-                    <div>{log.tags || '—'}</div>
+                    <span className="text-muted-foreground">Referrer</span>
+                    <div>{log.referrer || '—'}</div>
                 </div>
                 <div>
                     <span className="text-muted-foreground">When</span>

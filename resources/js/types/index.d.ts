@@ -204,7 +204,7 @@ export interface AdminSession {
 }
 
 export interface AdminAudit {
-    id: number;
+    token: string;
     event: string;
     auditable_type: string;
     auditable_id: number | null;
@@ -219,6 +219,7 @@ export interface AdminAudit {
     old_values?: Record<string, unknown>;
     new_values?: Record<string, unknown>;
     url?: string | null;
+    referrer?: string | null;
     user_agent?: string | null;
 }
 

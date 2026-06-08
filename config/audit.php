@@ -1,6 +1,7 @@
 <?php
 
-use OwenIt\Auditing\Models\Audit;
+use App\Models\Audit;
+use App\Support\ReferrerResolver;
 use OwenIt\Auditing\Resolvers\IpAddressResolver;
 use OwenIt\Auditing\Resolvers\UrlResolver;
 use OwenIt\Auditing\Resolvers\UserAgentResolver;
@@ -51,6 +52,7 @@ return [
         'ip_address' => IpAddressResolver::class,
         'user_agent' => UserAgentResolver::class,
         'url' => UrlResolver::class,
+        'referrer' => ReferrerResolver::class,
     ],
 
     /*
