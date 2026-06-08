@@ -49,14 +49,23 @@ function Row({
 }
 
 function SystemTab({ data: init }: { data: Record<string, unknown> }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, transform, put, processing, errors } = useForm({
         app_name: String(init.app_name ?? ''),
         timezone: String(init.timezone ?? 'UTC'),
-        pagination_size: Number(init.pagination_size ?? 20),
-        auto_logout_seconds: Number(init.auto_logout_seconds ?? 0),
+        // Numeric fields are kept as strings so the input can be cleared while
+        // editing (Number('') === 0 would otherwise make the zero undeletable);
+        // they're coerced to numbers on submit below.
+        pagination_size: String(init.pagination_size ?? 20),
+        auto_logout_seconds: String(init.auto_logout_seconds ?? 0),
         whitelist_ip_only: Boolean(init.whitelist_ip_only),
         default_theme: String(init.default_theme ?? 'system'),
     });
+
+    transform((payload) => ({
+        ...payload,
+        pagination_size: Number(payload.pagination_size),
+        auto_logout_seconds: Number(payload.auto_logout_seconds || 0),
+    }));
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -94,7 +103,7 @@ function SystemTab({ data: init }: { data: Record<string, unknown> }) {
                         type="number"
                         value={data.pagination_size}
                         onChange={(e) =>
-                            setData('pagination_size', Number(e.target.value))
+                            setData('pagination_size', e.target.value)
                         }
                     />
                 </Row>
@@ -108,10 +117,7 @@ function SystemTab({ data: init }: { data: Record<string, unknown> }) {
                         type="number"
                         value={data.auto_logout_seconds}
                         onChange={(e) =>
-                            setData(
-                                'auto_logout_seconds',
-                                Number(e.target.value),
-                            )
+                            setData('auto_logout_seconds', e.target.value)
                         }
                     />
                 </Row>
