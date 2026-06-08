@@ -1,6 +1,10 @@
 import '../css/app.css';
 import './bootstrap';
 
+import '@fontsource/figtree/400.css';
+import '@fontsource/figtree/500.css';
+import '@fontsource/figtree/600.css';
+
 import { ThemeProvider } from '@/Components/ThemeProvider';
 import Toaster from '@/Components/Toaster';
 import { toast } from '@/hooks/use-toast';
