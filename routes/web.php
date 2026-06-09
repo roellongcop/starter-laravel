@@ -95,7 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('files', FileController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
 
     Route::post('ips/bulk', [IpController::class, 'bulk'])->name('ips.bulk');
-    Route::resource('ips', IpController::class);
+    Route::resource('ips', IpController::class)->except(['create', 'edit']);
 
     // Notifications
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');

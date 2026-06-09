@@ -17,9 +17,10 @@ import { type AdminIp, type SelectOption } from '@/types';
 interface Props {
     ip?: AdminIp;
     listTypes: SelectOption[];
+    onSuccess?: () => void;
 }
 
-export default function IpForm({ ip, listTypes }: Props) {
+export default function IpForm({ ip, listTypes, onSuccess }: Props) {
     const editing = Boolean(ip);
 
     const { data, setData, post, patch, processing, errors } = useForm({
@@ -30,10 +31,11 @@ export default function IpForm({ ip, listTypes }: Props) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        const options = { preserveScroll: true, onSuccess };
         if (editing && ip) {
-            patch(route('ips.update', ip.token));
+            patch(route('ips.update', ip.token), options);
         } else {
-            post(route('ips.store'));
+            post(route('ips.store'), options);
         }
     };
 

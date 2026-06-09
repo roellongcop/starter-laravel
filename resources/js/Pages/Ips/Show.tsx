@@ -1,4 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import { useState } from 'react';
 
 import BackButton from '@/Components/BackButton.js';
 import Can from '@/Components/Can';
@@ -6,10 +7,25 @@ import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminIp } from '@/types';
+import { type AdminIp, type SelectOption } from '@/types';
+import IpForm from './Partials/IpForm';
 
-export default function Show({ ip }: { ip: AdminIp }) {
+interface Props {
+    ip: AdminIp;
+    listTypes: SelectOption[];
+}
+
+export default function Show({ ip, listTypes }: Props) {
+    const [editOpen, setEditOpen] = useState(false);
+
     return (
         <AuthenticatedLayout>
             <Head title={ip.ip_address} />
@@ -20,10 +36,8 @@ export default function Show({ ip }: { ip: AdminIp }) {
                     <>
                         <BackButton fallback={route('ips.index')} />
                         <Can ability="ips.update">
-                            <Button asChild>
-                                <Link href={route('ips.edit', ip.token)}>
-                                    Edit
-                                </Link>
+                            <Button onClick={() => setEditOpen(true)}>
+                                Edit
                             </Button>
                         </Can>
                     </>
@@ -56,6 +70,28 @@ export default function Show({ ip }: { ip: AdminIp }) {
                     </div>
                 </CardContent>
             </Card>
+
+            <Sheet open={editOpen} onOpenChange={setEditOpen}>
+                <SheetContent
+                    side="right"
+                    className="w-full overflow-y-auto sm:max-w-md"
+                >
+                    <SheetHeader>
+                        <SheetTitle>{`Edit ${ip.ip_address}`}</SheetTitle>
+                        <SheetDescription>
+                            Whitelist or blacklist entry enforced by the IP
+                            middleware.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                        <IpForm
+                            ip={ip}
+                            listTypes={listTypes}
+                            onSuccess={() => setEditOpen(false)}
+                        />
+                    </div>
+                </SheetContent>
+            </Sheet>
         </AuthenticatedLayout>
     );
 }

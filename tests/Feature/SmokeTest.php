@@ -66,9 +66,7 @@ it('renders every page route with a 200', function (): void {
         ['files.create', []],
         ['files.show', [$file]],
         ['ips.index', []],
-        ['ips.create', []],
         ['ips.show', [$ip]],
-        ['ips.edit', [$ip]],
     ];
 
     foreach ($pages as [$name, $params]) {

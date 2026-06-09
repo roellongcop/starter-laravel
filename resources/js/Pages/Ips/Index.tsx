@@ -11,6 +11,13 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+} from '@/Components/ui/sheet';
+import {
     Table,
     TableBody,
     TableCell,
@@ -19,11 +26,13 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminIp, type CursorResponse } from '@/types';
+import { type AdminIp, type CursorResponse, type SelectOption } from '@/types';
+import IpForm from './Partials/IpForm';
 
 interface Props {
     ips: CursorResponse<AdminIp>;
     filters: { search: string; inactive: boolean };
+    listTypes: SelectOption[];
     can: {
         create: boolean;
         update: boolean;
@@ -34,11 +43,23 @@ interface Props {
 
 type BulkProcess = 'active' | 'in_active' | 'delete' | 'white_list';
 
-export default function Index({ ips, filters }: Props) {
+export default function Index({ ips, filters, listTypes }: Props) {
     const [search, setSearch] = useState(filters.search);
     const [selected, setSelected] = useState<string[]>([]);
     const [bulk, setBulk] = useState<BulkProcess | null>(null);
     const [deleting, setDeleting] = useState<AdminIp | null>(null);
+    const [formOpen, setFormOpen] = useState(false);
+    const [formIp, setFormIp] = useState<AdminIp | null>(null);
+
+    const openCreate = () => {
+        setFormIp(null);
+        setFormOpen(true);
+    };
+
+    const openEdit = (ip: AdminIp) => {
+        setFormIp(ip);
+        setFormOpen(true);
+    };
 
     const reload = (params: Record<string, string | number | undefined>) =>
         router.get(route('ips.index'), params, {
@@ -89,10 +110,8 @@ export default function Index({ ips, filters }: Props) {
                 description="Whitelist / blacklist entries enforced by the IP middleware."
                 actions={
                     <Can ability="ips.create">
-                        <Button asChild>
-                            <Link href={route('ips.create')}>
-                                <Plus className="h-4 w-4" /> New Entry
-                            </Link>
+                        <Button onClick={openCreate}>
+                            <Plus className="h-4 w-4" /> New Entry
                         </Button>
                     </Can>
                 }
@@ -209,16 +228,9 @@ export default function Index({ ips, filters }: Props) {
                                                 variant="ghost"
                                                 title="Edit"
                                                 aria-label="Edit"
-                                                asChild
+                                                onClick={() => openEdit(ip)}
                                             >
-                                                <Link
-                                                    href={route(
-                                                        'ips.edit',
-                                                        ip.token,
-                                                    )}
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Link>
+                                                <Pencil className="h-4 w-4" />
                                             </Button>
                                         </Can>
                                         <Can ability="ips.delete">
@@ -246,6 +258,33 @@ export default function Index({ ips, filters }: Props) {
                     prevCursor={ips.prev_cursor}
                 />
             </div>
+
+            <Sheet open={formOpen} onOpenChange={setFormOpen}>
+                <SheetContent
+                    side="right"
+                    className="w-full overflow-y-auto sm:max-w-md"
+                >
+                    <SheetHeader>
+                        <SheetTitle>
+                            {formIp
+                                ? `Edit ${formIp.ip_address}`
+                                : 'New IP Entry'}
+                        </SheetTitle>
+                        <SheetDescription>
+                            Whitelist or blacklist entry enforced by the IP
+                            middleware.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                        <IpForm
+                            key={formIp?.token ?? 'new'}
+                            ip={formIp ?? undefined}
+                            listTypes={listTypes}
+                            onSuccess={() => setFormOpen(false)}
+                        />
+                    </div>
+                </SheetContent>
+            </Sheet>
 
             <ConfirmDialog
                 open={bulk !== null}

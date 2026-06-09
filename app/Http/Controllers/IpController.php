@@ -44,34 +44,20 @@ class IpController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        $this->authorize('create', Ip::class);
-
-        return Inertia::render('Ips/Create', ['listTypes' => IpListType::options()]);
-    }
-
     public function store(StoreIpRequest $request): RedirectResponse
     {
         $this->authorize('create', Ip::class);
 
-        $ip = Ip::create($request->validated());
+        Ip::create($request->validated());
 
-        return redirect()->route('ips.show', $ip)->with('success', 'IP entry created.');
+        return redirect()->route('ips.index')->with('success', 'IP entry created.');
     }
 
     public function show(Ip $ip): Response
     {
         $this->authorize('view', $ip);
 
-        return Inertia::render('Ips/Show', ['ip' => $this->row($ip)]);
-    }
-
-    public function edit(Ip $ip): Response
-    {
-        $this->authorize('update', $ip);
-
-        return Inertia::render('Ips/Edit', [
+        return Inertia::render('Ips/Show', [
             'ip' => $this->row($ip),
             'listTypes' => IpListType::options(),
         ]);
@@ -83,7 +69,7 @@ class IpController extends Controller
 
         $ip->update($request->validated());
 
-        return redirect()->route('ips.show', $ip)->with('success', 'IP entry updated.');
+        return back()->with('success', 'IP entry updated.');
     }
 
     public function destroy(Ip $ip): RedirectResponse
