@@ -59,7 +59,7 @@ class ExportController extends Controller
         ]);
 
         // Small exports run inline (immediate download); larger ones queue + notify.
-        $count = (new UsersExport($filters))->query()->count();
+        $count = (new UsersExport($filters, owner: $request->user()))->query()->count();
 
         if ($count <= config('keen.export_sync_threshold')) {
             GenerateExportJob::dispatchSync($export, notify: false);

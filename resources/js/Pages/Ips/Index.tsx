@@ -34,17 +34,11 @@ interface Props {
     ips: CursorResponse<AdminIp>;
     filters: { search: string; inactive: boolean };
     listTypes: SelectOption[];
-    can: {
-        create: boolean;
-        update: boolean;
-        delete: boolean;
-        viewInactive: boolean;
-    };
 }
 
 type BulkProcess = 'active' | 'in_active' | 'delete' | 'white_list';
 
-export default function Index({ ips, filters, listTypes, can }: Props) {
+export default function Index({ ips, filters, listTypes }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'ips.index',
         initial: filters,
@@ -116,13 +110,6 @@ export default function Index({ ips, filters, listTypes, can }: Props) {
                         onChange={(v) => f.set('search', v)}
                         placeholder="Search IP or description…"
                     />
-                    {can.viewInactive && (
-                        <FilterBar.Checkbox
-                            checked={f.values.inactive}
-                            onChange={(c) => f.apply({ inactive: c })}
-                            label="Show inactive"
-                        />
-                    )}
                 </FilterBar>
 
                 {selected.length > 0 && (

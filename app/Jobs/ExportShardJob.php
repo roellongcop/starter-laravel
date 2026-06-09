@@ -53,7 +53,7 @@ class ExportShardJob implements ShouldQueue
         $partName = 'part-'.str_pad((string) $this->part, 3, '0', STR_PAD_LEFT).".{$format}";
         $partPath = "{$this->partDir}/{$partName}";
 
-        $source = new UsersExport($filters, $this->window);
+        $source = new UsersExport($filters, $this->window, owner: $this->export->user);
 
         if ($format === 'pdf') {
             $users = $source->query()->get();

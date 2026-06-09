@@ -34,7 +34,7 @@ class GenerateExportJob implements ShouldQueue
         try {
             $filters = $this->export->filters ?? [];
             $filename = dated_path("users-{$this->export->id}-".now()->format('Ymd-His').".{$this->export->format}");
-            $source = new UsersExport($filters);
+            $source = new UsersExport($filters, owner: $this->export->user);
 
             if ($this->export->format === 'pdf') {
                 $users = $source->query()->get();

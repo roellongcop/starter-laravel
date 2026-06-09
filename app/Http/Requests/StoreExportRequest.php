@@ -14,6 +14,9 @@ class StoreExportRequest extends BaseFormRequest
             'resource' => ['required', 'in:users'],
             'filters' => ['array'],
             'filters.search' => ['nullable', 'string', 'max:255'],
+            'filters.inactive' => ['nullable', 'boolean'],
+            'filters.date_from' => ['nullable', 'date'],
+            'filters.date_to' => ['nullable', 'date'],
         ];
     }
 }

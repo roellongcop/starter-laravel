@@ -39,7 +39,7 @@ class DispatchExportJob implements ShouldQueue
         $this->export->update(['status' => UserExportStatus::Running]);
 
         $filters = $this->export->filters ?? [];
-        $ids = (new UsersExport($filters))->query()->reorder('id')->pluck('id');
+        $ids = (new UsersExport($filters, owner: $this->export->user))->query()->reorder('id')->pluck('id');
         $total = $ids->count();
 
         $this->export->update(['total_rows' => $total, 'processed_rows' => 0]);

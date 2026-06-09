@@ -127,6 +127,7 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
             resource: 'users',
             filters: {
                 search: f.values.search,
+                inactive: f.values.inactive ? 1 : undefined,
                 // date_from: f.values.date_from,
                 // date_to: f.values.date_to,
             },

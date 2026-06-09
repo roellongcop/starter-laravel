@@ -170,6 +170,54 @@ it('exports spreadsheets with real column-name headers', function (): void {
     expect($csv)->toContain('"id","name","email","username","user_status","roles","password","password_hint","created_at","updated_at"');
 });
 
+it('honors the inactive filter in the export', function (): void {
+    Storage::fake('exports');
+    $owner = actingAsRole(SystemRole::Developer); // has view-inactive
+
+    $active = User::factory()->create(['name' => 'Active Annie']);
+    $inactive = User::factory()->create(['name' => 'Inactive Ivan']);
+    $inactive->inactivate();
+
+    $export = UserExport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'format' => 'csv',
+        'resource' => 'users',
+        'filters' => ['inactive' => true],
+        'status' => UserExportStatus::Pending,
+    ]);
+
+    (new GenerateExportJob($export, notify: false))->handle();
+
+    $csv = (string) Storage::disk('exports')->get($export->fresh()->filename);
+    expect($csv)->toContain('Inactive Ivan')
+        ->and($csv)->not->toContain('Active Annie');
+});
+
+it('drops the inactive filter for an owner without view-inactive', function (): void {
+    Storage::fake('exports');
+    $owner = actingAsRole(SystemRole::Admin); // lacks view-inactive
+
+    User::factory()->create(['name' => 'Active Annie']);
+    User::factory()->create(['name' => 'Inactive Ivan'])->inactivate();
+
+    $export = UserExport::create([
+        'user_id' => $owner->id,
+        'token' => 'tok-'.uniqid(),
+        'format' => 'csv',
+        'resource' => 'users',
+        'filters' => ['inactive' => true],
+        'status' => UserExportStatus::Pending,
+    ]);
+
+    (new GenerateExportJob($export, notify: false))->handle();
+
+    // Gate denies inactive rows; the export falls back to the active scope.
+    $csv = (string) Storage::disk('exports')->get($export->fresh()->filename);
+    expect($csv)->toContain('Active Annie')
+        ->and($csv)->not->toContain('Inactive Ivan');
+});
+
 it('round-trips a csv export back through the import', function (): void {
     Storage::fake('exports');
     Storage::fake('imports');

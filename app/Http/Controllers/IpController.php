@@ -7,7 +7,6 @@ use App\Filters\IpFilters;
 use App\Http\Requests\StoreIpRequest;
 use App\Http\Requests\UpdateIpRequest;
 use App\Models\Ip;
-use App\Policies\BasePolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,12 +27,6 @@ class IpController extends Controller
             'ips' => cursorResponse($ips, fn (Ip $ip) => $this->row($ip)),
             'filters' => $filters->echoBack(),
             'listTypes' => IpListType::options(),
-            'can' => [
-                'create' => $request->user()->can('ips.create'),
-                'update' => $request->user()->can('ips.update'),
-                'delete' => $request->user()->can('ips.delete'),
-                'viewInactive' => $request->user()->can(BasePolicy::VIEW_INACTIVE),
-            ],
         ]);
     }
 

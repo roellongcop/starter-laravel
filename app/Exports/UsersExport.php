@@ -2,8 +2,11 @@
 
 namespace App\Exports;
 
+use App\Filters\UserFilters;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Pipeline\Pipeline;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -21,21 +24,27 @@ class UsersExport implements FromQuery, WithHeadings, WithMapping
     /**
      * @param  array<string, mixed>  $filters
      * @param  array{0: int, 1: int}|null  $window  inclusive [low id, high id] bound for one shard
+     * @param  User|null  $owner  export owner; gates the permission-bound filters (e.g. inactive)
      */
-    public function __construct(public array $filters = [], public ?array $window = null) {}
+    public function __construct(
+        public array $filters = [],
+        public ?array $window = null,
+        public ?User $owner = null,
+    ) {}
 
     /**
      * @return Builder<User>
      */
     public function query(): Builder
     {
-        $search = $this->filters['search'] ?? null;
+        // Reuse the index's UserFilters so the export honors the same filters
+        $request = Request::create('/', 'GET', $this->filters);
+        $request->setUserResolver(fn () => $this->owner);
 
-        return User::query()
+        $filters = new UserFilters($request, app(Pipeline::class));
+
+        return $filters->apply(User::query())
             ->with('roles:id,name')
-            ->when($search, fn (Builder $q) => $q->where(fn (Builder $w) => $w
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")))
             ->when($this->window, fn (Builder $q) => $q->whereBetween('id', $this->window))
             ->orderBy('id');
     }
