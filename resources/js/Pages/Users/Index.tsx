@@ -1,11 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Columns3, Download, Pencil, Plus, Trash2 } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { useState } from 'react';
 
 import Avatar from '@/Components/Avatar';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import CursorPager from '@/Components/CursorPager';
+import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -18,7 +19,6 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { Input } from '@/Components/ui/input';
 import {
     Table,
     TableBody,
@@ -27,6 +27,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminUser, type CursorResponse } from '@/types';
 
@@ -54,9 +55,10 @@ type Column = 'email' | 'status' | 'roles';
 const COLUMN_KEY = 'users.columns';
 
 export default function Index({ users, filters, can, exportFormats }: Props) {
-    const [search, setSearch] = useState(filters.search);
-    // const [dateFrom, setDateFrom] = useState(filters.date_from);
-    // const [dateTo, setDateTo] = useState(filters.date_to);
+    const f = useFilters<Props['filters']>({
+        route: 'users.index',
+        initial: filters,
+    });
     const [selected, setSelected] = useState<string[]>([]);
     const [bulk, setBulk] = useState<BulkProcess | null>(null);
     const [deleting, setDeleting] = useState<AdminUser | null>(null);
@@ -83,28 +85,6 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
             localStorage.setItem(COLUMN_KEY, JSON.stringify(next));
             return next;
         });
-
-    const reload = (params: Record<string, string | number | undefined>) =>
-        router.get(route('users.index'), params, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-
-    const currentFilters = () => ({
-        search,
-        inactive: filters.inactive ? 1 : undefined,
-        // date_from: dateFrom || undefined,
-        // date_to: dateTo || undefined,
-    });
-
-    const submitSearch: FormEventHandler = (e) => {
-        e.preventDefault();
-        reload(currentFilters());
-    };
-
-    const toggleInactive = (checked: boolean) =>
-        reload({ ...currentFilters(), inactive: checked ? 1 : undefined });
 
     const toggleRow = (id: string) =>
         setSelected((s) =>
@@ -146,9 +126,9 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
             format,
             resource: 'users',
             filters: {
-                search,
-                // date_from: dateFrom,
-                // date_to: dateTo
+                search: f.values.search,
+                // date_from: f.values.date_from,
+                // date_to: f.values.date_to,
             },
         });
 
@@ -173,30 +153,20 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
             />
 
             <div className="mb-4 flex flex-wrap gap-3">
-                <form
-                    onSubmit={submitSearch}
-                    className="flex flex-wrap items-end gap-2"
-                >
-                    <Input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                <FilterBar onSubmit={f.submit}>
+                    <FilterBar.Search
+                        value={f.values.search}
+                        onChange={(v) => f.set('search', v)}
                         placeholder="Search name, email, username…"
-                        className="w-64"
                     />
-                    <Button type="submit" variant="secondary">
-                        Search
-                    </Button>
-                </form>
-
-                {can.viewInactive && (
-                    <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Checkbox
-                            checked={filters.inactive}
-                            onCheckedChange={(c) => toggleInactive(Boolean(c))}
+                    {can.viewInactive && (
+                        <FilterBar.Checkbox
+                            checked={f.values.inactive}
+                            onChange={(c) => f.apply({ inactive: c })}
+                            label="Show inactive"
                         />
-                        Show inactive
-                    </label>
-                )}
+                    )}
+                </FilterBar>
 
                 <div className="ml-auto flex items-center gap-2">
                     <DropdownMenu>

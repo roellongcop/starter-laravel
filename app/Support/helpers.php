@@ -14,6 +14,19 @@ if (! function_exists('dated_path')) {
     }
 }
 
+if (! function_exists('escape_like')) {
+    /**
+     * Escape LIKE metacharacters (\ % _) so user-supplied search input is
+     * matched literally instead of as wildcards. The default '\' escape char
+     * works on MySQL/MariaDB and SQLite. Used by the filter primitives and any
+     * raw query-builder search (e.g. SessionController).
+     */
+    function escape_like(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $value);
+    }
+}
+
 if (! function_exists('cursorResponse')) {
     /**
      * Normalize a keyset paginator into the <CursorPager> envelope

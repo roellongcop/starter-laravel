@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserExportStatus;
 use App\Exports\UsersExport;
+use App\Filters\ExportFilters;
 use App\Http\Requests\StoreExportRequest;
 use App\Jobs\DispatchExportJob;
 use App\Jobs\GenerateExportJob;
@@ -17,24 +18,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, ExportFilters $filters): Response
     {
         $this->authorize('viewAny', UserExport::class);
 
-        $search = trim((string) $request->string('search'));
-
-        $exports = UserExport::query()
-            ->where('user_id', $request->user()->id)
-            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('resource', 'like', "%{$search}%")
-                ->orWhere('format', 'like', "%{$search}%")))
+        $exports = $filters->apply(UserExport::query())
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
 
         return Inertia::render('Exports/Index', [
             'exports' => cursorResponse($exports, fn (UserExport $e) => $this->row($e)),
-            'filters' => ['search' => $search],
+            'filters' => $filters->echoBack(),
             'can' => ['create' => $request->user()->can('exports.create')],
         ]);
     }

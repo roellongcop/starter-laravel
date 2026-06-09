@@ -6,11 +6,12 @@ import {
     RotateCcw,
     Trash2,
 } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { useState } from 'react';
 
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import CursorPager from '@/Components/CursorPager';
+import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
 import { Button } from '@/Components/ui/button';
@@ -21,7 +22,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/Components/ui/dialog';
-import { Input } from '@/Components/ui/input';
 import {
     Table,
     TableBody,
@@ -30,6 +30,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminBackup, type CursorResponse } from '@/types';
 
@@ -52,21 +53,15 @@ function humanSize(bytes: number | null): string {
 }
 
 export default function Index({ backups, filters, can }: Props) {
-    const [search, setSearch] = useState(filters.search);
+    const f = useFilters<Props['filters']>({
+        route: 'backups.index',
+        initial: filters,
+    });
     const [confirm, setConfirm] = useState<null | {
         action: 'restore' | 'delete';
         backup: AdminBackup;
     }>(null);
     const [errorDetail, setErrorDetail] = useState<AdminBackup | null>(null);
-
-    const submitSearch: FormEventHandler = (e) => {
-        e.preventDefault();
-        router.get(
-            route('backups.index'),
-            { search },
-            { preserveState: true, preserveScroll: true, replace: true },
-        );
-    };
 
     const run = () => {
         if (!confirm) return;
@@ -113,17 +108,13 @@ export default function Index({ backups, filters, can }: Props) {
                 }
             />
 
-            <form onSubmit={submitSearch} className="mb-4 flex gap-2">
-                <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+            <FilterBar onSubmit={f.submit} className="mb-4">
+                <FilterBar.Search
+                    value={f.values.search}
+                    onChange={(v) => f.set('search', v)}
                     placeholder="Search filename…"
-                    className="w-64"
                 />
-                <Button type="submit" variant="secondary">
-                    Search
-                </Button>
-            </form>
+            </FilterBar>
 
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>

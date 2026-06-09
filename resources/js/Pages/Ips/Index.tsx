@@ -1,15 +1,15 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { useState } from 'react';
 
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import CursorPager from '@/Components/CursorPager';
+import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { Input } from '@/Components/ui/input';
 import {
     Sheet,
     SheetContent,
@@ -25,6 +25,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminIp, type CursorResponse, type SelectOption } from '@/types';
 import IpForm from './Partials/IpForm';
@@ -43,8 +44,11 @@ interface Props {
 
 type BulkProcess = 'active' | 'in_active' | 'delete' | 'white_list';
 
-export default function Index({ ips, filters, listTypes }: Props) {
-    const [search, setSearch] = useState(filters.search);
+export default function Index({ ips, filters, listTypes, can }: Props) {
+    const f = useFilters<Props['filters']>({
+        route: 'ips.index',
+        initial: filters,
+    });
     const [selected, setSelected] = useState<string[]>([]);
     const [bulk, setBulk] = useState<BulkProcess | null>(null);
     const [deleting, setDeleting] = useState<AdminIp | null>(null);
@@ -59,18 +63,6 @@ export default function Index({ ips, filters, listTypes }: Props) {
     const openEdit = (ip: AdminIp) => {
         setFormIp(ip);
         setFormOpen(true);
-    };
-
-    const reload = (params: Record<string, string | number | undefined>) =>
-        router.get(route('ips.index'), params, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-
-    const submitSearch: FormEventHandler = (e) => {
-        e.preventDefault();
-        reload({ search, inactive: filters.inactive ? 1 : undefined });
     };
 
     const toggleRow = (id: string) =>
@@ -118,17 +110,20 @@ export default function Index({ ips, filters, listTypes }: Props) {
             />
 
             <div className="mb-4 flex flex-wrap items-center gap-3">
-                <form onSubmit={submitSearch} className="flex gap-2">
-                    <Input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                <FilterBar onSubmit={f.submit}>
+                    <FilterBar.Search
+                        value={f.values.search}
+                        onChange={(v) => f.set('search', v)}
                         placeholder="Search IP or description…"
-                        className="w-64"
                     />
-                    <Button type="submit" variant="secondary">
-                        Search
-                    </Button>
-                </form>
+                    {can.viewInactive && (
+                        <FilterBar.Checkbox
+                            checked={f.values.inactive}
+                            onChange={(c) => f.apply({ inactive: c })}
+                            label="Show inactive"
+                        />
+                    )}
+                </FilterBar>
 
                 {selected.length > 0 && (
                     <div className="ml-auto flex items-center gap-2">

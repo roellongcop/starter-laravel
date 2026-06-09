@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Filters\ThemeFilters;
 use App\Http\Requests\StoreThemeRequest;
 use App\Http\Requests\UpdateThemeRequest;
 use App\Models\Theme;
@@ -13,21 +14,18 @@ use Inertia\Response;
 
 class ThemeController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, ThemeFilters $filters): Response
     {
         $this->authorize('viewAny', Theme::class);
 
-        $search = trim((string) $request->string('search'));
-
-        $themes = Theme::query()
-            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+        $themes = $filters->apply(Theme::query())
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
 
         return Inertia::render('Themes/Index', [
             'themes' => cursorResponse($themes, fn (Theme $t) => $this->row($t)),
-            'filters' => ['search' => $search],
+            'filters' => $filters->echoBack(),
             'can' => [
                 'create' => $request->user()->can('themes.create'),
                 'update' => $request->user()->can('themes.update'),

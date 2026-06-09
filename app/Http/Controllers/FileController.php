@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\StoreUploadedFile;
+use App\Filters\FileFilters;
 use App\Http\Requests\StoreFileRequest;
 use App\Models\File;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -17,16 +18,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FileController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, FileFilters $filters): Response
     {
         $this->authorize('viewAny', File::class);
 
-        $search = trim((string) $request->string('search'));
-
-        $files = File::query()
-            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('original_name', 'like', "%{$search}%")
-                ->orWhere('tag', 'like', "%{$search}%")))
+        $files = $filters->apply(File::query())
             ->with('owner:id,name')
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
@@ -34,7 +30,7 @@ class FileController extends Controller
 
         return Inertia::render('Files/Index', [
             'files' => cursorResponse($files, fn (File $f) => $this->row($f)),
-            'filters' => ['search' => $search],
+            'filters' => $filters->echoBack(),
             'can' => [
                 'create' => $request->user()->can('files.create'),
                 'delete' => $request->user()->can('files.delete'),

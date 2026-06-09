@@ -1,11 +1,9 @@
-import { Head, router } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
+import { Head } from '@inertiajs/react';
 
 import CursorPager from '@/Components/CursorPager';
+import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
 import {
     Table,
     TableBody,
@@ -14,6 +12,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminLoginHistory, type CursorResponse } from '@/types';
 
@@ -28,20 +27,10 @@ const eventColor: Record<string, 'default' | 'secondary'> = {
 };
 
 export default function Index({ history, filters }: Props) {
-    const [search, setSearch] = useState(filters.search);
-
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        router.get(
-            route('login-history.index'),
-            { search, event: filters.event },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            },
-        );
-    };
+    const f = useFilters<Props['filters']>({
+        route: 'login-history.index',
+        initial: filters,
+    });
 
     return (
         <AuthenticatedLayout>
@@ -51,17 +40,13 @@ export default function Index({ history, filters }: Props) {
                 description="Read-only record of user sign-ins and sign-outs."
             />
 
-            <form onSubmit={submit} className="mb-4 flex gap-2">
-                <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+            <FilterBar onSubmit={f.submit} className="mb-4">
+                <FilterBar.Search
+                    value={f.values.search}
+                    onChange={(v) => f.set('search', v)}
                     placeholder="Search user or IP"
-                    className="w-64"
                 />
-                <Button type="submit" variant="secondary">
-                    Search
-                </Button>
-            </form>
+            </FilterBar>
 
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>

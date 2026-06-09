@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BackupStatus;
+use App\Filters\BackupFilters;
 use App\Jobs\CreateBackupJob;
 use App\Jobs\RestoreBackupJob;
 use App\Models\Backup;
@@ -15,21 +16,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BackupController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, BackupFilters $filters): Response
     {
         $this->authorize('viewAny', Backup::class);
 
-        $search = trim((string) $request->string('search'));
-
-        $backups = Backup::query()
-            ->when($search !== '', fn ($q) => $q->where('filename', 'like', "%{$search}%"))
+        $backups = $filters->apply(Backup::query())
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
 
         return Inertia::render('Backups/Index', [
             'backups' => cursorResponse($backups, fn (Backup $b) => $this->row($b)),
-            'filters' => ['search' => $search],
+            'filters' => $filters->echoBack(),
             'can' => [
                 'create' => $request->user()->can('backups.create'),
                 'restore' => $request->user()->can('backups.update'),

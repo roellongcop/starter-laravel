@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\IpListType;
+use App\Filters\IpFilters;
 use App\Http\Requests\StoreIpRequest;
 use App\Http\Requests\UpdateIpRequest;
 use App\Models\Ip;
@@ -14,26 +15,18 @@ use Inertia\Response;
 
 class IpController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, IpFilters $filters): Response
     {
         $this->authorize('viewAny', Ip::class);
 
-        $search = trim((string) $request->string('search'));
-        $inactive = $request->boolean('inactive')
-            && $request->user()->can(BasePolicy::VIEW_INACTIVE);
-
-        $ips = Ip::query()
-            ->when($inactive, fn ($q) => $q->onlyInactive())
-            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('ip_address', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")))
+        $ips = $filters->apply(Ip::query())
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
 
         return Inertia::render('Ips/Index', [
             'ips' => cursorResponse($ips, fn (Ip $ip) => $this->row($ip)),
-            'filters' => ['search' => $search, 'inactive' => $inactive],
+            'filters' => $filters->echoBack(),
             'listTypes' => IpListType::options(),
             'can' => [
                 'create' => $request->user()->can('ips.create'),

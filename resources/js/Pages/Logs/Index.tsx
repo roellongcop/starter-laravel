@@ -1,11 +1,10 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
 
 import CursorPager from '@/Components/CursorPager';
+import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
 import {
     Table,
     TableBody,
@@ -14,6 +13,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminAudit, type CursorResponse } from '@/types';
 
@@ -29,20 +29,10 @@ const eventColor: Record<string, 'default' | 'secondary' | 'destructive'> = {
 };
 
 export default function Index({ logs, filters }: Props) {
-    const [type, setType] = useState(filters.type);
-
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        router.get(
-            route('logs.index'),
-            { type, event: filters.event },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            },
-        );
-    };
+    const f = useFilters<Props['filters']>({
+        route: 'logs.index',
+        initial: filters,
+    });
 
     return (
         <AuthenticatedLayout>
@@ -52,17 +42,13 @@ export default function Index({ logs, filters }: Props) {
                 description="Read-only model change history."
             />
 
-            <form onSubmit={submit} className="mb-4 flex gap-2">
-                <Input
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
+            <FilterBar onSubmit={f.submit} className="mb-4">
+                <FilterBar.Search
+                    value={f.values.type}
+                    onChange={(v) => f.set('type', v)}
                     placeholder="Search Model"
-                    className="w-64"
                 />
-                <Button type="submit" variant="secondary">
-                    Search
-                </Button>
-            </form>
+            </FilterBar>
 
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>

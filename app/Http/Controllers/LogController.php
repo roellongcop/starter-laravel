@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Filters\LogFilters;
 use App\Models\Audit;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,16 +14,11 @@ use Inertia\Response;
  */
 class LogController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, LogFilters $filters): Response
     {
         $this->authorize('logs.index');
 
-        $event = trim((string) $request->string('event'));
-        $type = trim((string) $request->string('type'));
-
-        $audits = Audit::query()
-            ->when($event !== '', fn ($q) => $q->where('event', $event))
-            ->when($type !== '', fn ($q) => $q->where('auditable_type', 'like', "%{$type}%"))
+        $audits = $filters->apply(Audit::query())
             ->with('user')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
@@ -31,7 +27,7 @@ class LogController extends Controller
 
         return Inertia::render('Logs/Index', [
             'logs' => cursorResponse($audits, fn (Audit $a) => $this->row($a)),
-            'filters' => ['event' => $event, 'type' => $type],
+            'filters' => $filters->echoBack(),
         ]);
     }
 

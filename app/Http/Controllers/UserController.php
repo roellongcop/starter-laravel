@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserStatus;
+use App\Filters\UserFilters;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\File;
@@ -19,24 +20,11 @@ use OwenIt\Auditing\Events\AuditCustom;
 
 class UserController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, UserFilters $filters): Response
     {
         $this->authorize('viewAny', User::class);
 
-        $search = trim((string) $request->string('search'));
-        $dateFrom = trim((string) $request->string('date_from'));
-        $dateTo = trim((string) $request->string('date_to'));
-        $inactive = $request->boolean('inactive')
-            && $request->user()->can(BasePolicy::VIEW_INACTIVE);
-
-        $query = User::query()
-            ->when($inactive, fn ($q) => $q->onlyInactive())
-            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
-                ->orWhere('username', 'like', "%{$search}%")))
-            ->when($dateFrom !== '', fn ($q) => $q->whereDate('users.created_at', '>=', $dateFrom))
-            ->when($dateTo !== '', fn ($q) => $q->whereDate('users.created_at', '<=', $dateTo));
+        $query = $filters->apply(User::query());
 
         $total = (clone $query)->count();
 
@@ -48,7 +36,7 @@ class UserController extends Controller
 
         return Inertia::render('Users/Index', [
             'users' => cursorResponse($users, fn (User $u) => $this->row($u), $total),
-            'filters' => ['search' => $search, 'inactive' => $inactive, 'date_from' => $dateFrom, 'date_to' => $dateTo],
+            'filters' => $filters->echoBack(),
             'can' => [
                 'create' => $request->user()->can('users.create'),
                 'update' => $request->user()->can('users.update'),

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserImportStatus;
+use App\Filters\ImportFilters;
 use App\Http\Requests\StoreImportRequest;
 use App\Imports\UsersPreview;
 use App\Jobs\DispatchImportJob;
@@ -17,24 +18,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ImportController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, ImportFilters $filters): Response
     {
         $this->authorize('viewAny', UserImport::class);
 
-        $search = trim((string) $request->string('search'));
-
-        $imports = UserImport::query()
-            ->where('user_id', $request->user()->id)
-            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('resource', 'like', "%{$search}%")
-                ->orWhere('filename', 'like', "%{$search}%")))
+        $imports = $filters->apply(UserImport::query())
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString();
 
         return Inertia::render('Imports/Index', [
             'imports' => cursorResponse($imports, fn (UserImport $i) => $this->row($i)),
-            'filters' => ['search' => $search],
+            'filters' => $filters->echoBack(),
             'can' => ['create' => $request->user()->can('imports.create')],
         ]);
     }

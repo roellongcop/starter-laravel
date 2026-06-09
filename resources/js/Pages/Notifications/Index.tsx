@@ -1,13 +1,13 @@
 import { Head, router } from '@inertiajs/react';
 import { Check, Trash2, Undo2 } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { useState } from 'react';
 
 import CursorPager from '@/Components/CursorPager';
+import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { Input } from '@/Components/ui/input';
 import {
     Table,
     TableBody,
@@ -16,6 +16,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/Components/ui/table';
+import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminNotification, type CursorResponse } from '@/types';
 
@@ -26,17 +27,11 @@ export default function Index({
     notifications: CursorResponse<AdminNotification>;
     filters: { search: string };
 }) {
-    const [search, setSearch] = useState(filters.search);
+    const f = useFilters<{ search: string }>({
+        route: 'notifications.index',
+        initial: filters,
+    });
     const [selected, setSelected] = useState<string[]>([]);
-
-    const submitSearch: FormEventHandler = (e) => {
-        e.preventDefault();
-        router.get(
-            route('notifications.index'),
-            { search },
-            { preserveState: true, preserveScroll: true, replace: true },
-        );
-    };
 
     const toggle = (id: string) =>
         setSelected((s) =>
@@ -92,17 +87,13 @@ export default function Index({
                 }
             />
 
-            <form onSubmit={submitSearch} className="mb-4 flex gap-2">
-                <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+            <FilterBar onSubmit={f.submit} className="mb-4">
+                <FilterBar.Search
+                    value={f.values.search}
+                    onChange={(v) => f.set('search', v)}
                     placeholder="Search notifications…"
-                    className="w-64"
                 />
-                <Button type="submit" variant="secondary">
-                    Search
-                </Button>
-            </form>
+            </FilterBar>
 
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <Table>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Filters\NotificationFilters;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
@@ -10,14 +11,11 @@ use Inertia\Response;
 
 class NotificationController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, NotificationFilters $filters): Response
     {
         $this->authorize('notifications.index');
 
-        $search = trim((string) $request->string('search'));
-
-        $notifications = $request->user()->notifications()
-            ->when($search !== '', fn ($q) => $q->where('data', 'like', "%{$search}%"))
+        $notifications = $filters->apply($request->user()->notifications()->getQuery())
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->cursorPaginate(config('keen.pagination_size'))
@@ -25,7 +23,7 @@ class NotificationController extends Controller
 
         return Inertia::render('Notifications/Index', [
             'notifications' => cursorResponse($notifications, fn (DatabaseNotification $n) => $this->row($n)),
-            'filters' => ['search' => $search],
+            'filters' => $filters->echoBack(),
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\RoleType;
+use App\Filters\RoleFilters;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use App\Models\Role;
@@ -17,14 +18,11 @@ use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class RoleController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, RoleFilters $filters): Response
     {
         $this->authorize('viewAny', Role::class);
 
-        $search = trim((string) $request->string('search'));
-
-        $roles = Role::query()
-            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+        $roles = $filters->apply(Role::query())
             ->withCount('permissions')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
@@ -33,7 +31,7 @@ class RoleController extends Controller
 
         return Inertia::render('Roles/Index', [
             'roles' => cursorResponse($roles, fn (Role $r) => $this->row($r)),
-            'filters' => ['search' => $search],
+            'filters' => $filters->echoBack(),
             'can' => [
                 'create' => $request->user()->can('roles.create'),
                 'update' => $request->user()->can('roles.update'),
