@@ -56,19 +56,33 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
-            // Tables kept OUT of dumps (pg_dump --exclude-table), so a restore's
-            // `psql -f dump.sql` never drops/recreates them:
-            //  - backups: restoring an older archive must not erase the record
-            //    of which backups exist;
-            //  - jobs/job_batches/failed_jobs: the restore itself runs on the
-            //    database queue — dropping `jobs` mid-restore destroys the table
-            //    the worker is running from (and 500s /queue);
-            //  - sessions: don't log the operator out (and others) mid-restore;
-            //  - cache/cache_locks: transient, never worth restoring.
             'dump' => [
+                // pg_dump (unlike mysqldump's default --add-drop-table) does NOT drop
+                // tables before recreating them, so a restore would replay the dump on
+                // top of the live data: post-backup rows survive while the dump's
+                // setval() calls rewind each sequence → duplicate-key (23505) crashes on
+                // the next insert. --clean --if-exists makes the dump drop+recreate the
+                // DUMPED tables only, so the restore is faithful and sequences land right.
+                // The excluded operational tables below are never dropped (no FK touches
+                // them), so the restore job's own queue/backups rows survive.
+                'add_extra_option' => '--clean --if-exists',
+                // Tables kept OUT of dumps (pg_dump --exclude-table):
+                //  - backups: restoring an older archive must not erase the record
+                //    of which backups exist;
+                //  - jobs/job_batches/failed_jobs: the restore itself runs on the
+                //    database queue — dropping `jobs` mid-restore destroys the table
+                //    the worker is running from (and 500s /queue);
+                //  - sessions: don't log the operator out (and others) mid-restore;
+                //  - cache/cache_locks: transient, never worth restoring.
+                // The *_id_seq entries are the owned sequences of the excluded tables:
+                // -T excludes a table but NOT its sequence, so without these --clean
+                // would emit `DROP SEQUENCE jobs_id_seq` that fails (the still-present,
+                // excluded jobs table depends on it).
                 'exclude_tables' => [
-                    'backups',
-                    'jobs', 'job_batches', 'failed_jobs',
+                    'backups', 'backups_id_seq',
+                    'jobs', 'jobs_id_seq',
+                    'job_batches',
+                    'failed_jobs', 'failed_jobs_id_seq',
                     'sessions',
                     'cache', 'cache_locks',
                 ],

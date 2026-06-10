@@ -19,6 +19,17 @@ pest()->extend(TestCase::class)
     ->in('Feature');
 
 /*
+| Integration tests run against a REAL Postgres database (group "pg"), not the
+| in-memory SQLite default — they exercise external pg_dump/psql processes that
+| can't see an uncommitted RefreshDatabase transaction. They manage their own
+| committed migrate:fresh per test (see tests/Integration), so no DB trait here.
+| Excluded from `make test`; run via `make test-pg`.
+*/
+pest()->extend(TestCase::class)
+    ->group('pg')
+    ->in('Integration');
+
+/*
 |--------------------------------------------------------------------------
 | Expectations
 |--------------------------------------------------------------------------

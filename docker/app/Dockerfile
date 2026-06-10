@@ -6,15 +6,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         unzip \
         zip \
         curl \
+        ca-certificates \
         libzip-dev \
         libpng-dev \
         libjpeg-dev \
         libfreetype6-dev \
         libonig-dev \
         libxml2-dev \
-        postgresql-client \
-    # postgresql-client provides pg_dump/psql, which spatie/laravel-backup (dump)
-    # and the restore job (import via psql) invoke by name.
+    # pg_dump/psql back spatie/laravel-backup (dump) + the restore job (import via psql).
+    # Pin the client to 16 from the PGDG repo to MATCH the postgres:16 server — Debian
+    # trixie's default client is 17, and a newer client emits settings like
+    # transaction_timeout that an older server rejects mid-restore (with ON_ERROR_STOP).
+    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/keyrings/pgdg.asc \
+    && echo "deb [signed-by=/usr/share/keyrings/pgdg.asc] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main" \
+        > /etc/apt/sources.list.d/pgdg.list \
+    && apt-get update && apt-get install -y --no-install-recommends postgresql-client-16 \
     && rm -rf /var/lib/apt/lists/*
 
 # --- PHP extensions (via mlocati helper for reliability) ---

@@ -45,7 +45,56 @@ jobs:
         run: vendor/bin/phpstan analyse --no-progress
 
       - name: Tests (Pest)
-        run: php artisan test
+        run: php artisan test --exclude-group=pg
+
+  backend-pg:
+    name: Backend Postgres integration (backup/restore round-trip)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: keen_admin_test
+          POSTGRES_USER: keen
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U keen -d keen_admin_test"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, bcmath, gd, exif, zip, pcntl, fileinfo, dom, curl, pdo_pgsql, pgsql
+          coverage: none
+          tools: composer:v2
+
+      # pg_dump/psql for the real backup/restore. ubuntu-24.04 ships client 16,
+      # matching the postgres:16 service (pg_dump requires client >= server major).
+      - name: Install postgresql-client (pg_dump/psql)
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Postgres integration tests (group "pg")
+        run: php artisan test --group=pg
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: keen_admin_test
+          DB_USERNAME: keen
+          DB_PASSWORD: secret
 
   frontend:
     name: Frontend (Prettier, ESLint, build)

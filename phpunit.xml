@@ -11,6 +11,11 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <!-- Real-Postgres backup/restore round-trip (group "pg"); run via `make test-pg`.
+             `make test` excludes the pg group, so these do not run there. -->
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

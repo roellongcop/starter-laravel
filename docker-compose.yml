@@ -87,6 +87,8 @@ services:
       - "${DB_FORWARD_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      # Runs only on first init of a fresh volume — creates keen_admin_test for `make test-pg`.
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-keen} -d ${DB_DATABASE:-keen_admin}"]
       interval: 10s

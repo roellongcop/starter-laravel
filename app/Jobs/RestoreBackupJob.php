@@ -108,11 +108,13 @@ class RestoreBackupJob implements ShouldQueue
         $db = config('database.connections.'.config('database.default'));
 
         // The password is passed through PGPASSWORD (not the command line) and
-        // -f runs the dump script against the app database.
+        // -f runs the dump script against the app database. ON_ERROR_STOP=1 makes
+        // psql abort + return non-zero on the first failed statement instead of
+        // limping to exit 0 and reporting a half-applied restore as a success.
         $result = Process::timeout(600)
             ->env(['PGPASSWORD' => (string) $db['password']])
             ->run(sprintf(
-                'psql -h%s -p%s -U%s -d%s -f %s',
+                'psql -v ON_ERROR_STOP=1 -h%s -p%s -U%s -d%s -f %s',
                 escapeshellarg((string) $db['host']),
                 escapeshellarg((string) $db['port']),
                 escapeshellarg((string) $db['username']),
