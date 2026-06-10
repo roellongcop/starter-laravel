@@ -5,7 +5,7 @@
 ## Context
 
 Contributors run different host OSes and PHP/Node versions. "Works on my machine" drift —
-mismatched PHP extensions, Node versions, missing `mysqldump` — is the usual cost.
+mismatched PHP extensions, Node versions, missing `pg_dump` — is the usual cost.
 
 ## Decision
 
@@ -19,7 +19,7 @@ long-running service).
 
 - One command (`make setup`) bootstraps a working stack; `make help` lists everything.
 - Tooling that needs system binaries is baked into the image — e.g. the app image
-  symlinks `mysqldump`/`mysql` to MariaDB's `mariadb-dump`/`mariadb` so backups work.
+  installs the `postgresql-client` package (`pg_dump`/`psql`) so backups/restores work.
 - The `node` container runs as **root**, so `npm run build` writes root-owned files under
   `public/build`; `make clean` removes generated/uploaded files + storage caches via a
   root container for this reason.

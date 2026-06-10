@@ -17,13 +17,26 @@ if (! function_exists('dated_path')) {
 if (! function_exists('escape_like')) {
     /**
      * Escape LIKE metacharacters (\ % _) so user-supplied search input is
-     * matched literally instead of as wildcards. The default '\' escape char
-     * works on MySQL/MariaDB and SQLite. Used by the filter primitives and any
-     * raw query-builder search (e.g. SessionController).
+     * matched literally instead of as wildcards. The '\' escape char works on
+     * both Postgres and SQLite. Used by the filter primitives and any raw
+     * query-builder search (e.g. SessionController).
      */
     function escape_like(string $value): string
     {
         return str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $value);
+    }
+}
+
+if (! function_exists('like_operator')) {
+    /**
+     * The case-insensitive LIKE operator for the active DB driver. Postgres LIKE
+     * is case-sensitive, so use ILIKE there; SQLite (used by the test suite)
+     * matches LIKE case-insensitively for ASCII, so plain `like` is correct.
+     * Pair with escape_like() for the search term.
+     */
+    function like_operator(): string
+    {
+        return config('database.default') === 'pgsql' ? 'ilike' : 'like';
     }
 }
 

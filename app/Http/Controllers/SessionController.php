@@ -25,8 +25,8 @@ class SessionController extends Controller
             ->leftJoin('users', 'sessions.user_id', '=', 'users.id')
             ->select('sessions.id', 'sessions.ip_address', 'sessions.user_agent', 'sessions.last_activity', 'users.name as user_name')
             ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('users.name', 'like', $like)
-                ->orWhere('sessions.ip_address', 'like', $like)))
+                ->where('users.name', like_operator(), $like)
+                ->orWhere('sessions.ip_address', like_operator(), $like)))
             ->orderByDesc('sessions.last_activity')
             ->orderBy('sessions.id')
             ->cursorPaginate(config('keen.pagination_size'))

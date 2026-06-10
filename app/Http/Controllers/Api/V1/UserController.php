@@ -16,11 +16,12 @@ class UserController extends Controller
     public function available(Request $request): JsonResponse
     {
         $search = trim((string) $request->string('search'));
+        $like = '%'.escape_like($search).'%';
 
         $users = User::query()
             ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")))
+                ->where('name', like_operator(), $like)
+                ->orWhere('email', like_operator(), $like)))
             ->keyset()
             ->cursorPaginate((int) $request->integer('per_page', config('keen.pagination_size')))
             ->withQueryString();

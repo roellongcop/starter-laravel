@@ -66,7 +66,7 @@ return [
              * The content of the database dump may be customized for each connection
              * by adding a 'dump' key to the connection settings in config/database.php.
              * E.g.
-             * 'mysql' => [
+             * 'pgsql' => [
              *       ...
              *      'dump' => [
              *           'exclude_tables' => [
@@ -76,21 +76,10 @@ return [
              *       ],
              * ],
              *
-             * If you are using only InnoDB tables on a MySQL server, you can
-             * also supply the useSingleTransaction option to avoid table locking.
-             *
-             * E.g.
-             * 'mysql' => [
-             *       ...
-             *      'dump' => [
-             *           'useSingleTransaction' => true,
-             *       ],
-             * ],
-             *
              * For a complete list of available customization options, see https://github.com/spatie/db-dumper
              */
             'databases' => [
-                env('DB_CONNECTION', 'mysql'),
+                env('DB_CONNECTION', 'pgsql'),
             ],
         ],
 

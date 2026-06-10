@@ -10,8 +10,8 @@ flow.
 ## Key files
 
 - `docker-compose.yml` — service definitions.
-- `docker/app/Dockerfile` — the PHP image (incl. the `mysqldump`/`mysql` → `mariadb-*`
-  symlinks backups need).
+- `docker/app/Dockerfile` — the PHP image (incl. the `postgresql-client` package — `pg_dump`/`psql`
+  — that backups/restores need).
 - `Makefile` — every workflow target (`make help`).
 - `config/database.php`, `config/filesystems.php`, `config/keen.php`.
 - `app/Support/helpers.php` — `dated_path()`.
@@ -27,13 +27,13 @@ Services (`docker-compose.yml`):
 | `node`           | Vite dev server — **dev profile only** (`make dev`)        |
 | `queue`          | `queue:work --tries=3 --timeout=300` (database queue)      |
 | `scheduler`      | `schedule:work`                                            |
-| `mariadb`        | MariaDB 10.11 — DB sessions + queue + cache                |
-| `phpmyadmin`     | DB admin UI                                                |
+| `postgres`       | PostgreSQL 16 — DB sessions + queue + cache                |
+| `adminer`        | DB admin UI                                                |
 | `mailpit`        | local SMTP sink + web inbox (dev email)                    |
 | `seaweedfs`      | S3-compatible object storage                               |
 | `seaweedfs-init` | one-shot sidecar that creates the S3 buckets               |
 
-Ports: app `8080`, phpMyAdmin `8081`, Mailpit inbox `8025`, Vite `5173`, SeaweedFS filer
+Ports: app `8080`, Adminer `8081`, Mailpit inbox `8025`, Vite `5173`, SeaweedFS filer
 `8888`, S3 API `8333`.
 
 **Mail.** The transport is environment-driven, mirroring storage: `MAIL_MAILER` switches
@@ -74,15 +74,14 @@ gated to the **developer role** (`viewTelescope` in `TelescopeServiceProvider`, 
 
 - `node` is a one-off (`docker compose run --rm node`), not a long-running service — scripts
   and the pre-commit hook must invoke it that way, not via `exec`.
-- Backups need `mysqldump`/`mysql`; the image symlinks them to MariaDB's binaries and the DB
-  connection sets `dump.skip_ssl` + `dump.exclude_tables=['backups']` so a restore never
-  wipes the backup list.
+- Backups need `pg_dump`/`psql`; the image installs the `postgresql-client` package and the DB
+  connection sets `dump.exclude_tables=['backups', …]` so a restore never wipes the backup list.
 - `make clean` / `make refresh` delete generated files + storage runtime caches via a root
   container (because the node container writes root-owned files).
 
 ## Related
 
-- [Deployment](deployment.md) — taking this stack to a VPS or shared cPanel hosting.
+- [Deployment](deployment.md) — taking this stack to a Docker-capable VPS.
 - [CI & hooks](ci-and-hooks.md)
 - [Backups, exports & imports](../features/backups-exports-imports.md)
 - [Files & media](../features/files-and-media.md)

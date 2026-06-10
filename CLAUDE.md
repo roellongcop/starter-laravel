@@ -57,7 +57,7 @@ Demo logins (seeded by `make setup`/`make fresh`): `developer@developer.com`,
 
 Laravel 12 + Inertia + React + TypeScript + Tailwind + shadcn/ui. Services (see
 `docker-compose.yml`): `app` (PHP 8.4-FPM), `nginx`, `node` (dev profile only), `queue`,
-`scheduler`, `mariadb` (database queue/session/cache), `phpmyadmin`, `seaweedfs` (+ a
+`scheduler`, `postgres` (database queue/session/cache), `adminer` (web DB UI), `seaweedfs` (+ a
 one-shot `seaweedfs-init` that creates the S3 buckets).
 
 **Debugging:** Laravel Telescope (dev-only, local only, developer-gated) at `/telescope` for
@@ -119,11 +119,11 @@ Generated artifacts (backups/exports/imports) are nested under `YYYY/MM/` like u
 (maatwebsite/excel + dompdf), imports — jobs flip a `*Status` enum, capture failures into an
 `error_message` column (surfaced in the grid), and notify on completion. Export/import below
 `config('keen.*_sync_threshold')` run synchronously, above it queue. **Backups** need the
-`mysqldump`/`mysql` binaries — the app image symlinks them to MariaDB's `mariadb-dump`/`mariadb`
-(`docker/app/Dockerfile`), and the DB connection sets `dump.skip_ssl` + `dump.exclude_tables=['backups']`
-(`config/database.php`) so dumps connect without TLS and a restore never wipes the backup list.
+`pg_dump`/`psql` binaries — the app image installs `postgresql-client`
+(`docker/app/Dockerfile`), and the DB connection sets `dump.exclude_tables=['backups', …]`
+(`config/database.php`) so a restore never wipes the backup list.
 `CreateBackupJob` relocates the archive under `YYYY/MM/`; `RestoreBackupJob` extracts to a temp
-workdir it recursively cleans.
+workdir it recursively cleans and imports via `psql`.
 
 **Scheduled tasks** live in `routes/console.php`, run by the `scheduler` service. Backups are
 automated by `backups:run`/`backups:prune`/`backups:monitor` (nightly/weekly/daily) operating over
@@ -133,9 +133,7 @@ Deep dive: `docs/features/backups-exports-imports.md`.
 
 **Deploying.** On a Docker VPS the `queue`/`scheduler` services run as-is — layer
 `docker-compose.prod.yml` on top (`-f docker-compose.yml -f docker-compose.prod.yml`) to harden
-config + lock down ports. On shared cPanel hosting there are no daemons: flip `*_DISK_DRIVER=local`,
-seed from `.env.cpanel.example`, and drive the scheduler + queue from cron. Runbook:
-`docs/infrastructure/deployment.md`.
+config + lock down ports. Runbook: `docs/infrastructure/deployment.md`.
 
 **User feedback**: controllers `->with('success'|'error', …)`; `HandleInertiaRequests` shares `flash`
 as an `Inertia::always()` prop so partial reloads (`router.reload({ only: [...] })`) re-evaluate the

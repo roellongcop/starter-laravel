@@ -4,9 +4,9 @@
 #
 # What it changes vs. the dev stack (see docs/infrastructure/deployment.md):
 #   - restart: always (survive host reboots, not just crashes)
-#   - stops publishing the database, SeaweedFS, and phpMyAdmin ports to the host —
+#   - stops publishing the database, SeaweedFS, and Adminer ports to the host —
 #     only nginx is reachable, and you front *that* with a TLS reverse proxy
-#   - parks phpMyAdmin behind a "debug" profile so it isn't started by default
+#   - parks Adminer behind a "debug" profile so it isn't started by default
 #
 # The app code is still bind-mounted from the host, so deploy = `git pull` on the
 # host + `composer install --no-dev --optimize-autoloader` + `npm run build` +
@@ -27,10 +27,10 @@ services:
   scheduler:
     restart: always
 
-  mariadb:
+  postgres:
     restart: always
     # Don't expose the database to the host/internet — the app reaches it on the
-    # internal appnet as mariadb:3306.
+    # internal appnet as postgres:5432.
     ports: !reset []
 
   seaweedfs:
@@ -45,8 +45,8 @@ services:
     profiles: ["debug"]
     restart: always
 
-  # phpMyAdmin is a convenience, not a production service. Keep it off by default;
-  # start it only when you need it:  docker compose --profile debug up -d phpmyadmin
-  phpmyadmin:
+  # Adminer is a convenience, not a production service. Keep it off by default;
+  # start it only when you need it:  docker compose --profile debug up -d adminer
+  adminer:
     profiles: ["debug"]
     restart: always

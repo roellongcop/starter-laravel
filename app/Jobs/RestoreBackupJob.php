@@ -18,7 +18,7 @@ use ZipArchive;
 
 /**
  * Restores the app DB from a spatie backup archive (extract .sql → import via the
- * mysql client). DESTRUCTIVE: overwrites the configured app connection.
+ * psql client). DESTRUCTIVE: overwrites the configured app connection.
  * See docs/features/backups-exports-imports.md.
  */
 class RestoreBackupJob implements ShouldQueue
@@ -107,20 +107,18 @@ class RestoreBackupJob implements ShouldQueue
         /** @var array<string, mixed> $db */
         $db = config('database.connections.'.config('database.default'));
 
-        // The MariaDB client defaults to requiring TLS, but the local server
-        // doesn't offer it — mirror the backup dump's skip_ssl setting.
-        $skipSsl = ! empty($db['dump']['skip_ssl']) ? ' --skip-ssl' : '';
-
-        $result = Process::timeout(600)->run(sprintf(
-            'mysql%s -h%s -P%s -u%s -p%s %s < %s',
-            $skipSsl,
-            escapeshellarg((string) $db['host']),
-            escapeshellarg((string) $db['port']),
-            escapeshellarg((string) $db['username']),
-            escapeshellarg((string) $db['password']),
-            escapeshellarg((string) $db['database']),
-            escapeshellarg($sqlPath),
-        ));
+        // The password is passed through PGPASSWORD (not the command line) and
+        // -f runs the dump script against the app database.
+        $result = Process::timeout(600)
+            ->env(['PGPASSWORD' => (string) $db['password']])
+            ->run(sprintf(
+                'psql -h%s -p%s -U%s -d%s -f %s',
+                escapeshellarg((string) $db['host']),
+                escapeshellarg((string) $db['port']),
+                escapeshellarg((string) $db['username']),
+                escapeshellarg((string) $db['database']),
+                escapeshellarg($sqlPath),
+            ));
 
         if (! $result->successful()) {
             throw new \RuntimeException('Database import failed: '.$result->errorOutput());

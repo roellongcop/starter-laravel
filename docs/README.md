@@ -51,8 +51,7 @@ from the map below.
   `make hooks` pre-commit hook, and the code-quality tools.
 - [Observability](infrastructure/observability.md) — structured logs + `request_id` correlation,
   the Pulse dashboard, and where tracing goes next.
-- [Deployment](infrastructure/deployment.md) — taking it to production: the easy Docker-VPS
-  path and the manual cPanel shared-hosting path.
+- [Deployment](infrastructure/deployment.md) — taking it to production on a Docker-capable VPS.
 
 ### Features — *per-feature deep dives*
 

@@ -6,7 +6,7 @@
 
 Production needs to answer three questions: *what happened* (logs), *how much / how fast* (metrics),
 and *why a request was slow* (traces). This is the free, self-hosted foundation that fits the
-"everything in Docker + MariaDB" model — structured logs tied together by a request id, plus a metrics
+"everything in Docker + Postgres" model — structured logs tied together by a request id, plus a metrics
 dashboard — and the layer worth keeping regardless of any future tracing backend. (Telescope is
 **dev-only** debugging, a separate concern — see [services & stack](services-and-stack.md).)
 
@@ -34,7 +34,7 @@ Dev keeps the readable `daily` file channel. **Production** should emit structur
 carry `request_id` automatically; ship stdout to Loki/ELK/CloudWatch from there.
 
 ### Metrics — Laravel Pulse
-`laravel/pulse` records into MariaDB and renders a dashboard at **`/pulse`**: slow queries, slow
+`laravel/pulse` records into Postgres and renders a dashboard at **`/pulse`**: slow queries, slow
 requests, slow jobs, exceptions, cache hit rates, and usage (busiest users/routes). It's gated by the
 `viewPulse` gate to the **developer** role (matching `Gate::before` god-mode). `PULSE_ENABLED` toggles
 recording (forced `false` in `phpunit.xml`). Recorders run inline on normal requests/jobs — no daemon
@@ -47,7 +47,7 @@ needed.
 - **JSON logs only in prod** — local stays human-readable (`daily`); the `stderr` channel already
   exists, so the switch is env-only.
 - **Pulse over an external metrics stack (for now)** — free, self-hosted, no new services, and it reads
-  the same MariaDB the app already uses.
+  the same Postgres the app already uses.
 - **Telescope ≠ Pulse** — Telescope is local-only request inspection (dev); Pulse is the
   production-facing aggregate dashboard.
 

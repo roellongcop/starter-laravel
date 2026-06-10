@@ -19,7 +19,7 @@ everyone but the operator while it runs.
 - `app/Http/Controllers/{BackupController,ExportController,ImportController}.php` — the resources.
 - `app/Support/RestoreSentinel.php` — the file-based "restore in progress" flag.
 - `app/Http/Middleware/EnforceRestoreMode.php` — serves 503 during a restore.
-- `config/database.php` — backup dump config (`dump.skip_ssl`, `dump.exclude_tables`).
+- `config/database.php` — backup dump config (`dump.exclude_tables`).
 - `app/Support/helpers.php` `dated_path()` — nests artifacts under `YYYY/MM/`.
 - `app/Console/Commands/{RunScheduledBackup,PruneBackups,MonitorBackups}` + `routes/console.php` —
   the unattended backup automation (`backups:run` / `backups:prune` / `backups:monitor`), run by the
@@ -81,7 +81,7 @@ everyone but the operator while it runs.
     sends an in-app `AdminNotification` (Warning, linking to `/backups`) to every `developer`-role
     user. A custom check because spatie's `backup:monitor` scans the wrong folder/disk.
 - **Restore.** `RestoreBackupJob` extracts the `.sql` dump from the archive into a temp workdir
-  (recursively cleaned afterwards) and imports it via the `mysql` client. Before importing it sets the
+  (recursively cleaned afterwards) and imports it via the `psql` client. Before importing it sets the
   `RestoreSentinel`; `EnforceRestoreMode` then returns **503** to everyone except the operator who
   triggered it (or a developer) and the auth routes — so the operator can re-authenticate after the
   session store is replaced.
@@ -94,13 +94,12 @@ everyone but the operator while it runs.
 - **Restore is connection-scoped and destructive** — it overwrites only the configured app connection;
   the job is explicitly marked DESTRUCTIVE in code.
 - **Dumps exclude the `backups` table** (`config/database.php` `dump.exclude_tables`) so restoring an
-  older snapshot never wipes the list of available backups; `dump.skip_ssl` lets the dump connect
-  without TLS.
+  older snapshot never wipes the list of available backups.
 
 ## Gotchas
 
-- Backups need the `mysqldump`/`mysql` binaries — the app image symlinks them to MariaDB's
-  `mariadb-dump`/`mariadb` (`docker/app/Dockerfile`).
+- Backups need the `pg_dump`/`psql` binaries — the app image installs the `postgresql-client`
+  package (`docker/app/Dockerfile`).
 - The auth route names in `EnforceRestoreMode::$allowed` must stay in sync with the real auth routes,
   or an operator can lock themselves out mid-restore.
 - **Testing the schedule.** Run a scheduled entry on demand (in the `app` container) with

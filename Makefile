@@ -64,9 +64,9 @@ refresh: ## Wipe EVERYTHING (containers, volumes, local files) and rebuild fresh
 
 restart: down up ## Restart the stack
 
-wait-db: ## Block until MariaDB reports healthy
-	@echo "Waiting for MariaDB to become healthy..."
-	@until [ "$$(docker inspect -f '{{.State.Health.Status}}' $$($(DC) ps -q mariadb) 2>/dev/null)" = "healthy" ]; do \
+wait-db: ## Block until Postgres reports healthy
+	@echo "Waiting for Postgres to become healthy..."
+	@until [ "$$(docker inspect -f '{{.State.Health.Status}}' $$($(DC) ps -q postgres) 2>/dev/null)" = "healthy" ]; do \
 		printf '.'; sleep 2; \
 	done; echo " ready."
 

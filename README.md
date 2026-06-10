@@ -22,7 +22,7 @@ Then open:
 | Service      | URL                                |
 | ------------ | ---------------------------------- |
 | App          | http://localhost:8080              |
-| phpMyAdmin   | http://localhost:8081              |
+| Adminer      | http://localhost:8081              |
 | Mailpit (email inbox)          | http://localhost:8025    |
 | Vite (dev)   | http://localhost:5173 (`make dev`) |
 | SeaweedFS filer (browse files) | http://localhost:8888    |
@@ -76,8 +76,8 @@ via CSS variables + a `data-theme` attribute.
 | `node`           | Vite dev server (dev profile only — `make dev`)        |
 | `queue`          | `queue:work --tries=3 --timeout=300` (database queue)  |
 | `scheduler`      | `schedule:work`                                        |
-| `mariadb`        | MariaDB 10.11 (database sessions + queue + cache)      |
-| `phpmyadmin`     | DB admin UI                                            |
+| `postgres`       | PostgreSQL 16 (database sessions + queue + cache)      |
+| `adminer`        | DB admin UI                                            |
 | `mailpit`        | Local SMTP sink + web inbox (dev email)                |
 | `seaweedfs`      | S3-compatible object storage                           |
 | `seaweedfs-init` | One-shot sidecar that creates the S3 buckets           |

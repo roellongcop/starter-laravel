@@ -12,7 +12,7 @@ services:
     volumes:
       - ./:/var/www/html
     depends_on:
-      mariadb:
+      postgres:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "php -v >/dev/null 2>&1 || exit 1"]
@@ -55,7 +55,7 @@ services:
       - ./:/var/www/html
     command: php artisan queue:work --tries=3 --timeout=300
     depends_on:
-      mariadb:
+      postgres:
         condition: service_healthy
       app:
         condition: service_started
@@ -69,44 +69,41 @@ services:
       - ./:/var/www/html
     command: php artisan schedule:work
     depends_on:
-      mariadb:
+      postgres:
         condition: service_healthy
       app:
         condition: service_started
     networks: [appnet]
 
-  mariadb:
-    image: mariadb:10.11
+  postgres:
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      MARIADB_DATABASE: ${DB_DATABASE:-keen_admin}
-      MARIADB_USER: ${DB_USERNAME:-keen}
-      MARIADB_PASSWORD: ${DB_PASSWORD:-secret}
-      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      POSTGRES_DB: ${DB_DATABASE:-keen_admin}
+      POSTGRES_USER: ${DB_USERNAME:-keen}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     ports:
-      # Host-side forward only (the app connects to mariadb:3306 internally).
-      - "${DB_FORWARD_PORT:-3306}:3306"
+      # Host-side forward only (the app connects to postgres:5432 internally).
+      - "${DB_FORWARD_PORT:-5432}:5432"
     volumes:
-      - mariadb-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-keen} -d ${DB_DATABASE:-keen_admin}"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
     networks: [appnet]
 
-  phpmyadmin:
-    image: phpmyadmin:5
+  adminer:
+    image: adminer:5
     restart: unless-stopped
     environment:
-      PMA_HOST: mariadb
-      PMA_PORT: 3306
-      UPLOAD_LIMIT: 64M
+      ADMINER_DEFAULT_SERVER: postgres
     ports:
-      - "${PMA_PORT:-8081}:80"
+      - "${ADMINER_PORT:-8081}:8080"
     depends_on:
-      - mariadb
+      - postgres
     networks: [appnet]
 
   # Local SMTP sink with a web inbox — the mail analogue of SeaweedFS. Mail goes
@@ -165,5 +162,5 @@ networks:
     driver: bridge
 
 volumes:
-  mariadb-data:
+  postgres-data:
   seaweedfs-data:

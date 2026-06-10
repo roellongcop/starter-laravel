@@ -5,7 +5,7 @@ namespace App\Filters\Primitives;
 use App\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Grammars\SQLiteGrammar;
+use Illuminate\Database\Query\Grammars\PostgresGrammar;
 use Illuminate\Http\Request;
 
 /**
@@ -39,10 +39,10 @@ abstract class AbstractFilter implements Filter
     }
 
     /**
-     * Add a wildcard-escaped LIKE condition. The pattern is bound as a param;
-     * only the ESCAPE clause is inlined, and it must spell the backslash escape
-     * char differently per driver (SQLite treats '\' literally; MySQL parses
-     * '\\' down to one backslash).
+     * Add a wildcard-escaped, case-insensitive LIKE condition. The pattern is
+     * bound as a param; the operator is inlined because Postgres LIKE is
+     * case-sensitive (use ILIKE) while SQLite — used by the test suite — matches
+     * LIKE case-insensitively. The backslash escape char is '\' on both.
      *
      * @param  Builder<Model>  $query
      */
@@ -50,8 +50,8 @@ abstract class AbstractFilter implements Filter
     {
         $grammar = $query->getQuery()->getGrammar();
         $wrapped = $grammar->wrap($column);
-        $escape = $grammar instanceof SQLiteGrammar ? "'\\'" : "'\\\\'";
+        $operator = $grammar instanceof PostgresGrammar ? 'ilike' : 'like';
 
-        $query->whereRaw("{$wrapped} like ? escape {$escape}", [$pattern], $boolean);
+        $query->whereRaw("{$wrapped} {$operator} ? escape '\\'", [$pattern], $boolean);
     }
 }
