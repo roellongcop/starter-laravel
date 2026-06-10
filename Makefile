@@ -15,7 +15,7 @@ export GID := $(shell id -g)
 
 .DEFAULT_GOAL := help
 .PHONY: help build up down down-v refresh restart install setup shell migrate \
-        fresh seed queue dev assets test pint stan lint is-mergeable logs ps tinker \
+        fresh seed queue dev assets test test-mariadb pint stan lint is-mergeable logs ps tinker \
         ide-helper wait-db key storage-link clean hooks mail fix \
         backup backup-prune backup-monitor schedule-list
 
@@ -126,8 +126,18 @@ mail: ## Print the Mailpit inbox URL (dev email)
 assets: ## Build production assets
 	$(NODE_RUN) npm run build
 
-test: ## Run the Pest test suite
-	$(APP) php artisan test
+test: ## Run the Pest test suite (fast, SQLite — excludes the real-MariaDB "mariadb" group)
+	$(APP) php artisan test --exclude-group=mariadb
+
+# Real backup/restore round-trip against MariaDB (tests/Integration, group "mariadb").
+# Uses a dedicated keen_admin_test DB (created + granted here if missing — idempotent)
+# so it never touches dev data, and runs committed migrate:fresh (no transaction) so
+# the external mysqldump/mysql can see the rows.
+test-mariadb: ## Run the MariaDB integration tests (real mysqldump/mysql round-trip)
+	docker compose exec -T mariadb mariadb -uroot -p$${DB_ROOT_PASSWORD:-root} -e \
+		"CREATE DATABASE IF NOT EXISTS keen_admin_test; \
+		 GRANT ALL ON keen_admin_test.* TO '$${DB_USERNAME:-keen}'@'%';"
+	$(APP) php artisan test --group=mariadb
 
 pint: ## Format PHP with Pint
 	$(APP) ./vendor/bin/pint
@@ -148,10 +158,11 @@ hooks: ## Install the git pre-commit hook (Pint + Prettier + ESLint, check-only)
 	git config core.hooksPath .githooks
 	@echo "Git hooks enabled (.githooks/pre-commit). Bypass once with SKIP_HOOKS=1 git commit."
 
-is-mergeable: ## Run the full CI gate locally (check-only, no writes)
+is-mergeable: ## Run the full CI gate locally (check-only — mirrors .github/workflows/ci.yml)
 	$(APP) ./vendor/bin/pint --test
 	$(APP) ./vendor/bin/phpstan analyse --no-progress
-	$(APP) php artisan test
+	$(APP) php artisan test --exclude-group=mariadb
+	@$(MAKE) test-mariadb
 	$(NODE_RUN) npm run format:check
 	$(NODE_RUN) npm run lint:check
 	$(NODE_RUN) npm run build

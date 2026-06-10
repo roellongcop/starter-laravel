@@ -19,6 +19,17 @@ pest()->extend(TestCase::class)
     ->in('Feature');
 
 /*
+| Integration tests run against a REAL MariaDB database (group "mariadb"), not the
+| in-memory SQLite default — they exercise external mysqldump/mysql processes that
+| can't see an uncommitted RefreshDatabase transaction. They manage their own
+| committed migrate:fresh per test (see tests/Integration), so no DB trait here.
+| Excluded from `make test`; run via `make test-mariadb`.
+*/
+pest()->extend(TestCase::class)
+    ->group('mariadb')
+    ->in('Integration');
+
+/*
 |--------------------------------------------------------------------------
 | Expectations
 |--------------------------------------------------------------------------

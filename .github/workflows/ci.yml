@@ -45,7 +45,62 @@ jobs:
         run: vendor/bin/phpstan analyse --no-progress
 
       - name: Tests (Pest)
-        run: php artisan test
+        run: php artisan test --exclude-group=mariadb
+
+  backend-db:
+    name: Backend MariaDB integration (backup/restore round-trip)
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_DATABASE: keen_admin_test
+          MARIADB_USER: keen
+          MARIADB_PASSWORD: secret
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, bcmath, gd, exif, zip, pcntl, fileinfo, dom, curl, pdo_mysql
+          coverage: none
+          tools: composer:v2
+
+      # mysqldump/mysql for the real backup/restore. default-mysql-client is MariaDB
+      # (ships mariadb-dump/mariadb); symlink the mysqldump/mysql names spatie + the
+      # restore job invoke — mirrors docker/app/Dockerfile.
+      - name: Install MariaDB client (mysqldump/mysql)
+        run: |
+          sudo apt-get update && sudo apt-get install -y default-mysql-client
+          sudo ln -sf "$(command -v mariadb-dump)" /usr/local/bin/mysqldump
+          sudo ln -sf "$(command -v mariadb)" /usr/local/bin/mysql
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: MariaDB integration tests (group "mariadb")
+        run: php artisan test --group=mariadb
+        env:
+          DB_CONNECTION: mariadb
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: keen_admin_test
+          DB_USERNAME: keen
+          DB_PASSWORD: secret
+          DB_BACKUP_SKIP_SSL: true
 
   frontend:
     name: Frontend (Prettier, ESLint, build)

@@ -11,6 +11,11 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <!-- Real-MariaDB backup/restore round-trip (group "mariadb"); run via `make test-mariadb`.
+             `make test` excludes the mariadb group, so these do not run there. -->
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
