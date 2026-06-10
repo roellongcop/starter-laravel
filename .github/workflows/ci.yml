@@ -74,12 +74,14 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      # mysqldump/mysql for the real backup/restore. default-mysql-client is MariaDB
-      # (ships mariadb-dump/mariadb); symlink the mysqldump/mysql names spatie + the
-      # restore job invoke — mirrors docker/app/Dockerfile.
-      - name: Install MariaDB client (mysqldump/mysql)
+      # mysqldump/mysql for the real backup/restore. Install the MariaDB client
+      # explicitly (NOT default-mysql-client — on Ubuntu that's MySQL, which ships no
+      # mariadb-dump and whose mysqldump 8 chokes on MariaDB's missing COLUMN_STATISTICS).
+      # mariadb-client matches the mariadb:10.11 service + the app image; symlink the
+      # mysqldump/mysql names spatie + the restore job invoke — mirrors docker/app/Dockerfile.
+      - name: Install MariaDB client (mariadb-dump/mariadb → mysqldump/mysql)
         run: |
-          sudo apt-get update && sudo apt-get install -y default-mysql-client
+          sudo apt-get update && sudo apt-get install -y mariadb-client
           sudo ln -sf "$(command -v mariadb-dump)" /usr/local/bin/mysqldump
           sudo ln -sf "$(command -v mariadb)" /usr/local/bin/mysql
 
