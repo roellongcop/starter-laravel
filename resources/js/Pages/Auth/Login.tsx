@@ -104,10 +104,10 @@ export default function Login({
                         <span />
                     )}
                     <Link
-                        href={route('contact')}
+                        href={route('register')}
                         className="transition-colors hover:text-foreground"
                     >
-                        Contact
+                        Register
                     </Link>
                 </div>
             </form>
