@@ -9,6 +9,7 @@ use App\Models\Concerns\HasRecordStatus;
 use App\Models\Concerns\HasToken;
 use App\Models\Concerns\IsResource;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,7 +31,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property int|null $avatar_file_id
  * @property-read string|null $avatar_url
  */
-class User extends Authenticatable implements Auditable
+class User extends Authenticatable implements Auditable, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use AuditableTrait, Blameable, HasApiTokens, HasFactory, HasRecordStatus, HasRoles, HasToken, IsResource, Notifiable;
