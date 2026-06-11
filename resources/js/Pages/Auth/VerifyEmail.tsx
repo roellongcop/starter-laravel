@@ -40,9 +40,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
                 </Button>
 
                 <Button asChild variant="ghost" size="sm">
-                    <Link href={route('logout')} method="post" as="button">
-                        Log out
-                    </Link>
+                    <Link href={route('profile.edit')}>View Profile</Link>
                 </Button>
             </form>
         </GuestLayout>
