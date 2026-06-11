@@ -4,7 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        {{-- No static <title>: it's owned by <Head>/<Seo> via @inertiaHead, so
+             SSR pages don't get a duplicate. See docs/features/seo-and-ssr.md. --}}
 
         <!-- Apply persisted theme before paint to avoid a flash of the wrong theme -->
         <script>

@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import {
     ArrowRight,
     ArrowUpRight,
@@ -16,6 +16,7 @@ import {
 import { FormEventHandler, ReactNode, useState } from 'react';
 
 import InputError from '@/Components/InputError';
+import Seo, { type SeoData } from '@/Components/Seo';
 import { useTheme } from '@/Components/ThemeProvider';
 import YinYang from '@/Components/YinYang';
 import { Badge } from '@/Components/ui/badge';
@@ -215,11 +216,13 @@ function SectionHeading({ kicker, title }: { kicker: string; title: string }) {
 type Props = {
     canLogin: boolean;
     canRegister: boolean;
+    seo: SeoData;
 };
 
 export default function Welcome({
     canLogin,
     canRegister,
+    seo,
     auth,
 }: PageProps<Props>) {
     const { toggleTheme } = useTheme();
@@ -246,7 +249,7 @@ export default function Welcome({
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Head title="Roel R. Longcop — Full Stack Software Developer" />
+            <Seo seo={seo} />
 
             <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur">
                 <div className="container flex h-16 items-center justify-between">

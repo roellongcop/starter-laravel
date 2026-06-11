@@ -62,8 +62,9 @@ Always finish a deploy with `php artisan optimize` (config/route/view cache) and
 ### Path A — Docker VPS (self-contained)
 
 The base stack already runs `app`, `nginx`, `queue` (`queue:work`), `scheduler`
-(`schedule:work`), `mariadb`, and `seaweedfs` (+ the one-shot `seaweedfs-init`). So the queue
-and scheduler "just work" — no cron needed. Layer the production override on top:
+(`schedule:work`), `ssr` (the Inertia SSR renderer), `mariadb`, and `seaweedfs` (+ the one-shot
+`seaweedfs-init`). So the queue and scheduler "just work" — no cron needed. Layer the production
+override on top:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
@@ -86,7 +87,18 @@ php artisan optimize
 ```
 
 Build assets with `make assets` (or `docker compose run --rm node npm run build`) so
-`public/build` exists.
+`public/build` **and** the SSR bundle `bootstrap/ssr/ssr.js` exist (`npm run build` now runs
+`vite build && vite build --ssr`).
+
+**Server-side rendering (public/SEO pages).** The public marketing pages (`/`, `/contact`, and
+any future DB-driven SEO pages — the routes behind the `EnableSsr` middleware) are server-side
+rendered for crawlers and social cards; the authenticated admin app stays plain CSR. The `ssr`
+service runs `node bootstrap/ssr/ssr.js` on `:13714`; the app dispatches to it via
+`INERTIA_SSR_URL=http://ssr:13714`. SSR is opt-in per request (`inertia.ssr.enabled` defaults
+false, flipped on by `EnableSsr`), and if the bundle is missing or `ssr` is down the app falls
+back to CSR (`inertia.ssr.ensure_bundle_exists`). Verify after deploy with
+`docker compose exec app php artisan inertia:check-ssr`. Rebuild the bundle on every deploy so
+`ssr` serves current code, and restart `ssr` alongside `app`.
 
 **TLS.** The stack's nginx speaks plain `:80` only — terminate HTTPS at a reverse proxy in
 front of it (Caddy/Traefik, or host-nginx + certbot). Bind the app port to localhost so only
@@ -104,8 +116,9 @@ object store (uploads/exports/imports) is *not* in that dump — snapshot the `s
 volume separately. See [Backups, exports & imports](../features/backups-exports-imports.md).
 
 **Updates.** `git pull` on the host → `composer install --no-dev --optimize-autoloader` →
-`npm run build` → `php artisan migrate --force` → `php artisan optimize:clear && php artisan
-optimize` → `docker compose … restart app queue scheduler`.
+`npm run build` (rebuilds the client **and** SSR bundles) → `php artisan migrate --force` →
+`php artisan optimize:clear && php artisan optimize` → `docker compose … restart app queue
+scheduler ssr`.
 
 **Optional — managed services.** To offload state: point `DB_HOST` at a managed database, set
 `*_DISK_DRIVER=s3` with real `AWS_*` credentials/endpoint, and drop the `mariadb` / `seaweedfs`

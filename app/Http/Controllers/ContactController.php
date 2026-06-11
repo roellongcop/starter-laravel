@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ContactMessage;
 use App\Settings\EmailSettings;
+use App\Support\Seo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +19,13 @@ class ContactController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Contact');
+        return Inertia::render('Contact', [
+            'seo' => Seo::make(
+                title: 'Contact',
+                description: 'Get in touch — send a message about a project, '
+                    .'a question, or a collaboration.',
+            )->toArray(),
+        ]);
     }
 
     /**
