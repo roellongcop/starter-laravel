@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, master-seo]
   pull_request:
   workflow_dispatch:
 
@@ -109,6 +109,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+
+      # The SSR build (vite build --ssr) imports Ziggy's route() from the
+      # vendored composer package via a Vite alias, so vendor/ must exist.
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
 
       - name: Setup Node
         uses: actions/setup-node@v4

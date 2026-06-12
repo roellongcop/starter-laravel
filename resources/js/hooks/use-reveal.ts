@@ -10,13 +10,18 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(): {
     visible: boolean;
 } {
     const ref = useRef<T>(null);
-    const reduced =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const [visible, setVisible] = useState(reduced);
+    // Start hidden so SSR markup hydrates without a mismatch; the effect reveals.
+    const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        if (reduced || visible) return;
+        const reduced = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+        if (reduced) {
+            setVisible(true);
+            return;
+        }
+        if (visible) return;
         const el = ref.current;
         if (!el) return;
 
@@ -32,7 +37,7 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(): {
 
         observer.observe(el);
         return () => observer.disconnect();
-    }, [reduced, visible]);
+    }, [visible]);
 
     return { ref, visible };
 }

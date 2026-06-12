@@ -1,15 +1,16 @@
-import { Head, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Send } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/Components/InputError';
+import Seo, { type SeoData } from '@/Components/Seo';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import GuestLayout from '@/Layouts/GuestLayout';
 
-export default function Contact() {
+export default function Contact({ seo }: { seo: SeoData }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -26,7 +27,7 @@ export default function Contact() {
 
     return (
         <GuestLayout>
-            <Head title="Contact" />
+            <Seo seo={seo} />
 
             <h1 className="text-2xl font-bold tracking-tight">Get in touch</h1>
             <p className="mb-6 mt-1 text-sm text-muted-foreground">

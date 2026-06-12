@@ -11,7 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { initNavHistory } from '@/lib/navHistory';
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { createRoot } from 'react-dom/client';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -36,8 +36,6 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.tsx'),
         ),
     setup({ el, App, props }) {
-        const root = createRoot(el);
-
         const initial = props.initialPage.props as {
             settings?: {
                 system: {
@@ -61,7 +59,7 @@ createInertiaApp({
             showFlash((event.detail.page.props as { flash?: Flash }).flash),
         );
 
-        root.render(
+        const tree = (
             <ThemeProvider
                 defaultTheme={
                     initial.settings?.system?.default_theme ?? 'system'
@@ -69,8 +67,15 @@ createInertiaApp({
             >
                 <App {...props} />
                 <Toaster />
-            </ThemeProvider>,
+            </ThemeProvider>
         );
+
+        // SSR'd public pages arrive with markup to hydrate; CSR pages mount fresh.
+        if (el.hasChildNodes()) {
+            hydrateRoot(el, tree);
+        } else {
+            createRoot(el).render(tree);
+        }
     },
     progress: {
         color: '#4B5563',

@@ -10,6 +10,7 @@ use App\Support\Navigation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Middleware;
+use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -42,7 +43,7 @@ class HandleInertiaRequests extends Middleware
         $permissions = $user ? $user->getAllPermissions()->pluck('name')->all() : [];
         $modules = Navigation::modulesFor($permissions);
 
-        return [
+        $shared = [
             ...parent::share($request),
             'auth' => [
                 'user' => $user ? [
@@ -78,7 +79,16 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
                 'hint' => $request->session()->get('hint'),
             ]),
+            // Ziggy config for the Node SSR renderer's route(). Lazy: share()
+            // runs before the route's EnableSsr, so the flag is only correct at
+            // resolution time; null on CSR keeps the route list off admin
+            // payloads. See docs/features/seo-and-ssr.md.
+            'ziggy' => fn () => config('inertia.ssr.enabled')
+                ? [...(new Ziggy)->toArray(), 'location' => $request->url()]
+                : null,
         ];
+
+        return $shared;
     }
 
     /**
