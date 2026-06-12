@@ -44,7 +44,7 @@ down-v: ## Stop and remove containers + named volumes (db, seaweedfs)
 # bind-mounted, so root can remove files of any owner. Needs the app image built.
 clean: ## Delete generated/uploaded files + runtime caches (assets, storage, compiled config)
 	$(DC) run --rm --no-deps -T --user root app sh -lc 'rm -rf \
-		public/build public/hot \
+		public/build public/hot bootstrap/ssr \
 		storage/app/private/uploads storage/app/private/exports \
 		storage/app/private/imports storage/app/private/backups \
 		storage/app/private/image-cache \
