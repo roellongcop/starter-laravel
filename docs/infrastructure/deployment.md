@@ -55,7 +55,7 @@ Always finish a deploy with `php artisan optimize` (config/route/view cache) and
 
 ### Docker VPS (self-contained)
 
-The base stack already runs `app`, `nginx`, `queue` (`queue:work`), `scheduler`
+The base stack already runs `app`, `caddy`, `queue` (`queue:work`), `scheduler`
 (`schedule:work`), `ssr` (the Inertia SSR renderer), `postgres`, and `seaweedfs` (+ the one-shot
 `seaweedfs-init`). So the queue and scheduler "just work" — no cron needed. Layer the production
 override on top:
@@ -66,7 +66,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 `docker-compose.prod.yml` flips `restart: always`, stops publishing the Postgres / SeaweedFS /
 Adminer ports to the host (the app reaches them on the internal `appnet`), and parks
-Adminer behind a `debug` profile. Only nginx (`:80`) is exposed.
+Adminer behind a `debug` profile. Only Caddy (`:80`) is exposed.
 
 First-run, inside the app container (`docker compose exec app …`):
 
@@ -94,15 +94,22 @@ back to CSR (`inertia.ssr.ensure_bundle_exists`). Verify after deploy with
 `docker compose exec app php artisan inertia:check-ssr`. Rebuild the bundle on every deploy so
 `ssr` serves current code, and restart `ssr` alongside `app`.
 
-**TLS.** The stack's nginx speaks plain `:80` only — terminate HTTPS at a reverse proxy in
-front of it (Caddy/Traefik, or host-nginx + certbot). Bind the app port to localhost so only
-the proxy reaches it (`APP_PORT=127.0.0.1:8080`). Minimal Caddy example:
+**TLS.** In production Caddy terminates HTTPS itself — `docker-compose.prod.yml` swaps the dev
+`:80` Caddyfile for `docker/caddy/Caddyfile.prod`, which provisions and auto-renews a Let's
+Encrypt cert for your domain and publishes `:80` (ACME challenge + HTTPS redirect) and `:443`.
+No external reverse proxy needed. Set two env vars on the VPS and point `APP_URL` at the domain:
 
-```caddy
-your-domain.com {
-    reverse_proxy 127.0.0.1:8080
-}
+```dotenv
+APP_DOMAIN=your-domain.com
+TLS_EMAIL=admin@your-domain.com
+APP_URL=https://your-domain.com
 ```
+
+Point the domain's DNS A/AAAA record at the VPS, open ports 80 + 443 in the firewall, and bring
+the stack up — Caddy fetches the cert on first boot and persists it in the `caddy-data` volume
+(so restarts don't re-request it). `APP_URL=https://…` makes `AppServiceProvider` force https on
+all generated links/assets. For multi-host or load-balanced setups you can instead keep the dev
+`:80` Caddyfile and front the stack with a separate TLS proxy, but a single VPS doesn't need that.
 
 **Persistence & backups.** All state lives in the named volumes `postgres-data` and
 `seaweedfs-data`. The in-app nightly `backups:run` covers the **database**; the SeaweedFS
@@ -144,7 +151,7 @@ scheduler ssr`.
 - **The prod override keeps the bind mount.** `docker-compose.prod.yml` hardens config but the
   app code is still mounted from the host, so the host is the source of truth — deploy by
   `git pull` + rebuild assets, not by rebuilding an image. A fully immutable (baked-code)
-  image is possible but adds an nginx static-asset-sync step; out of scope for this starter.
+  image is possible but adds a Caddy static-asset-sync step; out of scope for this starter.
 
 ## Related
 

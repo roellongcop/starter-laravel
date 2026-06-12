@@ -99,7 +99,7 @@ Accepted image extensions are **not** a setting — they live in `config('keen.i
   is `min:0`.
 - The idle-logout warning toast auto-dismisses after ~5s (the global toast delay), so it's a
   brief heads-up, not a persistent countdown.
-- `whitelist_ip_only` matches `$request->ip()`, which behind nginx is the **proxy** IP unless
+- `whitelist_ip_only` matches `$request->ip()`, which behind Caddy is the **proxy** IP unless
   `TrustProxies` is configured — turning it on without that (or without whitelisting the proxy
   IP) can lock everyone out. See [IP rules](ip-rules.md).
 - After changing a setting, a cached config can mask config-shaped overrides: `php artisan

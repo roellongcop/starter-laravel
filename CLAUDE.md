@@ -56,7 +56,7 @@ Demo logins (seeded by `make setup`/`make fresh`): `developer@developer.com`,
 ## Stack
 
 Laravel 12 + Inertia + React + TypeScript + Tailwind + shadcn/ui. Services (see
-`docker-compose.yml`): `app` (PHP 8.4-FPM), `nginx`, `node` (dev profile only), `queue`,
+`docker-compose.yml`): `app` (PHP 8.4-FPM), `caddy`, `node` (dev profile only), `queue`,
 `scheduler`, `postgres` (database queue/session/cache), `adminer` (web DB UI), `seaweedfs` (+ a
 one-shot `seaweedfs-init` that creates the S3 buckets).
 

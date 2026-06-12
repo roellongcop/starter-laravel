@@ -23,7 +23,7 @@ Services (`docker-compose.yml`):
 | Service          | Purpose                                                    |
 | ---------------- | ---------------------------------------------------------- |
 | `app`            | PHP 8.4-FPM running Laravel                                |
-| `nginx`          | Serves `public/`, proxies PHP to `app:9000`                |
+| `caddy`          | Serves `public/`, proxies PHP to `app:9000`                |
 | `node`           | Vite dev server — **dev profile only** (`make dev`)        |
 | `queue`          | `queue:work --tries=3 --timeout=300` (database queue)      |
 | `scheduler`      | `schedule:work`                                            |

@@ -1,0 +1,28 @@
+# Production Caddyfile — terminates TLS itself (automatic HTTPS via Let's Encrypt).
+# Mounted over /etc/caddy/Caddyfile by docker-compose.prod.yml. The domain and the
+# ACME account email are injected from the environment (APP_DOMAIN / TLS_EMAIL).
+{
+	email {$TLS_EMAIL}
+}
+
+{$APP_DOMAIN} {
+	root * /var/www/html/public
+	encode zstd gzip
+
+	# Block dotfiles except /.well-known (ACME, etc.)
+	@hidden {
+		path /.*
+		not path /.well-known/*
+	}
+	respond @hidden 403
+
+	php_fastcgi app:9000 {
+		# match the app's max_execution_time (php.ini = 300s)
+		read_timeout 300s
+	}
+	file_server
+
+	request_body {
+		max_size 64MB
+	}
+}

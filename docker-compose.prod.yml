@@ -5,7 +5,9 @@
 # What it changes vs. the dev stack (see docs/infrastructure/deployment.md):
 #   - restart: always (survive host reboots, not just crashes)
 #   - stops publishing the database, SeaweedFS, and Adminer ports to the host —
-#     only nginx is reachable, and you front *that* with a TLS reverse proxy
+#     only Caddy is reachable, on :80 + :443, terminating TLS itself
+#   - swaps the internal :80 Caddyfile for the domain-driven TLS Caddyfile
+#     (needs APP_DOMAIN + TLS_EMAIL in the environment; see deployment.md)
 #   - parks Adminer behind a "debug" profile so it isn't started by default
 #
 # The app code is still bind-mounted from the host, so deploy = `git pull` on the
@@ -15,11 +17,23 @@ services:
   app:
     restart: always
 
-  nginx:
+  caddy:
     restart: always
-    # Front this with a reverse proxy (Caddy/Traefik/host-nginx + certbot) for TLS;
-    # the container itself only speaks :80. Override APP_PORT to bind to localhost,
-    # e.g. APP_PORT=127.0.0.1:8080 so only the proxy can reach it.
+    # Caddy terminates TLS itself — automatic HTTPS (Let's Encrypt) for APP_DOMAIN,
+    # certs persisted in the caddy-data volume. Publish 80 (ACME challenge + HTTPS
+    # redirect) and 443 (TCP + UDP for HTTP/3). No external proxy needed.
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN (e.g. example.com) in .env}
+      TLS_EMAIL: ${TLS_EMAIL:?set TLS_EMAIL (ACME account email) in .env}
+    ports: !override
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes: !override
+      - ./:/var/www/html
+      - ./docker/caddy/Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
 
   queue:
     restart: always
