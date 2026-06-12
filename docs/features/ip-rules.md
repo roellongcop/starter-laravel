@@ -30,7 +30,7 @@ deploy.
 
 ## Gotchas
 
-- **Behind nginx, `$request->ip()` is the proxy IP unless `TrustProxies` is configured for the real
+- **Behind Caddy, `$request->ip()` is the proxy IP unless `TrustProxies` is configured for the real
   client.** Enabling `whitelist_ip_only` without that can 403 everyone — configure `TrustProxies` in
   production first.
 
