@@ -44,7 +44,7 @@ down-v: ## Stop and remove containers + named volumes (db, seaweedfs)
 # bind-mounted, so root can remove files of any owner. Needs the app image built.
 clean: ## Delete generated/uploaded files + runtime caches (assets, storage, compiled config)
 	$(DC) run --rm --no-deps -T --user root app sh -lc 'rm -rf \
-		public/build public/hot \
+		public/build public/hot bootstrap/ssr \
 		storage/app/private/uploads storage/app/private/exports \
 		storage/app/private/imports storage/app/private/backups \
 		storage/app/private/image-cache \
@@ -54,7 +54,12 @@ clean: ## Delete generated/uploaded files + runtime caches (assets, storage, com
 			storage/framework/views storage/framework/testing \
 			storage/logs bootstrap/cache; do \
 			find "$$d" -mindepth 1 -not -name .gitignore -delete 2>/dev/null || true; \
-		done'
+		done; \
+		f=docker/postgres/init/10-create-test-db.sql; \
+		git config --global --add safe.directory /var/www/html 2>/dev/null || true; \
+		if [ -f "$$f" ] && ! git ls-files --error-unmatch "$$f" >/dev/null 2>&1; then \
+			rm -f "$$f"; \
+		fi'
 
 refresh: ## Wipe EVERYTHING (containers, volumes, local files) and rebuild fresh
 	$(DC) --profile dev down -v --remove-orphans
