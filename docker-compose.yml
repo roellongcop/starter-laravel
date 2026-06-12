@@ -82,7 +82,10 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html
-    command: sh -c "npm install --no-audit --no-fund && node bootstrap/ssr/ssr.js"
+    # Wait for the SSR bundle before launching node — on a cold boot the asset
+    # build may not have emitted bootstrap/ssr/ssr.js yet, which would otherwise
+    # crash-loop the renderer and serve client-only (empty-body) HTML meanwhile.
+    command: sh -c "npm install --no-audit --no-fund && until [ -f bootstrap/ssr/ssr.js ]; do echo 'waiting for SSR bundle (bootstrap/ssr/ssr.js)...'; sleep 2; done && node bootstrap/ssr/ssr.js"
     depends_on:
       app:
         condition: service_started
