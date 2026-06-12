@@ -67,7 +67,7 @@ file) so its `Sitemap:` line uses the live `APP_URL`.
 - **No static `<title>` in `app.blade.php`.** With SSR, `@inertiaHead` emits the title; a static
   `<title inertia>` would produce a duplicate in the raw HTML (crawlers pick the wrong one).
 - **Dynamic `robots.txt`.** A static file can't carry an absolute, environment-correct `Sitemap:`
-  URL; nginx's `location = /robots.txt` falls through to `index.php`.
+  URL; Caddy's `php_fastcgi` falls through to `index.php` for the (non-existent) file.
 
 ## Gotchas
 
