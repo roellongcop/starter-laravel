@@ -27,6 +27,17 @@ services:
   scheduler:
     restart: always
 
+  # SSR renderer: deps come from the deploy's npm install, so just run the bundle.
+  ssr:
+    restart: always
+    command: node bootstrap/ssr/ssr.js
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:13714/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   postgres:
     restart: always
     # Don't expose the database to the host/internet — the app reaches it on the

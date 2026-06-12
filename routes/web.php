@@ -20,22 +20,54 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SessionHeartbeatController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ThemeController;
 use App\Http\Controllers\UserController;
+use App\Http\Middleware\EnableSsr;
+use App\Support\Seo;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-    ]);
+// Public/SEO pages: server-side rendered. New marketing/SEO pages go in this
+// group. See docs/features/seo-and-ssr.md.
+Route::middleware(EnableSsr::class)->group(function () {
+    Route::get('/', function () {
+        return Inertia::render('Welcome', [
+            'canLogin' => Route::has('login'),
+            'canRegister' => Route::has('register'),
+            'seo' => Seo::make(
+                title: 'Roel R. Longcop — Full Stack Software Developer',
+                description: 'Full Stack Software Developer with 8+ years building '
+                    .'web and mobile apps in Laravel, React, Vue and Node.js. '
+                    .'See selected work, skills and experience.',
+                type: 'profile',
+                jsonLd: Seo::personSchema(
+                    name: 'Roel R. Longcop',
+                    jobTitle: 'Full Stack Software Developer',
+                ),
+            )->toArray(),
+        ]);
+    })->name('home');
+
+    Route::get('/contact', [ContactController::class, 'create'])->name('contact');
 });
 
-Route::get('/contact', [ContactController::class, 'create'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])
     ->middleware('throttle:5,1')
     ->name('contact.store');
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+Route::get('/robots.txt', function () {
+    $body = implode("\n", [
+        'User-agent: *',
+        'Disallow:',
+        '',
+        'Sitemap: '.route('sitemap'),
+    ])."\n";
+
+    return response($body, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+})->name('robots');
 
 // Public brand images (favicon + logos) — render before login / on guest pages.
 Route::get('brand/{slot}', [BrandController::class, 'show'])

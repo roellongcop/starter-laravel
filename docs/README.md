@@ -69,5 +69,7 @@ from the map below.
   sessions, audit log, toasts/idle-logout. ✅ written
 - [Mobile API auth](features/mobile-api-auth.md) — stateless Sanctum bearer-token
   login/me/logout for the `/api/v1` surface. ✅ written
+- [SEO & SSR](features/seo-and-ssr.md) — selective Inertia SSR for public pages, the `Seo`
+  meta object, sitemap/robots. ✅ written
 
 > Fill a room when you next touch that area — leave it better-documented than you found it.
