@@ -1,6 +1,6 @@
+import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
 import animate from 'tailwindcss-animate';
-import defaultTheme from 'tailwindcss/defaultTheme';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -74,45 +74,10 @@ export default {
                     from: { height: 'var(--radix-accordion-content-height)' },
                     to: { height: '0' },
                 },
-                // Slow ambient drift for futuristic background blobs.
-                'float-slow': {
-                    '0%, 100%': { transform: 'translate3d(0, 0, 0) scale(1)' },
-                    '50%': {
-                        transform: 'translate3d(4%, -6%, 0) scale(1.12)',
-                    },
-                },
-                'float-slower': {
-                    '0%, 100%': { transform: 'translate3d(0, 0, 0) scale(1)' },
-                    '50%': {
-                        transform: 'translate3d(-5%, 5%, 0) scale(1.08)',
-                    },
-                },
-                // Breathing accent glow behind the hero mark.
-                'glow-pulse': {
-                    '0%, 100%': { opacity: '0.35', transform: 'scale(1)' },
-                    '50%': { opacity: '0.6', transform: 'scale(1.06)' },
-                },
-                // Slow light sweeping across the headline.
-                shimmer: {
-                    '0%': { backgroundPosition: '200% 0' },
-                    '100%': { backgroundPosition: '-200% 0' },
-                },
-                // Restless film grain for an atmospheric, alive texture.
-                grain: {
-                    '0%, 100%': { transform: 'translate(0, 0)' },
-                    '25%': { transform: 'translate(-5px, 4px)' },
-                    '50%': { transform: 'translate(4px, -3px)' },
-                    '75%': { transform: 'translate(-3px, -5px)' },
-                },
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
                 'accordion-up': 'accordion-up 0.2s ease-out',
-                'float-slow': 'float-slow 18s ease-in-out infinite',
-                'float-slower': 'float-slower 24s ease-in-out infinite',
-                'glow-pulse': 'glow-pulse 6s ease-in-out infinite',
-                shimmer: 'shimmer 7s linear infinite',
-                grain: 'grain 1.4s steps(1) infinite',
             },
         },
     },
