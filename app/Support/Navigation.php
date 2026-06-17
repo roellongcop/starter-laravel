@@ -86,6 +86,7 @@ class Navigation
             [
                 'label' => 'Content', 'icon' => 'FolderOpen', 'children' => [
                     ['key' => 'organizations', 'label' => 'Organizations', 'icon' => 'Building2', 'href' => '/organizations'],
+                    ['key' => 'projects', 'label' => 'Projects', 'icon' => 'FolderKanban', 'href' => '/projects'],
                     ['key' => 'files', 'label' => 'Files', 'icon' => 'Files', 'href' => '/files'],
                     ['key' => 'themes', 'label' => 'Themes', 'icon' => 'Palette', 'href' => '/themes'],
                     ['key' => 'notifications', 'label' => 'Notifications', 'icon' => 'Bell', 'href' => '/notifications'],

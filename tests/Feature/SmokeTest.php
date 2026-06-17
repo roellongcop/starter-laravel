@@ -4,6 +4,7 @@ use App\Enums\SystemRole;
 use App\Models\File;
 use App\Models\Ip;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\Role;
 use App\Models\Theme;
 use App\Models\User;
@@ -33,6 +34,7 @@ it('renders every page route with a 200', function (): void {
     $file = File::factory()->create(['owner_id' => auth()->id()]);
     $ip = Ip::factory()->create();
     $organization = Organization::factory()->create();
+    $project = Project::factory()->create();
     $role = Role::query()->firstOrFail();
 
     /** @var array<int, array{0: string, 1: array<int, mixed>}> $pages */
@@ -71,6 +73,8 @@ it('renders every page route with a 200', function (): void {
         ['ips.show', [$ip]],
         ['organizations.index', []],
         ['organizations.show', [$organization]],
+        ['projects.index', []],
+        ['projects.show', [$project]],
     ];
 
     foreach ($pages as [$name, $params]) {

@@ -16,6 +16,7 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SessionController;
@@ -133,6 +134,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('organizations/bulk', [OrganizationController::class, 'bulk'])->name('organizations.bulk');
     Route::resource('organizations', OrganizationController::class)->except(['create', 'edit']);
+
+    Route::post('projects/bulk', [ProjectController::class, 'bulk'])->name('projects.bulk');
+    Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
 
     // Notifications
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');

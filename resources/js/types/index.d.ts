@@ -141,6 +141,18 @@ export interface AdminOrganization {
     created_at: string | null;
 }
 
+/** A project as serialized by ProjectController. */
+export interface AdminProject {
+    token: string;
+    name: string;
+    description: string | null;
+    private: boolean;
+    organization: string | null; // organization token
+    organization_name: string | null; // display name
+    record_status: number;
+    created_at: string | null;
+}
+
 /** A node in the sidebar tree shared as `navigation`. */
 export interface NavItem {
     key?: string;

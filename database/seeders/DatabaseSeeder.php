@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ThemeSeeder::class,
             IpSeeder::class,
             OrganizationSeeder::class,
+            ProjectSeeder::class,
             MonitoringSeeder::class,
         ]);
     }

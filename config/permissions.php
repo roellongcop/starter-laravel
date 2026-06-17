@@ -27,6 +27,7 @@ return [
         'files',
         'ips',
         'organizations',
+        'projects',
         'themes',
         'notifications',
         'backups',
