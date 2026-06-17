@@ -1,6 +1,5 @@
 import { Head } from '@inertiajs/react';
 
-import BackButton from '@/Components/BackButton.js';
 import PageHeader from '@/Components/PageHeader';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -13,9 +12,14 @@ export default function Edit({ theme }: { theme: AdminTheme }) {
             <Head title={`Edit ${theme.name}`} />
             <PageHeader
                 title={`Edit ${theme.name}`}
-                actions={
-                    <BackButton fallback={route('themes.show', theme.token)} />
-                }
+                breadcrumbs={[
+                    { label: 'Themes', href: route('themes.index') },
+                    {
+                        label: theme.name,
+                        href: route('themes.show', theme.token),
+                    },
+                    { label: 'Edit' },
+                ]}
             />
             <Card>
                 <CardContent className="pt-6">

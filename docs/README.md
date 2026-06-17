@@ -39,7 +39,7 @@ from the map below.
 - [Backend](conventions/backend.md) — controller→FormRequest→Policy→Inertia shape,
   `BaseModel` traits, Larastan `@property` rules, `cursorResponse()`.
 - [Frontend](conventions/frontend.md) — React/TS, shadcn primitives, Prettier import
-  ordering + `eslint --fix`, `<BackButton>`/nav history, `<Can>` gating.
+  ordering + `eslint --fix`, breadcrumbs (`<PageHeader breadcrumbs>`), `<Can>` gating.
 - [Comments](conventions/comments.md) — comment the *why*, not the *what*; what to
   keep vs delete, and the cleanup baseline.
 

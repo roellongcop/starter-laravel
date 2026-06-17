@@ -150,9 +150,9 @@ one-shot bag to null instead of re-toasting it; `app.tsx` turns it into toasts g
   `checkModelProperties` is off; avoid generic `Attribute<...>` return docblocks (covariance error).
 - **Frontend:** React is all TypeScript; shadcn primitives live in `resources/js/Components/ui/`.
   Prettier (`prettier-plugin-organize-imports` + `prettier-plugin-tailwindcss`) enforces import
-  ordering and class sorting — run `eslint --fix` after edits (manually-ordered imports get reshuffled). `<BackButton fallback>` navigates to the previous
-  page with a **fresh** `router.get` via a per-tab sessionStorage nav stack (`lib/navHistory.ts`), not
-  `history.back()` (which serves Inertia's stale cache).
+  ordering and class sorting — run `eslint --fix` after edits (manually-ordered imports get reshuffled). Wayfinding on non-index pages
+  uses `<PageHeader breadcrumbs={[...]}>` (a `Crumb[]` trail rendered above the title by
+  `Components/Breadcrumbs.tsx`); index/list pages keep the plain-text `description` instead.
 - **The `node` container runs as root**, so `npm run build` writes root-owned files under
   `public/build`. `make clean` deletes generated/uploaded files **and** storage runtime caches
   (`storage/framework/*`, `storage/logs`, `bootstrap/cache`, backup-temp/restore workdirs) via a root

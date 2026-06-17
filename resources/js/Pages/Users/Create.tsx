@@ -1,6 +1,5 @@
 import { Head } from '@inertiajs/react';
 
-import BackButton from '@/Components/BackButton';
 import PageHeader from '@/Components/PageHeader';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -18,7 +17,10 @@ export default function Create({ roleOptions, statusOptions }: Props) {
             <Head title="New User" />
             <PageHeader
                 title="New User"
-                actions={<BackButton fallback={route('users.index')} />}
+                breadcrumbs={[
+                    { label: 'Users', href: route('users.index') },
+                    { label: 'New User' },
+                ]}
             />
             <Card>
                 <CardContent className="pt-6">

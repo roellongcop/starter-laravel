@@ -2,7 +2,6 @@ import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { type Accept } from 'react-dropzone';
 
-import BackButton from '@/Components/BackButton';
 import FileDropzone from '@/Components/FileDropzone';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
@@ -38,7 +37,10 @@ export default function Create() {
             <Head title="Upload Files" />
             <PageHeader
                 title="Upload Files"
-                actions={<BackButton fallback={route('files.index')} />}
+                breadcrumbs={[
+                    { label: 'Files', href: route('files.index') },
+                    { label: 'Upload Files' },
+                ]}
             />
             <Card>
                 <CardContent className="space-y-4 pt-6">

@@ -1,6 +1,5 @@
 import { Head } from '@inertiajs/react';
 
-import BackButton from '@/Components/BackButton.js';
 import PageHeader from '@/Components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -34,7 +33,10 @@ export default function Show({ log }: { log: AdminAudit }) {
             <PageHeader
                 title={`${log.event} ${log.auditable_type} #${log.auditable_id}`}
                 description={`${log.user} · ${log.browser} / ${log.os} / ${log.device}${log.tags ? ` | ${log.tags}` : ''}`}
-                actions={<BackButton fallback={route('logs.index')} />}
+                breadcrumbs={[
+                    { label: 'Audit Logs', href: route('logs.index') },
+                    { label: `${log.event} #${log.auditable_id}` },
+                ]}
             />
 
             <div className="mb-6 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-2">
