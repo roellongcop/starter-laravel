@@ -14,6 +14,7 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\LoginHistoryController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RoleController;
@@ -129,6 +130,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('ips/bulk', [IpController::class, 'bulk'])->name('ips.bulk');
     Route::resource('ips', IpController::class)->except(['create', 'edit']);
+
+    Route::post('organizations/bulk', [OrganizationController::class, 'bulk'])->name('organizations.bulk');
+    Route::resource('organizations', OrganizationController::class)->except(['create', 'edit']);
 
     // Notifications
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');

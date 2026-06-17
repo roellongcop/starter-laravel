@@ -1,6 +1,7 @@
 import {
     Archive,
     Bell,
+    Building2,
     Circle,
     Database,
     Download,
@@ -41,6 +42,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
     Download,
     Upload,
     Archive,
+    Building2,
     Settings,
     Network,
     MonitorSmartphone,

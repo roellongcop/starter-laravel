@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ThemeSeeder::class,
             IpSeeder::class,
+            OrganizationSeeder::class,
             MonitoringSeeder::class,
         ]);
     }

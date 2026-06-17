@@ -26,6 +26,7 @@ return [
         'roles',
         'files',
         'ips',
+        'organizations',
         'themes',
         'notifications',
         'backups',

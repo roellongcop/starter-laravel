@@ -124,6 +124,17 @@ export interface AdminIp {
     created_at: string | null;
 }
 
+/** An organization as serialized by OrganizationController. */
+export interface AdminOrganization {
+    token: string;
+    name: string;
+    description: string | null;
+    point_of_contact: string | null; // user token
+    point_of_contact_name: string | null; // display name
+    record_status: number;
+    created_at: string | null;
+}
+
 /** A node in the sidebar tree shared as `navigation`. */
 export interface NavItem {
     key?: string;
