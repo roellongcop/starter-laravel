@@ -100,6 +100,16 @@ it('never leaks the point-of-contact id to the frontend', function (): void {
             ->missing('organization.point_of_contact_id'));
 });
 
+it('renders organizations on the index page (scroll prop loads on first paint)', function (): void {
+    actingAsRole(SystemRole::Developer);
+    Organization::factory()->count(3)->create();
+
+    $this->get(route('organizations.index'))
+        ->assertInertia(fn ($page) => $page
+            ->component('Organizations/Index')
+            ->has('organizations.data', 3));
+});
+
 it('forbids organization access without permission', function (): void {
     $this->get(route('organizations.index'))->assertRedirect(route('login'));
 

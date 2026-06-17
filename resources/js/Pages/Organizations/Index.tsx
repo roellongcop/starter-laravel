@@ -1,13 +1,13 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
+import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
-import CursorPager from '@/Components/CursorPager';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
     Sheet,
@@ -16,25 +16,15 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/Components/ui/sheet';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/Components/ui/table';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    type AdminOrganization,
-    type CursorResponse,
-    type SelectOption,
-} from '@/types';
+import { type AdminOrganization, type SelectOption } from '@/types';
 import OrganizationForm from './Partials/OrganizationForm';
 
 interface Props {
-    organizations: CursorResponse<AdminOrganization>;
+    // Serialized CursorPaginator wrapped by Inertia::scroll(); the
+    // <InfiniteScroll> component appends pages into `data` as the user scrolls.
+    organizations: { data: AdminOrganization[] };
     filters: { search: string; inactive: boolean };
     users: SelectOption[];
 }
@@ -143,61 +133,65 @@ export default function Index({ organizations, filters, users }: Props) {
                 )}
             </div>
 
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-10"></TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Point of contact</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead className="text-right">
-                                Actions
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {organizations.data.length === 0 && (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={5}
-                                    className="text-center text-muted-foreground"
-                                >
-                                    No organizations found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                        {organizations.data.map((organization) => (
-                            <TableRow key={organization.token}>
-                                <TableCell>
-                                    <Checkbox
-                                        checked={selected.includes(
-                                            organization.token,
-                                        )}
-                                        onCheckedChange={() =>
-                                            toggleRow(organization.token)
-                                        }
-                                    />
-                                </TableCell>
-                                <TableCell className="font-medium">
-                                    <Link
-                                        href={route(
-                                            'organizations.show',
-                                            organization.token,
-                                        )}
-                                        className="hover:underline"
-                                    >
-                                        {organization.name}
-                                    </Link>
-                                </TableCell>
-                                <TableCell className="text-sm">
-                                    {organization.point_of_contact_name ?? '—'}
-                                </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">
-                                    {organization.description ?? '—'}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex justify-end gap-1">
+            {organizations.data.length === 0 ? (
+                <div className="rounded-lg border bg-card py-16 text-center text-sm text-muted-foreground">
+                    No organizations found.
+                </div>
+            ) : (
+                <InfiniteScroll
+                    data="organizations"
+                    buffer={300}
+                    className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                    loading={
+                        <div className="col-span-full flex justify-center py-6 text-muted-foreground">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                        </div>
+                    }
+                >
+                    {organizations.data.map((organization) => {
+                        const isSelected = selected.includes(
+                            organization.token,
+                        );
+                        return (
+                            <Card
+                                key={organization.token}
+                                data-selected={isSelected}
+                                className="relative flex flex-col transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md data-[selected=true]:ring-2 data-[selected=true]:ring-primary"
+                            >
+                                <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
+                                    <div className="flex items-start gap-3">
+                                        <Checkbox
+                                            className="relative z-10 mt-1"
+                                            checked={isSelected}
+                                            onCheckedChange={() =>
+                                                toggleRow(organization.token)
+                                            }
+                                            aria-label={`Select ${organization.name}`}
+                                        />
+                                        <div className="space-y-1">
+                                            <CardTitle className="text-base leading-tight">
+                                                {/* Stretched link: the ::after
+                                                    overlay makes the whole card
+                                                    navigate to the show page,
+                                                    while z-10 controls stay
+                                                    clickable above it. */}
+                                                <Link
+                                                    href={route(
+                                                        'organizations.show',
+                                                        organization.token,
+                                                    )}
+                                                    className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                                >
+                                                    {organization.name}
+                                                </Link>
+                                            </CardTitle>
+                                            <p className="text-sm text-muted-foreground">
+                                                {organization.point_of_contact_name ??
+                                                    'No point of contact'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="relative z-10 flex shrink-0 gap-1">
                                         <Can ability="organizations.update">
                                             <Button
                                                 size="icon"
@@ -225,19 +219,17 @@ export default function Index({ organizations, filters, users }: Props) {
                                             </Button>
                                         </Can>
                                     </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-
-            <div className="mt-4">
-                <CursorPager
-                    nextCursor={organizations.next_cursor}
-                    prevCursor={organizations.prev_cursor}
-                />
-            </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="line-clamp-3 text-sm text-muted-foreground">
+                                        {organization.description ?? '—'}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </InfiniteScroll>
+            )}
 
             <Sheet open={formOpen} onOpenChange={setFormOpen}>
                 <SheetContent

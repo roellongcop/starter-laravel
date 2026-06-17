@@ -21,10 +21,14 @@ class OrganizationController extends Controller
         $organizations = $filters->apply(Organization::query()->with('pointOfContact'))
             ->keyset()
             ->cursorPaginate(config('keen.pagination_size'))
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn (Organization $organization) => $this->row($organization));
 
         return Inertia::render('Organizations/Index', [
-            'organizations' => cursorResponse($organizations, fn (Organization $organization) => $this->row($organization)),
+            // Inertia::scroll() merges (appends) the paginator's `data` wrapper on
+            // partial reloads, driving the <InfiniteScroll> card grid; cursor
+            // metadata is derived from the CursorPaginator automatically.
+            'organizations' => Inertia::scroll($organizations),
             'filters' => $filters->echoBack(),
             'users' => $this->userOptions(),
         ]);
