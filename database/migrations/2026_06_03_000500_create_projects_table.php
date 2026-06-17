@@ -16,6 +16,8 @@ return new class extends Migration
             $table->boolean('private')->default(false);
             $table->foreignId('organization_id')->constrained('organizations')->cascadeOnDelete();
             $table->auditColumns();
+            // A project name is unique within its organization (may repeat across orgs).
+            $table->unique(['organization_id', 'name']);
         });
     }
 

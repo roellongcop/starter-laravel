@@ -77,6 +77,13 @@ class OrganizationController extends Controller
             'projectsTotal' => $projectsTotal,
             'projectFilters' => $filters->echoBack(),
             'users' => $this->userOptions(),
+            // Org options for the inline project edit form (a project may be
+            // reassigned to another organization).
+            'organizationOptions' => Organization::query()
+                ->orderBy('name')
+                ->get(['token', 'name'])
+                ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
+                ->all(),
         ]);
     }
 
@@ -96,21 +103,6 @@ class OrganizationController extends Controller
         $organization->delete();
 
         return redirect()->route('organizations.index')->with('success', 'Organization deleted.');
-    }
-
-    public function bulk(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'process' => ['required', 'in:active,in_active,delete'],
-            'tokens' => ['required', 'array'],
-            'tokens.*' => ['string'],
-        ]);
-
-        $this->authorize($validated['process'] === 'delete' ? 'delete' : 'update', Organization::class);
-
-        $count = Organization::bulkAction($validated['process'], $validated['tokens']);
-
-        return back()->with('success', "{$count} organization(s) updated.");
     }
 
     /**

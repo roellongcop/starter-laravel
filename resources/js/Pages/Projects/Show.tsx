@@ -1,7 +1,8 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import Can from '@/Components/Can';
+import ConfirmDialog from '@/Components/ConfirmDialog';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -31,6 +32,12 @@ export default function Show({
     parentOrganization,
 }: Props) {
     const [editOpen, setEditOpen] = useState(false);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+    const destroy = () =>
+        router.delete(route('projects.destroy', project.token), {
+            onFinish: () => setConfirmingDelete(false),
+        });
 
     const breadcrumbs: Crumb[] = parentOrganization
         ? [
@@ -58,6 +65,14 @@ export default function Show({
                         <Can ability="projects.update">
                             <Button onClick={() => setEditOpen(true)}>
                                 Edit
+                            </Button>
+                        </Can>
+                        <Can ability="projects.delete">
+                            <Button
+                                variant="destructive"
+                                onClick={() => setConfirmingDelete(true)}
+                            >
+                                Delete
                             </Button>
                         </Can>
                     </>
@@ -119,6 +134,15 @@ export default function Show({
                     </div>
                 </SheetContent>
             </Sheet>
+
+            <ConfirmDialog
+                open={confirmingDelete}
+                onOpenChange={setConfirmingDelete}
+                title={`Delete ${project.name}?`}
+                confirmLabel="Delete"
+                destructive
+                onConfirm={destroy}
+            />
         </AuthenticatedLayout>
     );
 }

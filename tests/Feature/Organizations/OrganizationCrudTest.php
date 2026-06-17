@@ -70,25 +70,6 @@ it('deletes an organization', function (): void {
     expect(Organization::withInactive()->find($organization->id))->toBeNull();
 });
 
-it('bulk inactivates and deletes organizations', function (): void {
-    actingAsRole(SystemRole::Developer);
-    $organizations = Organization::factory()->count(2)->create();
-    $tokens = $organizations->pluck('token')->all();
-
-    $this->post(route('organizations.bulk'), [
-        'process' => 'in_active',
-        'tokens' => $tokens,
-    ])->assertRedirect();
-    expect(Organization::query()->count())->toBe(0)
-        ->and(Organization::onlyInactive()->count())->toBe(2);
-
-    $this->post(route('organizations.bulk'), [
-        'process' => 'delete',
-        'tokens' => $tokens,
-    ])->assertRedirect();
-    expect(Organization::withInactive()->count())->toBe(0);
-});
-
 it('never leaks the point-of-contact id to the frontend', function (): void {
     actingAsRole(SystemRole::Developer);
     $contact = User::factory()->create();

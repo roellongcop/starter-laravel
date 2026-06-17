@@ -132,13 +132,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('ips/bulk', [IpController::class, 'bulk'])->name('ips.bulk');
     Route::resource('ips', IpController::class)->except(['create', 'edit']);
 
-    Route::post('organizations/bulk', [OrganizationController::class, 'bulk'])->name('organizations.bulk');
     Route::resource('organizations', OrganizationController::class)->except(['create', 'edit']);
 
-    Route::post('projects/bulk', [ProjectController::class, 'bulk'])->name('projects.bulk');
     Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
     Route::get('organizations/{organization}/projects/{project}', [ProjectController::class, 'showForOrganization'])
         ->name('organizations.projects.show');
+    Route::delete('organizations/{organization}/projects/{project}', [ProjectController::class, 'destroyForOrganization'])
+        ->name('organizations.projects.destroy');
 
     // Notifications
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');

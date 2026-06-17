@@ -1,13 +1,20 @@
-import { Head, InfiniteScroll, Link } from '@inertiajs/react';
-import { Loader2 } from 'lucide-react';
+import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
+import { Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import Can from '@/Components/Can';
+import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import {
     Sheet,
     SheetContent,
@@ -17,6 +24,7 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import ProjectForm from '@/Pages/Projects/Partials/ProjectForm';
 import { type AdminOrganization, type SelectOption } from '@/types';
 import OrganizationForm from './Partials/OrganizationForm';
 
@@ -34,6 +42,7 @@ interface Props {
     projectsTotal: number;
     projectFilters: { search: string };
     users: SelectOption[];
+    organizationOptions: SelectOption[];
 }
 
 export default function Show({
@@ -42,14 +51,47 @@ export default function Show({
     projectsTotal,
     projectFilters,
     users,
+    organizationOptions,
 }: Props) {
     const [editOpen, setEditOpen] = useState(false);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+    const [projectFormOpen, setProjectFormOpen] = useState(false);
+    const [editingProject, setEditingProject] =
+        useState<OrganizationProject | null>(null);
+    const [deletingProject, setDeletingProject] =
+        useState<OrganizationProject | null>(null);
+
     const f = useFilters<{ search: string }>({
         route: 'organizations.show',
         params: organization.token,
         reset: ['projects'],
         initial: { search: projectFilters.search },
     });
+
+    const destroy = () =>
+        router.delete(route('organizations.destroy', organization.token), {
+            onFinish: () => setConfirmingDelete(false),
+        });
+
+    const openEditProject = (project: OrganizationProject) => {
+        setEditingProject(project);
+        setProjectFormOpen(true);
+    };
+
+    const destroyProject = () => {
+        if (!deletingProject) return;
+        // Nested route → redirects back to this org page (not projects index).
+        router.delete(
+            route('organizations.projects.destroy', [
+                organization.token,
+                deletingProject.token,
+            ]),
+            {
+                preserveScroll: true,
+                onFinish: () => setDeletingProject(null),
+            },
+        );
+    };
 
     return (
         <AuthenticatedLayout>
@@ -69,6 +111,14 @@ export default function Show({
                         <Can ability="organizations.update">
                             <Button onClick={() => setEditOpen(true)}>
                                 Edit
+                            </Button>
+                        </Can>
+                        <Can ability="organizations.delete">
+                            <Button
+                                variant="destructive"
+                                onClick={() => setConfirmingDelete(true)}
+                            >
+                                Delete
                             </Button>
                         </Can>
                     </>
@@ -133,9 +183,9 @@ export default function Show({
                             {projects.data.map((project) => (
                                 <Card
                                     key={project.token}
-                                    className="relative flex flex-col transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md"
+                                    className="relative flex flex-col transition-shadow hover:shadow-md"
                                 >
-                                    <CardHeader>
+                                    <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
                                         <CardTitle className="flex items-center gap-2 text-base leading-tight">
                                             <Link
                                                 href={route(
@@ -155,6 +205,52 @@ export default function Show({
                                                 </Badge>
                                             )}
                                         </CardTitle>
+                                        <Can
+                                            anyOf={[
+                                                'projects.update',
+                                                'projects.delete',
+                                            ]}
+                                        >
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="relative z-10 shrink-0"
+                                                        aria-label="Actions"
+                                                    >
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <Can ability="projects.update">
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                openEditProject(
+                                                                    project,
+                                                                )
+                                                            }
+                                                        >
+                                                            <Pencil className="mr-2 h-4 w-4" />
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                    </Can>
+                                                    <Can ability="projects.delete">
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                setDeletingProject(
+                                                                    project,
+                                                                )
+                                                            }
+                                                            className="text-destructive focus:text-destructive"
+                                                        >
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </Can>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </Can>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="line-clamp-3 text-sm text-muted-foreground">
@@ -188,6 +284,58 @@ export default function Show({
                     </div>
                 </SheetContent>
             </Sheet>
+
+            <Sheet open={projectFormOpen} onOpenChange={setProjectFormOpen}>
+                <SheetContent
+                    side="right"
+                    className="w-full overflow-y-auto sm:max-w-md"
+                >
+                    <SheetHeader>
+                        <SheetTitle>
+                            {editingProject
+                                ? `Edit ${editingProject.name}`
+                                : 'Project'}
+                        </SheetTitle>
+                        <SheetDescription>
+                            A project belonging to an organization.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                        {editingProject && (
+                            <ProjectForm
+                                key={editingProject.token}
+                                project={{
+                                    token: editingProject.token,
+                                    name: editingProject.name,
+                                    description: editingProject.description,
+                                    private: editingProject.private,
+                                    organization: organization.token,
+                                }}
+                                organizations={organizationOptions}
+                                onSuccess={() => setProjectFormOpen(false)}
+                            />
+                        )}
+                    </div>
+                </SheetContent>
+            </Sheet>
+
+            <ConfirmDialog
+                open={confirmingDelete}
+                onOpenChange={setConfirmingDelete}
+                title={`Delete ${organization.name}?`}
+                confirmLabel="Delete"
+                destructive
+                onConfirm={destroy}
+            />
+
+            <ConfirmDialog
+                open={deletingProject !== null}
+                onOpenChange={(o) => !o && setDeletingProject(null)}
+                title={`Delete ${deletingProject?.name}?`}
+                confirmLabel="Delete"
+                destructive
+                onConfirm={destroyProject}
+            />
         </AuthenticatedLayout>
     );
 }

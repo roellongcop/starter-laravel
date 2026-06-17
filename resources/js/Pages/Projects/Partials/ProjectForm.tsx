@@ -17,7 +17,10 @@ import { Textarea } from '@/Components/ui/textarea';
 import { type AdminProject, type SelectOption } from '@/types';
 
 interface Props {
-    project?: AdminProject;
+    project?: Pick<
+        AdminProject,
+        'token' | 'name' | 'description' | 'private' | 'organization'
+    >;
     organizations: SelectOption[];
     onSuccess?: () => void;
 }

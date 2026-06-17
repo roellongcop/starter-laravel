@@ -92,19 +92,19 @@ class ProjectController extends Controller
         return redirect()->route('projects.index')->with('success', 'Project deleted.');
     }
 
-    public function bulk(Request $request): RedirectResponse
+    /**
+     * Delete a project from its organization's page and return there (rather
+     * than the global projects index).
+     */
+    public function destroyForOrganization(Organization $organization, Project $project): RedirectResponse
     {
-        $validated = $request->validate([
-            'process' => ['required', 'in:active,in_active,delete'],
-            'tokens' => ['required', 'array'],
-            'tokens.*' => ['string'],
-        ]);
+        abort_unless($project->organization_id === $organization->id, 404);
 
-        $this->authorize($validated['process'] === 'delete' ? 'delete' : 'update', Project::class);
+        $this->authorize('delete', $project);
 
-        $count = Project::bulkAction($validated['process'], $validated['tokens']);
+        $project->delete();
 
-        return back()->with('success', "{$count} project(s) updated.");
+        return redirect()->route('organizations.show', $organization->token)->with('success', 'Project deleted.');
     }
 
     /**

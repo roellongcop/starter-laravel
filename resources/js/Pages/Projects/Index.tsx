@@ -1,5 +1,5 @@
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
-import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import Can from '@/Components/Can';
@@ -9,7 +9,12 @@ import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import {
     Sheet,
     SheetContent,
@@ -30,16 +35,12 @@ interface Props {
     organizations: SelectOption[];
 }
 
-type BulkProcess = 'active' | 'in_active' | 'delete';
-
 export default function Index({ projects, filters, organizations }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'projects.index',
         reset: ['projects'],
         initial: filters,
     });
-    const [selected, setSelected] = useState<string[]>([]);
-    const [bulk, setBulk] = useState<BulkProcess | null>(null);
     const [deleting, setDeleting] = useState<AdminProject | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [formProject, setFormProject] = useState<AdminProject | null>(null);
@@ -52,26 +53,6 @@ export default function Index({ projects, filters, organizations }: Props) {
     const openEdit = (project: AdminProject) => {
         setFormProject(project);
         setFormOpen(true);
-    };
-
-    const toggleRow = (id: string) =>
-        setSelected((s) =>
-            s.includes(id) ? s.filter((x) => x !== id) : [...s, id],
-        );
-
-    const runBulk = () => {
-        if (!bulk) return;
-        router.post(
-            route('projects.bulk'),
-            { process: bulk, tokens: selected },
-            {
-                preserveScroll: true,
-                onFinish: () => {
-                    setBulk(null);
-                    setSelected([]);
-                },
-            },
-        );
     };
 
     const destroy = () => {
@@ -106,32 +87,6 @@ export default function Index({ projects, filters, organizations }: Props) {
                         placeholder="Search name or description…"
                     />
                 </FilterBar>
-
-                {selected.length > 0 && (
-                    <div className="ml-auto flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                            {selected.length} selected
-                        </span>
-                        <Can ability="projects.update">
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setBulk('in_active')}
-                            >
-                                Inactivate
-                            </Button>
-                        </Can>
-                        <Can ability="projects.delete">
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => setBulk('delete')}
-                            >
-                                Delete
-                            </Button>
-                        </Can>
-                    </div>
-                )}
             </div>
 
             {projects.data.length === 0 ? (
@@ -149,89 +104,88 @@ export default function Index({ projects, filters, organizations }: Props) {
                         </div>
                     }
                 >
-                    {projects.data.map((project) => {
-                        const isSelected = selected.includes(project.token);
-                        return (
-                            <Card
-                                key={project.token}
-                                data-selected={isSelected}
-                                className="relative flex flex-col transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md data-[selected=true]:ring-2 data-[selected=true]:ring-primary"
-                            >
-                                <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-                                    <div className="flex items-start gap-3">
-                                        <Checkbox
-                                            className="relative z-10 mt-1"
-                                            checked={isSelected}
-                                            onCheckedChange={() =>
-                                                toggleRow(project.token)
-                                            }
-                                            aria-label={`Select ${project.name}`}
-                                        />
-                                        <div className="space-y-1">
-                                            <CardTitle className="flex items-center gap-2 text-base leading-tight">
-                                                {/* Stretched link: the ::after
-                                                    overlay makes the whole card
-                                                    navigate to the show page,
-                                                    while z-10 controls stay
-                                                    clickable above it. */}
-                                                <Link
-                                                    href={route(
-                                                        'projects.show',
-                                                        project.token,
-                                                    )}
-                                                    className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
-                                                >
-                                                    {project.name}
-                                                </Link>
-                                                {project.private && (
-                                                    <Badge variant="secondary">
-                                                        Private
-                                                    </Badge>
-                                                )}
-                                            </CardTitle>
-                                            <p className="text-sm text-muted-foreground">
-                                                {project.organization_name ??
-                                                    'No organization'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="relative z-10 flex shrink-0 gap-1">
-                                        <Can ability="projects.update">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                title="Edit"
-                                                aria-label="Edit"
-                                                onClick={() =>
-                                                    openEdit(project)
-                                                }
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                        </Can>
-                                        <Can ability="projects.delete">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                title="Delete"
-                                                aria-label="Delete"
-                                                onClick={() =>
-                                                    setDeleting(project)
-                                                }
-                                            >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </Can>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="line-clamp-3 text-sm text-muted-foreground">
-                                        {project.description ?? '—'}
+                    {projects.data.map((project) => (
+                        <Card
+                            key={project.token}
+                            className="relative flex flex-col transition-shadow hover:shadow-md"
+                        >
+                            <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
+                                <div className="space-y-1">
+                                    <CardTitle className="flex items-center gap-2 text-base leading-tight">
+                                        {/* Stretched link: the ::after overlay
+                                            makes the whole card navigate to the
+                                            show page, while the z-10 menu stays
+                                            clickable above it. */}
+                                        <Link
+                                            href={route(
+                                                'projects.show',
+                                                project.token,
+                                            )}
+                                            className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                        >
+                                            {project.name}
+                                        </Link>
+                                        {project.private && (
+                                            <Badge variant="secondary">
+                                                Private
+                                            </Badge>
+                                        )}
+                                    </CardTitle>
+                                    <p className="text-sm text-muted-foreground">
+                                        {project.organization_name ??
+                                            'No organization'}
                                     </p>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                                </div>
+                                <Can
+                                    anyOf={[
+                                        'projects.update',
+                                        'projects.delete',
+                                    ]}
+                                >
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="relative z-10 shrink-0"
+                                                aria-label="Actions"
+                                            >
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <Can ability="projects.update">
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        openEdit(project)
+                                                    }
+                                                >
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Edit
+                                                </DropdownMenuItem>
+                                            </Can>
+                                            <Can ability="projects.delete">
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        setDeleting(project)
+                                                    }
+                                                    className="text-destructive focus:text-destructive"
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            </Can>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </Can>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="line-clamp-3 text-sm text-muted-foreground">
+                                    {project.description ?? '—'}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </InfiniteScroll>
             )}
 
@@ -260,15 +214,6 @@ export default function Index({ projects, filters, organizations }: Props) {
                     </div>
                 </SheetContent>
             </Sheet>
-
-            <ConfirmDialog
-                open={bulk !== null}
-                onOpenChange={(o) => !o && setBulk(null)}
-                title={`Apply "${bulk}" to ${selected.length} project(s)?`}
-                confirmLabel="Apply"
-                destructive={bulk === 'delete'}
-                onConfirm={runBulk}
-            />
 
             <ConfirmDialog
                 open={deleting !== null}

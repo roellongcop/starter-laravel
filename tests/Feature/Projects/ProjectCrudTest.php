@@ -41,6 +41,41 @@ it('requires a valid organization token', function (): void {
     expect(Project::where('name', 'Orphan')->exists())->toBeFalse();
 });
 
+it('rejects a duplicate project name within the same organization', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    Project::factory()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Apollo Platform',
+    ]);
+
+    $this->post(route('projects.store'), [
+        'name' => 'Apollo Platform',
+        'private' => false,
+        'organization' => $organization->token,
+    ])->assertSessionHasErrors('name');
+
+    expect(Project::where('name', 'Apollo Platform')->count())->toBe(1);
+});
+
+it('allows the same project name across different organizations', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $orgA = Organization::factory()->create();
+    $orgB = Organization::factory()->create();
+    Project::factory()->create([
+        'organization_id' => $orgA->id,
+        'name' => 'Shared Name',
+    ]);
+
+    $this->post(route('projects.store'), [
+        'name' => 'Shared Name',
+        'private' => false,
+        'organization' => $orgB->token,
+    ])->assertRedirect(route('projects.index'));
+
+    expect(Project::where('name', 'Shared Name')->count())->toBe(2);
+});
+
 it('updates a project', function (): void {
     actingAsRole(SystemRole::Developer);
     $project = Project::factory()->create(['name' => 'Old', 'private' => false]);
@@ -64,25 +99,6 @@ it('deletes a project', function (): void {
     expect(Project::withInactive()->find($project->id))->toBeNull();
 });
 
-it('bulk inactivates and deletes projects', function (): void {
-    actingAsRole(SystemRole::Developer);
-    $projects = Project::factory()->count(2)->create();
-    $tokens = $projects->pluck('token')->all();
-
-    $this->post(route('projects.bulk'), [
-        'process' => 'in_active',
-        'tokens' => $tokens,
-    ])->assertRedirect();
-    expect(Project::query()->count())->toBe(0)
-        ->and(Project::onlyInactive()->count())->toBe(2);
-
-    $this->post(route('projects.bulk'), [
-        'process' => 'delete',
-        'tokens' => $tokens,
-    ])->assertRedirect();
-    expect(Project::withInactive()->count())->toBe(0);
-});
-
 it('renders projects on the index page (scroll prop loads on first paint)', function (): void {
     actingAsRole(SystemRole::Developer);
     Project::factory()->count(3)->create();
@@ -103,6 +119,28 @@ it('never leaks the organization id to the frontend', function (): void {
             ->where('project.organization', $organization->token)
             ->where('project.organization_name', $organization->name)
             ->missing('project.organization_id'));
+});
+
+it('deletes a project from its organization page and redirects back to the org', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+
+    $this->delete(route('organizations.projects.destroy', [$organization, $project]))
+        ->assertRedirect(route('organizations.show', $organization->token));
+
+    expect(Project::withInactive()->find($project->id))->toBeNull();
+});
+
+it('404s deleting a nested project that does not belong to the organization', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(); // different org
+
+    $this->delete(route('organizations.projects.destroy', [$organization, $project]))
+        ->assertNotFound();
+
+    expect(Project::find($project->id))->not->toBeNull();
 });
 
 it('shows a project nested under its organization with an org-rooted trail', function (): void {

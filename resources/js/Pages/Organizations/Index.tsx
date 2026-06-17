@@ -1,5 +1,5 @@
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
-import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import Can from '@/Components/Can';
@@ -8,7 +8,12 @@ import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Checkbox } from '@/Components/ui/checkbox';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import {
     Sheet,
     SheetContent,
@@ -29,16 +34,12 @@ interface Props {
     users: SelectOption[];
 }
 
-type BulkProcess = 'active' | 'in_active' | 'delete';
-
 export default function Index({ organizations, filters, users }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'organizations.index',
         reset: ['organizations'],
         initial: filters,
     });
-    const [selected, setSelected] = useState<string[]>([]);
-    const [bulk, setBulk] = useState<BulkProcess | null>(null);
     const [deleting, setDeleting] = useState<AdminOrganization | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [formOrganization, setFormOrganization] =
@@ -52,26 +53,6 @@ export default function Index({ organizations, filters, users }: Props) {
     const openEdit = (organization: AdminOrganization) => {
         setFormOrganization(organization);
         setFormOpen(true);
-    };
-
-    const toggleRow = (id: string) =>
-        setSelected((s) =>
-            s.includes(id) ? s.filter((x) => x !== id) : [...s, id],
-        );
-
-    const runBulk = () => {
-        if (!bulk) return;
-        router.post(
-            route('organizations.bulk'),
-            { process: bulk, tokens: selected },
-            {
-                preserveScroll: true,
-                onFinish: () => {
-                    setBulk(null);
-                    setSelected([]);
-                },
-            },
-        );
     };
 
     const destroy = () => {
@@ -106,32 +87,6 @@ export default function Index({ organizations, filters, users }: Props) {
                         placeholder="Search name or description…"
                     />
                 </FilterBar>
-
-                {selected.length > 0 && (
-                    <div className="ml-auto flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                            {selected.length} selected
-                        </span>
-                        <Can ability="organizations.update">
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setBulk('in_active')}
-                            >
-                                Inactivate
-                            </Button>
-                        </Can>
-                        <Can ability="organizations.delete">
-                            <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => setBulk('delete')}
-                            >
-                                Delete
-                            </Button>
-                        </Can>
-                    </div>
-                )}
             </div>
 
             {organizations.data.length === 0 ? (
@@ -149,86 +104,85 @@ export default function Index({ organizations, filters, users }: Props) {
                         </div>
                     }
                 >
-                    {organizations.data.map((organization) => {
-                        const isSelected = selected.includes(
-                            organization.token,
-                        );
-                        return (
-                            <Card
-                                key={organization.token}
-                                data-selected={isSelected}
-                                className="relative flex flex-col transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md data-[selected=true]:ring-2 data-[selected=true]:ring-primary"
-                            >
-                                <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-                                    <div className="flex items-start gap-3">
-                                        <Checkbox
-                                            className="relative z-10 mt-1"
-                                            checked={isSelected}
-                                            onCheckedChange={() =>
-                                                toggleRow(organization.token)
-                                            }
-                                            aria-label={`Select ${organization.name}`}
-                                        />
-                                        <div className="space-y-1">
-                                            <CardTitle className="text-base leading-tight">
-                                                {/* Stretched link: the ::after
-                                                    overlay makes the whole card
-                                                    navigate to the show page,
-                                                    while z-10 controls stay
-                                                    clickable above it. */}
-                                                <Link
-                                                    href={route(
-                                                        'organizations.show',
-                                                        organization.token,
-                                                    )}
-                                                    className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
-                                                >
-                                                    {organization.name}
-                                                </Link>
-                                            </CardTitle>
-                                            <p className="text-sm text-muted-foreground">
-                                                {organization.point_of_contact_name ??
-                                                    'No point of contact'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="relative z-10 flex shrink-0 gap-1">
-                                        <Can ability="organizations.update">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                title="Edit"
-                                                aria-label="Edit"
-                                                onClick={() =>
-                                                    openEdit(organization)
-                                                }
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                        </Can>
-                                        <Can ability="organizations.delete">
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                title="Delete"
-                                                aria-label="Delete"
-                                                onClick={() =>
-                                                    setDeleting(organization)
-                                                }
-                                            >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </Can>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="line-clamp-3 text-sm text-muted-foreground">
-                                        {organization.description ?? '—'}
+                    {organizations.data.map((organization) => (
+                        <Card
+                            key={organization.token}
+                            className="relative flex flex-col transition-shadow hover:shadow-md"
+                        >
+                            <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
+                                <div className="space-y-1">
+                                    <CardTitle className="text-base leading-tight">
+                                        {/* Stretched link: the ::after overlay
+                                            makes the whole card navigate to the
+                                            show page, while the z-10 menu stays
+                                            clickable above it. */}
+                                        <Link
+                                            href={route(
+                                                'organizations.show',
+                                                organization.token,
+                                            )}
+                                            className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                        >
+                                            {organization.name}
+                                        </Link>
+                                    </CardTitle>
+                                    <p className="text-sm text-muted-foreground">
+                                        {organization.point_of_contact_name ??
+                                            'No point of contact'}
                                     </p>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                                </div>
+                                <Can
+                                    anyOf={[
+                                        'organizations.update',
+                                        'organizations.delete',
+                                    ]}
+                                >
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="relative z-10 shrink-0"
+                                                aria-label="Actions"
+                                            >
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <Can ability="organizations.update">
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        openEdit(organization)
+                                                    }
+                                                >
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Edit
+                                                </DropdownMenuItem>
+                                            </Can>
+                                            <Can ability="organizations.delete">
+                                                <DropdownMenuItem
+                                                    onClick={() =>
+                                                        setDeleting(
+                                                            organization,
+                                                        )
+                                                    }
+                                                    className="text-destructive focus:text-destructive"
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            </Can>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </Can>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="line-clamp-3 text-sm text-muted-foreground">
+                                    {organization.description ?? '—'}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </InfiniteScroll>
             )}
 
@@ -257,15 +211,6 @@ export default function Index({ organizations, filters, users }: Props) {
                     </div>
                 </SheetContent>
             </Sheet>
-
-            <ConfirmDialog
-                open={bulk !== null}
-                onOpenChange={(o) => !o && setBulk(null)}
-                title={`Apply "${bulk}" to ${selected.length} organization(s)?`}
-                confirmLabel="Apply"
-                destructive={bulk === 'delete'}
-                onConfirm={runBulk}
-            />
 
             <ConfirmDialog
                 open={deleting !== null}
