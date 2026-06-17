@@ -1,7 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 
-import BackButton from '@/Components/BackButton.js';
 import Can from '@/Components/Can';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
@@ -31,9 +30,15 @@ export default function Show({ organization, users }: Props) {
 
             <PageHeader
                 title={organization.name}
+                breadcrumbs={[
+                    {
+                        label: 'Organizations',
+                        href: route('organizations.index'),
+                    },
+                    { label: organization.name },
+                ]}
                 actions={
                     <>
-                        <BackButton fallback={route('organizations.index')} />
                         <Can ability="organizations.update">
                             <Button onClick={() => setEditOpen(true)}>
                                 Edit

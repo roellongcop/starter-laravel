@@ -127,7 +127,7 @@ numbers drift** — treat this as a record, not a live index.
 **Left in place (deliberate):**
 
 - All *why* comments (a non-exhaustive sample: `use-idle-logout.ts`, `Bell.tsx`,
-  `CursorPager.tsx`, `navHistory.ts`, `app.tsx`, the jobs and middleware).
+  `CursorPager.tsx`, `app.tsx`, the jobs and middleware).
 - `app/Http/Controllers/MediaController.php` docblocks — borderline; they note
   ownership/authorization that isn't obvious from the signature. Tighten only if
   they start restating the code.

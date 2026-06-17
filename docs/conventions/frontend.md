@@ -14,7 +14,7 @@ imports or fail the format check.
 - `resources/js/Components/ui/*` — shadcn primitives; other components alongside.
 - `resources/js/types/index.d.ts` — shared types incl. `PageProps` (shape of Inertia
   shared props).
-- `resources/js/lib/navHistory.ts`, `Components/Can.tsx`, `hooks/*`.
+- `resources/js/Components/Breadcrumbs.tsx`, `Components/Can.tsx`, `hooks/*`.
 
 ## How it works
 
@@ -26,9 +26,10 @@ imports or fail the format check.
 - **UI gating:** wrap permission-gated UI in `<Can ability="...">` (fed by
   `auth.modules`/`auth.permissions`). The menu is roles-aware and can never show something
   the user can't access.
-- **Navigation:** use `<BackButton fallback>` — it does a fresh `router.get` via a per-tab
-  sessionStorage nav stack (`lib/navHistory.ts`), **not** `history.back()` (which serves
-  Inertia's stale cache). See *Navigation history* below.
+- **Navigation / wayfinding:** non-index pages (Show/Create/Edit) pass a `breadcrumbs`
+  `Crumb[]` trail to `<PageHeader>`, rendered above the title by `Components/Breadcrumbs.tsx`
+  (the last crumb is the current page, no link; earlier crumbs link to ancestors). Index/list
+  pages keep the plain-text `description` instead. See *Breadcrumbs* below.
 - **Pagination:** `<CursorPager>` renders Prev/Next only — no page numbers, no sortable
   headers (lists are ordered `created_at DESC, id DESC` server-side; see
   [ADR 0002](../decisions/0002-keyset-cursor-pagination.md)). It navigates by pushing the
@@ -43,19 +44,20 @@ imports or fail the format check.
 
 - Theming is CSS-variable + `data-theme` based — see [Theming](../features/theming.md).
 
-### Navigation history
+### Breadcrumbs
 
-`<BackButton>` does a **fresh** `router.get` rather than `window.history.back()` because Inertia
-restores history navigations from its own cache (stale data). The previous URL comes from a
-small per-tab stack in `lib/navHistory.ts`, kept in `sessionStorage` (survives refresh, supports
-multi-level back).
+Non-index pages orient the user with a breadcrumb trail instead of a back button. A page passes
+`breadcrumbs={[...]}` (a `Crumb[]`, `{ label, href? }`) to `<PageHeader>`, which renders it above
+the title via `Components/Breadcrumbs.tsx`. Trails start at the resource index (no "Dashboard"
+root) and end at the current page (a label with no `href`):
 
-The stack is driven by Inertia's **`navigate`** event: a navigation to the second-from-top URL
-is treated as a back (pop), anything else as a forward (push) — no flags. **Caveat:** filter/sort
-reloads use `{ replace: true }`, for which Inertia *skips* the `navigate` event, so the stack
-mirrors those via the **`success`** event instead — when a visit lands on the same path as the
-stack top but a different query string, it replaces the top (matching the browser's
-`replaceState`).
+- **Show:** `[{ label: 'Users', href: route('users.index') }, { label: user.name }]`
+- **Edit:** add the entity as a linked middle crumb, then `{ label: 'Edit' }` — so both the
+  index and the entity are one click away.
+- **Create:** `[{ resource index }, { label: 'New X' }]`.
+
+Crumbs are real Inertia `<Link>`s. Index/list pages do **not** use breadcrumbs — they keep the
+plain-text `description`.
 
 ## Gotchas
 

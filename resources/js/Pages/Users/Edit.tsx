@@ -1,6 +1,5 @@
 import { Head } from '@inertiajs/react';
 
-import BackButton from '@/Components/BackButton';
 import PageHeader from '@/Components/PageHeader';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -30,9 +29,11 @@ export default function Edit({
             <Head title={`Edit ${user.name}`} />
             <PageHeader
                 title={`Edit ${user.name}`}
-                actions={
-                    <BackButton fallback={route('users.show', user.token)} />
-                }
+                breadcrumbs={[
+                    { label: 'Users', href: route('users.index') },
+                    { label: user.name, href: route('users.show', user.token) },
+                    { label: 'Edit' },
+                ]}
             />
             <Card>
                 <CardContent className="pt-6">

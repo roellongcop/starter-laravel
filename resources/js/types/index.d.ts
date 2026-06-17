@@ -80,6 +80,12 @@ export interface SelectOption {
     label: string;
 }
 
+/** One segment of a PageHeader breadcrumb trail; the last crumb omits `href`. */
+export interface Crumb {
+    label: string;
+    href?: string;
+}
+
 export interface DashboardMetric {
     label: string;
     icon: string;
