@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Enums\RecordStatus;
 use Database\Factories\OrganizationFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -19,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read User|null $pointOfContact
+ * @property-read Collection<int, Project> $projects
  */
 class Organization extends BaseModel
 {
@@ -33,5 +36,13 @@ class Organization extends BaseModel
     public function pointOfContact(): BelongsTo
     {
         return $this->belongsTo(User::class, 'point_of_contact_id');
+    }
+
+    /**
+     * @return HasMany<Project, $this>
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
     }
 }

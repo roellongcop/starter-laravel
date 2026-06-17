@@ -14,16 +14,37 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminProject, type SelectOption } from '@/types';
+import { type AdminProject, type Crumb, type SelectOption } from '@/types';
 import ProjectForm from './Partials/ProjectForm';
 
 interface Props {
     project: AdminProject;
     organizations: SelectOption[];
+    // When reached via an organization (organizations/:token/projects/:token),
+    // the breadcrumb trail is rooted at that organization instead of Projects.
+    parentOrganization?: { token: string; name: string } | null;
 }
 
-export default function Show({ project, organizations }: Props) {
+export default function Show({
+    project,
+    organizations,
+    parentOrganization,
+}: Props) {
     const [editOpen, setEditOpen] = useState(false);
+
+    const breadcrumbs: Crumb[] = parentOrganization
+        ? [
+              { label: 'Organizations', href: route('organizations.index') },
+              {
+                  label: parentOrganization.name,
+                  href: route('organizations.show', parentOrganization.token),
+              },
+              { label: project.name },
+          ]
+        : [
+              { label: 'Projects', href: route('projects.index') },
+              { label: project.name },
+          ];
 
     return (
         <AuthenticatedLayout>
@@ -31,10 +52,7 @@ export default function Show({ project, organizations }: Props) {
 
             <PageHeader
                 title={project.name}
-                breadcrumbs={[
-                    { label: 'Projects', href: route('projects.index') },
-                    { label: project.name },
-                ]}
+                breadcrumbs={breadcrumbs}
                 actions={
                     <>
                         <Can ability="projects.update">

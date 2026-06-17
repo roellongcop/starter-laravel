@@ -33,8 +33,15 @@ it('renders every page route with a 200', function (): void {
     $theme = Theme::factory()->create();
     $file = File::factory()->create(['owner_id' => auth()->id()]);
     $ip = Ip::factory()->create();
+    // Seed past the keyset page size (config('keen.pagination_size')) so the
+    // Inertia::scroll() cursor pages — organizations.index, projects.index and
+    // the org show projects list — actually compute a next cursor and exercise
+    // that code path (a single page never does).
+    $pageSize = (int) config('keen.pagination_size');
     $organization = Organization::factory()->create();
-    $project = Project::factory()->create();
+    Organization::factory()->count($pageSize)->create();
+    Project::factory()->count($pageSize + 1)->create(['organization_id' => $organization->id]);
+    $project = $organization->projects()->firstOrFail();
     $role = Role::query()->firstOrFail();
 
     /** @var array<int, array{0: string, 1: array<int, mixed>}> $pages */
@@ -75,6 +82,7 @@ it('renders every page route with a 200', function (): void {
         ['organizations.show', [$organization]],
         ['projects.index', []],
         ['projects.show', [$project]],
+        ['organizations.projects.show', [$project->organization, $project]],
     ];
 
     foreach ($pages as [$name, $params]) {

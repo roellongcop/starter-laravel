@@ -105,6 +105,28 @@ it('never leaks the organization id to the frontend', function (): void {
             ->missing('project.organization_id'));
 });
 
+it('shows a project nested under its organization with an org-rooted trail', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+
+    $this->get(route('organizations.projects.show', [$organization, $project]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('Projects/Show')
+            ->where('parentOrganization.token', $organization->token)
+            ->where('parentOrganization.name', $organization->name));
+});
+
+it('404s a nested project that does not belong to the organization', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(); // belongs to a different org
+
+    $this->get(route('organizations.projects.show', [$organization, $project]))
+        ->assertNotFound();
+});
+
 it('forbids project access without permission', function (): void {
     $this->get(route('projects.index'))->assertRedirect(route('login'));
 

@@ -16,6 +16,14 @@ export type FilterParams = Record<string, string | number | undefined>;
 interface UseFiltersOptions<T extends FilterValues> {
     /** Route name, e.g. 'users.index'. */
     route: string;
+    /** Route params for a parametrized route, e.g. an `organizations.show` token. */
+    params?: Parameters<typeof route>[1];
+    /**
+     * Inertia merge/scroll prop names to reset on every filter change. Required
+     * for <InfiniteScroll> pages: without it a re-filter APPENDS the new first
+     * page to the accumulated rows (duplicates) instead of replacing them.
+     */
+    reset?: string[];
     /** The `filters` prop echoed by the controller — seeds initial state. */
     initial: T;
     /**
@@ -51,6 +59,8 @@ const defaultSerialize = (value: unknown): string | number | undefined => {
  */
 export function useFilters<T extends FilterValues>({
     route: routeName,
+    params,
+    reset: resetProps,
     initial,
     serialize,
 }: UseFiltersOptions<T>) {
@@ -75,12 +85,13 @@ export function useFilters<T extends FilterValues>({
 
     const visit = useCallback(
         (vals: T) =>
-            router.get(route(routeName), toParams(vals), {
+            router.get(route(routeName, params), toParams(vals), {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                ...(resetProps ? { reset: resetProps } : {}),
             }),
-        [routeName, toParams],
+        [routeName, params, resetProps, toParams],
     );
 
     /** Update one pending value locally WITHOUT navigating (text inputs). */

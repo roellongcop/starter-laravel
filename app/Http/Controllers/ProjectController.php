@@ -19,7 +19,7 @@ class ProjectController extends Controller
         $this->authorize('viewAny', Project::class);
 
         $projects = $filters->apply(Project::query()->with('organization'))
-            ->keyset()
+            ->keysetByToken()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString()
             ->through(fn (Project $project) => $this->row($project));
@@ -50,6 +50,27 @@ class ProjectController extends Controller
         return Inertia::render('Projects/Show', [
             'project' => $this->row($project->load('organization')),
             'organizations' => $this->organizationOptions(),
+        ]);
+    }
+
+    /**
+     * Show a project nested under its organization
+     * (organizations/{organization}/projects/{project}). Renders the same page
+     * as show(), but with the breadcrumb trail rooted at the organization.
+     */
+    public function showForOrganization(Organization $organization, Project $project): Response
+    {
+        abort_unless($project->organization_id === $organization->id, 404);
+
+        $this->authorize('view', $project);
+
+        return Inertia::render('Projects/Show', [
+            'project' => $this->row($project->load('organization')),
+            'organizations' => $this->organizationOptions(),
+            'parentOrganization' => [
+                'token' => $organization->token,
+                'name' => $organization->name,
+            ],
         ]);
     }
 

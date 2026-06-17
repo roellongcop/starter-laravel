@@ -1,10 +1,13 @@
-import { Head } from '@inertiajs/react';
+import { Head, InfiniteScroll, Link } from '@inertiajs/react';
+import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 import Can from '@/Components/Can';
+import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent } from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
     Sheet,
     SheetContent,
@@ -12,17 +15,41 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/Components/ui/sheet';
+import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminOrganization, type SelectOption } from '@/types';
 import OrganizationForm from './Partials/OrganizationForm';
 
+interface OrganizationProject {
+    token: string;
+    name: string;
+    private: boolean;
+    description: string | null;
+}
+
 interface Props {
     organization: AdminOrganization;
+    // Keyset-paginated via Inertia::scroll(); <InfiniteScroll> appends pages.
+    projects: { data: OrganizationProject[] };
+    projectsTotal: number;
+    projectFilters: { search: string };
     users: SelectOption[];
 }
 
-export default function Show({ organization, users }: Props) {
+export default function Show({
+    organization,
+    projects,
+    projectsTotal,
+    projectFilters,
+    users,
+}: Props) {
     const [editOpen, setEditOpen] = useState(false);
+    const f = useFilters<{ search: string }>({
+        route: 'organizations.show',
+        params: organization.token,
+        reset: ['projects'],
+        initial: { search: projectFilters.search },
+    });
 
     return (
         <AuthenticatedLayout>
@@ -68,6 +95,78 @@ export default function Show({ organization, users }: Props) {
                     </div>
                 </CardContent>
             </Card>
+
+            <Can ability="projects.index">
+                <div className="mt-6">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                        <h2 className="text-lg font-semibold tracking-tight">
+                            Projects
+                            <span className="ml-2 text-sm font-normal text-muted-foreground">
+                                {projectsTotal}
+                            </span>
+                        </h2>
+                        <FilterBar onSubmit={f.submit}>
+                            <FilterBar.Search
+                                value={f.values.search}
+                                onChange={(v) => f.set('search', v)}
+                                placeholder="Search projects…"
+                            />
+                        </FilterBar>
+                    </div>
+                    {projects.data.length === 0 ? (
+                        <div className="rounded-lg border bg-card py-10 text-center text-sm text-muted-foreground">
+                            {projectFilters.search
+                                ? 'No projects match your search.'
+                                : 'No projects yet.'}
+                        </div>
+                    ) : (
+                        <InfiniteScroll
+                            data="projects"
+                            buffer={300}
+                            className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                            loading={
+                                <div className="col-span-full flex justify-center py-6 text-muted-foreground">
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                </div>
+                            }
+                        >
+                            {projects.data.map((project) => (
+                                <Card
+                                    key={project.token}
+                                    className="relative flex flex-col transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md"
+                                >
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-base leading-tight">
+                                            <Link
+                                                href={route(
+                                                    'organizations.projects.show',
+                                                    [
+                                                        organization.token,
+                                                        project.token,
+                                                    ],
+                                                )}
+                                                className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                            >
+                                                {project.name}
+                                            </Link>
+                                            {project.private && (
+                                                <Badge variant="secondary">
+                                                    Private
+                                                </Badge>
+                                            )}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="line-clamp-3 text-sm text-muted-foreground">
+                                            {project.description ?? '—'}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </InfiniteScroll>
+                    )}
+                </div>
+            </Can>
 
             <Sheet open={editOpen} onOpenChange={setEditOpen}>
                 <SheetContent

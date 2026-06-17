@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Filters\OrganizationFilters;
+use App\Filters\ProjectFilters;
 use App\Http\Requests\StoreOrganizationRequest;
 use App\Http\Requests\UpdateOrganizationRequest;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +21,7 @@ class OrganizationController extends Controller
         $this->authorize('viewAny', Organization::class);
 
         $organizations = $filters->apply(Organization::query()->with('pointOfContact'))
-            ->keyset()
+            ->keysetByToken()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString()
             ->through(fn (Organization $organization) => $this->row($organization));
@@ -43,12 +45,37 @@ class OrganizationController extends Controller
         return redirect()->route('organizations.index')->with('success', 'Organization created.');
     }
 
-    public function show(Organization $organization): Response
+    public function show(Organization $organization, ProjectFilters $filters): Response
     {
         $this->authorize('view', $organization);
 
+        $projectsQuery = $filters->apply($organization->projects()->getQuery());
+
+        // Exact count of the matching projects (keyset pagination has no total),
+        // shown as a label; reflects the active search filter.
+        $projectsTotal = (clone $projectsQuery)->count();
+
+        $projects = $projectsQuery
+            ->keysetByToken()
+            ->cursorPaginate(config('keen.pagination_size'))
+            ->withQueryString()
+            ->through(fn (Project $project) => [
+                'token' => $project->token,
+                'name' => $project->name,
+                'private' => $project->private,
+                'description' => $project->description,
+                // Keyset cursor columns — must be present in the row for
+                // Inertia::scroll() to encode the next cursor.
+                'created_at' => $project->created_at?->toIso8601String(),
+            ]);
+
         return Inertia::render('Organizations/Show', [
             'organization' => $this->row($organization->load('pointOfContact')),
+            // Keyset-paginated + searchable via <InfiniteScroll>; the search
+            // term lives in the URL query (?search=) so it survives reloads.
+            'projects' => Inertia::scroll($projects),
+            'projectsTotal' => $projectsTotal,
+            'projectFilters' => $filters->echoBack(),
             'users' => $this->userOptions(),
         ]);
     }

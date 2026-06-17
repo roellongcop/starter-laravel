@@ -137,6 +137,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('projects/bulk', [ProjectController::class, 'bulk'])->name('projects.bulk');
     Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
+    Route::get('organizations/{organization}/projects/{project}', [ProjectController::class, 'showForOrganization'])
+        ->name('organizations.projects.show');
 
     // Notifications
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');

@@ -25,6 +25,19 @@ trait IsResource
     }
 
     /**
+     * Keyset ordering whose tiebreaker is the public `token` instead of `id`.
+     * Use this for Inertia::scroll() payloads: the cursor is encoded from the
+     * (transformed) row arrays, so the keyset columns (created_at + token) must
+     * be present in the payload — and token, unlike id, is safe to expose.
+     */
+    public function scopeKeysetByToken(Builder $query): Builder
+    {
+        return $query
+            ->orderBy($this->getTable().'.created_at', 'desc')
+            ->orderBy($this->getTable().'.'.$this->getRouteKeyName(), 'desc');
+    }
+
+    /**
      * Routing/url descriptor used by controllers and url helpers.
      *
      * @return array{controllerId: string, mainAttribute: string, paramName: string, dateAttribute: string}

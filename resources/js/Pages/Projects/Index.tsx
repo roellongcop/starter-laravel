@@ -35,6 +35,7 @@ type BulkProcess = 'active' | 'in_active' | 'delete';
 export default function Index({ projects, filters, organizations }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'projects.index',
+        reset: ['projects'],
         initial: filters,
     });
     const [selected, setSelected] = useState<string[]>([]);

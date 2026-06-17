@@ -2,6 +2,7 @@
 
 use App\Enums\SystemRole;
 use App\Models\Organization;
+use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -108,6 +109,39 @@ it('renders organizations on the index page (scroll prop loads on first paint)',
         ->assertInertia(fn ($page) => $page
             ->component('Organizations/Index')
             ->has('organizations.data', 3));
+});
+
+it('lists the organization projects on its show page', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    Project::factory()->count(2)->create(['organization_id' => $organization->id]);
+    Project::factory()->create(); // belongs to a different org
+
+    $this->get(route('organizations.show', $organization))
+        ->assertInertia(fn ($page) => $page
+            ->component('Organizations/Show')
+            ->has('projects.data', 2)
+            ->where('projectsTotal', 2));
+});
+
+it('searches the projects on the organization show page', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    Project::factory()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Apollo Launch',
+    ]);
+    Project::factory()->create([
+        'organization_id' => $organization->id,
+        'name' => 'Zephyr Build',
+    ]);
+
+    $this->get(route('organizations.show', [$organization, 'search' => 'Apollo']))
+        ->assertInertia(fn ($page) => $page
+            ->has('projects.data', 1)
+            ->where('projects.data.0.name', 'Apollo Launch')
+            ->where('projectsTotal', 1)
+            ->where('projectFilters.search', 'Apollo'));
 });
 
 it('forbids organization access without permission', function (): void {
