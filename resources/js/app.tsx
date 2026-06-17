@@ -8,7 +8,6 @@ import '@fontsource/figtree/600.css';
 import { ThemeProvider } from '@/Components/ThemeProvider';
 import Toaster from '@/Components/Toaster';
 import { toast } from '@/hooks/use-toast';
-import { initNavHistory } from '@/lib/navHistory';
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot, hydrateRoot } from 'react-dom/client';
@@ -47,10 +46,6 @@ createInertiaApp({
             };
             flash?: Flash;
         };
-
-        // Track in-app navigation so <BackButton> can revisit the previous page
-        // with a fresh request instead of a stale history-cache restore.
-        initNavHistory();
 
         // Flash on first load (e.g. landing after a post-login redirect)…
         showFlash(initial.flash);

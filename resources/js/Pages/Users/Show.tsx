@@ -2,7 +2,6 @@ import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 import Avatar from '@/Components/Avatar';
-import BackButton from '@/Components/BackButton';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import DocumentList from '@/Components/DocumentList';
@@ -49,9 +48,12 @@ export default function Show({
             <PageHeader
                 title={user.name}
                 description={user.email}
+                breadcrumbs={[
+                    { label: 'Users', href: route('users.index') },
+                    { label: user.name },
+                ]}
                 actions={
                     <>
-                        <BackButton fallback={route('users.index')} />
                         <Can ability="users.update">
                             <Button asChild>
                                 <Link href={route('users.edit', user.token)}>

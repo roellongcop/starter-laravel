@@ -1,6 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
 
-import BackButton from '@/Components/BackButton.js';
 import Can from '@/Components/Can';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
@@ -40,11 +39,12 @@ export default function Show({ theme }: { theme: AdminTheme }) {
             <PageHeader
                 title={theme.name}
                 description={theme.description ?? undefined}
+                breadcrumbs={[
+                    { label: 'Themes', href: route('themes.index') },
+                    { label: theme.name },
+                ]}
                 actions={
                     <>
-                        <BackButton
-                            fallback={route('themes.show', theme.token)}
-                        />
                         <Can ability="themes.update">
                             <Button asChild>
                                 <Link href={route('themes.edit', theme.token)}>

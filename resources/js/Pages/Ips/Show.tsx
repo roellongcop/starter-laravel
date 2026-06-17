@@ -1,7 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 
-import BackButton from '@/Components/BackButton.js';
 import Can from '@/Components/Can';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
@@ -32,9 +31,12 @@ export default function Show({ ip, listTypes }: Props) {
 
             <PageHeader
                 title={ip.ip_address}
+                breadcrumbs={[
+                    { label: 'IP Lists', href: route('ips.index') },
+                    { label: ip.ip_address },
+                ]}
                 actions={
                     <>
-                        <BackButton fallback={route('ips.index')} />
                         <Can ability="ips.update">
                             <Button onClick={() => setEditOpen(true)}>
                                 Edit

@@ -8,7 +8,6 @@ import {
     ShieldCheck,
 } from 'lucide-react';
 
-import BackButton from '@/Components/BackButton';
 import Can from '@/Components/Can';
 import PageHeader from '@/Components/PageHeader';
 import { Badge } from '@/Components/ui/badge';
@@ -106,9 +105,12 @@ export default function Show({ role }: { role: AdminRole }) {
             <PageHeader
                 title={role.name}
                 description={role.description ?? undefined}
+                breadcrumbs={[
+                    { label: 'Roles', href: route('roles.index') },
+                    { label: role.name },
+                ]}
                 actions={
                     <>
-                        <BackButton fallback={route('roles.index')} />
                         <Can ability="roles.update">
                             <Button asChild>
                                 <Link href={route('roles.edit', role.token)}>

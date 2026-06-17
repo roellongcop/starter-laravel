@@ -2,7 +2,6 @@ import { Head } from '@inertiajs/react';
 import { Download, Eye } from 'lucide-react';
 import { useState } from 'react';
 
-import BackButton from '@/Components/BackButton.js';
 import FileViewer, { type ViewerFile } from '@/Components/FileViewer';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
@@ -40,9 +39,12 @@ export default function Show({ file }: { file: AdminFile }) {
             <PageHeader
                 title={file.original_name}
                 description={file.tag ?? undefined}
+                breadcrumbs={[
+                    { label: 'Files', href: route('files.index') },
+                    { label: file.original_name },
+                ]}
                 actions={
                     <>
-                        <BackButton fallback={route('files.index')} />
                         <Button variant="outline" onClick={openPreview}>
                             <Eye className="h-4 w-4" /> Preview
                         </Button>

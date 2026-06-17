@@ -1,6 +1,5 @@
 import { Head } from '@inertiajs/react';
 
-import BackButton from '@/Components/BackButton';
 import PageHeader from '@/Components/PageHeader';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -19,9 +18,11 @@ export default function Edit({ role, permissionGroups, menuCatalog }: Props) {
             <Head title={`Edit ${role.name}`} />
             <PageHeader
                 title={`Edit ${role.name}`}
-                actions={
-                    <BackButton fallback={route('roles.show', role.token)} />
-                }
+                breadcrumbs={[
+                    { label: 'Roles', href: route('roles.index') },
+                    { label: role.name, href: route('roles.show', role.token) },
+                    { label: 'Edit' },
+                ]}
             />
             <Card>
                 <CardContent className="pt-6">
