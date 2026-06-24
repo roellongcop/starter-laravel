@@ -83,4 +83,42 @@
     .scrollbar-thin::-webkit-scrollbar-thumb:hover {
         background-color: hsl(var(--muted-foreground) / 0.5);
     }
+
+    /* Like .scrollbar-thin, but the thumb stays hidden until the user hovers
+       (or focuses within) the scroll area — keeps the sidebar uncluttered.
+       The track width is still reserved, so revealing the thumb causes no
+       layout shift. */
+    .scrollbar-hover {
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        transition: scrollbar-color 150ms ease-in-out;
+    }
+
+    .scrollbar-hover:hover,
+    .scrollbar-hover:focus-within {
+        scrollbar-color: hsl(var(--border)) transparent;
+    }
+
+    .scrollbar-hover::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .scrollbar-hover::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .scrollbar-hover::-webkit-scrollbar-thumb {
+        border-radius: 9999px;
+        background-color: transparent;
+    }
+
+    .scrollbar-hover:hover::-webkit-scrollbar-thumb,
+    .scrollbar-hover:focus-within::-webkit-scrollbar-thumb {
+        background-color: hsl(var(--border));
+    }
+
+    .scrollbar-hover:hover::-webkit-scrollbar-thumb:hover {
+        background-color: hsl(var(--muted-foreground) / 0.5);
+    }
 }

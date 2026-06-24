@@ -196,7 +196,7 @@ export default function Authenticated({
             )}
 
             <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 sm:px-6 lg:px-8">
-                <aside className="scrollbar-thin sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 self-start overflow-y-auto py-6 md:block">
+                <aside className="scrollbar-hover sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 self-start overflow-y-auto py-6 md:block">
                     <Sidebar />
                 </aside>
 
