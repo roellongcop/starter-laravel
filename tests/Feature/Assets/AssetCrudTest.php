@@ -154,48 +154,18 @@ it('never leaks the organization id to the frontend', function (): void {
             ->missing('asset.organization_id'));
 });
 
-it('deletes an asset from its organization page and redirects back to the org', function (): void {
+it('filters the index by organization token', function (): void {
     actingAsRole(SystemRole::Developer);
-    $organization = Organization::factory()->create();
-    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+    $orgA = Organization::factory()->create();
+    $orgB = Organization::factory()->create();
+    Asset::factory()->count(2)->create(['organization_id' => $orgA->id]);
+    Asset::factory()->create(['organization_id' => $orgB->id]);
 
-    $this->delete(route('organizations.assets.destroy', [$organization, $asset]))
-        ->assertRedirect(route('organizations.show', $organization->token));
-
-    expect(Asset::withInactive()->find($asset->id))->toBeNull();
-});
-
-it('404s deleting a nested asset that does not belong to the organization', function (): void {
-    actingAsRole(SystemRole::Developer);
-    $organization = Organization::factory()->create();
-    $asset = Asset::factory()->create(); // different org
-
-    $this->delete(route('organizations.assets.destroy', [$organization, $asset]))
-        ->assertNotFound();
-
-    expect(Asset::find($asset->id))->not->toBeNull();
-});
-
-it('shows an asset nested under its organization with an org-rooted trail', function (): void {
-    actingAsRole(SystemRole::Developer);
-    $organization = Organization::factory()->create();
-    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
-
-    $this->get(route('organizations.assets.show', [$organization, $asset]))
-        ->assertOk()
+    $this->get(route('assets.index', ['organization' => $orgA->token]))
         ->assertInertia(fn ($page) => $page
-            ->component('Assets/Show')
-            ->where('parentOrganization.token', $organization->token)
-            ->where('parentOrganization.name', $organization->name));
-});
-
-it('404s a nested asset that does not belong to the organization', function (): void {
-    actingAsRole(SystemRole::Developer);
-    $organization = Organization::factory()->create();
-    $asset = Asset::factory()->create(); // belongs to a different org
-
-    $this->get(route('organizations.assets.show', [$organization, $asset]))
-        ->assertNotFound();
+            ->component('Assets/Index')
+            ->has('assets.data', 2)
+            ->where('filters.organization', $orgA->token));
 });
 
 it('forbids asset access without permission', function (): void {

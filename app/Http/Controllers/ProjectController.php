@@ -53,27 +53,6 @@ class ProjectController extends Controller
         ]);
     }
 
-    /**
-     * Show a project nested under its organization
-     * (organizations/{organization}/projects/{project}). Renders the same page
-     * as show(), but with the breadcrumb trail rooted at the organization.
-     */
-    public function showForOrganization(Organization $organization, Project $project): Response
-    {
-        abort_unless($project->organization_id === $organization->id, 404);
-
-        $this->authorize('view', $project);
-
-        return Inertia::render('Projects/Show', [
-            'project' => $this->row($project->load('organization')),
-            'organizations' => $this->organizationOptions(),
-            'parentOrganization' => [
-                'token' => $organization->token,
-                'name' => $organization->name,
-            ],
-        ]);
-    }
-
     public function update(UpdateProjectRequest $request, Project $project): RedirectResponse
     {
         $this->authorize('update', $project);
@@ -90,21 +69,6 @@ class ProjectController extends Controller
         $project->delete();
 
         return redirect()->route('projects.index')->with('success', 'Project deleted.');
-    }
-
-    /**
-     * Delete a project from its organization's page and return there (rather
-     * than the global projects index).
-     */
-    public function destroyForOrganization(Organization $organization, Project $project): RedirectResponse
-    {
-        abort_unless($project->organization_id === $organization->id, 404);
-
-        $this->authorize('delete', $project);
-
-        $project->delete();
-
-        return redirect()->route('organizations.show', $organization->token)->with('success', 'Project deleted.');
     }
 
     /**

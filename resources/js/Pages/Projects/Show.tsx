@@ -21,16 +21,9 @@ import ProjectForm from './Partials/ProjectForm';
 interface Props {
     project: AdminProject;
     organizations: SelectOption[];
-    // When reached via an organization (organizations/:token/projects/:token),
-    // the breadcrumb trail is rooted at that organization instead of Projects.
-    parentOrganization?: { token: string; name: string } | null;
 }
 
-export default function Show({
-    project,
-    organizations,
-    parentOrganization,
-}: Props) {
+export default function Show({ project, organizations }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -39,19 +32,10 @@ export default function Show({
             onFinish: () => setConfirmingDelete(false),
         });
 
-    const breadcrumbs: Crumb[] = parentOrganization
-        ? [
-              { label: 'Organizations', href: route('organizations.index') },
-              {
-                  label: parentOrganization.name,
-                  href: route('organizations.show', parentOrganization.token),
-              },
-              { label: project.name },
-          ]
-        : [
-              { label: 'Projects', href: route('projects.index') },
-              { label: project.name },
-          ];
+    const breadcrumbs: Crumb[] = [
+        { label: 'Projects', href: route('projects.index') },
+        { label: project.name },
+    ];
 
     return (
         <AuthenticatedLayout>

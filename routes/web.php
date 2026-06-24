@@ -136,16 +136,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('organizations', OrganizationController::class)->except(['create', 'edit']);
 
     Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
-    Route::get('organizations/{organization}/projects/{project}', [ProjectController::class, 'showForOrganization'])
-        ->name('organizations.projects.show');
-    Route::delete('organizations/{organization}/projects/{project}', [ProjectController::class, 'destroyForOrganization'])
-        ->name('organizations.projects.destroy');
-
     Route::resource('assets', AssetController::class)->except(['create', 'edit']);
-    Route::get('organizations/{organization}/assets/{asset}', [AssetController::class, 'showForOrganization'])
-        ->name('organizations.assets.show');
-    Route::delete('organizations/{organization}/assets/{asset}', [AssetController::class, 'destroyForOrganization'])
-        ->name('organizations.assets.destroy');
 
     // Notifications
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');

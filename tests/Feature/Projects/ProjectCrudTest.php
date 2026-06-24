@@ -121,48 +121,18 @@ it('never leaks the organization id to the frontend', function (): void {
             ->missing('project.organization_id'));
 });
 
-it('deletes a project from its organization page and redirects back to the org', function (): void {
+it('filters the index by organization token', function (): void {
     actingAsRole(SystemRole::Developer);
-    $organization = Organization::factory()->create();
-    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $orgA = Organization::factory()->create();
+    $orgB = Organization::factory()->create();
+    Project::factory()->count(2)->create(['organization_id' => $orgA->id]);
+    Project::factory()->create(['organization_id' => $orgB->id]);
 
-    $this->delete(route('organizations.projects.destroy', [$organization, $project]))
-        ->assertRedirect(route('organizations.show', $organization->token));
-
-    expect(Project::withInactive()->find($project->id))->toBeNull();
-});
-
-it('404s deleting a nested project that does not belong to the organization', function (): void {
-    actingAsRole(SystemRole::Developer);
-    $organization = Organization::factory()->create();
-    $project = Project::factory()->create(); // different org
-
-    $this->delete(route('organizations.projects.destroy', [$organization, $project]))
-        ->assertNotFound();
-
-    expect(Project::find($project->id))->not->toBeNull();
-});
-
-it('shows a project nested under its organization with an org-rooted trail', function (): void {
-    actingAsRole(SystemRole::Developer);
-    $organization = Organization::factory()->create();
-    $project = Project::factory()->create(['organization_id' => $organization->id]);
-
-    $this->get(route('organizations.projects.show', [$organization, $project]))
-        ->assertOk()
+    $this->get(route('projects.index', ['organization' => $orgA->token]))
         ->assertInertia(fn ($page) => $page
-            ->component('Projects/Show')
-            ->where('parentOrganization.token', $organization->token)
-            ->where('parentOrganization.name', $organization->name));
-});
-
-it('404s a nested project that does not belong to the organization', function (): void {
-    actingAsRole(SystemRole::Developer);
-    $organization = Organization::factory()->create();
-    $project = Project::factory()->create(); // belongs to a different org
-
-    $this->get(route('organizations.projects.show', [$organization, $project]))
-        ->assertNotFound();
+            ->component('Projects/Index')
+            ->has('projects.data', 2)
+            ->where('filters.organization', $orgA->token));
 });
 
 it('forbids project access without permission', function (): void {

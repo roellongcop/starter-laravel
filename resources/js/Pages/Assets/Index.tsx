@@ -30,7 +30,7 @@ interface Props {
     // Serialized CursorPaginator wrapped by Inertia::scroll(); the
     // <InfiniteScroll> component appends pages into `data` as the user scrolls.
     assets: { data: AdminAsset[] };
-    filters: { search: string; inactive: boolean };
+    filters: { search: string; organization: string; inactive: boolean };
     organizations: SelectOption[];
 }
 
@@ -84,6 +84,14 @@ export default function Index({ assets, filters, organizations }: Props) {
                         value={f.values.search}
                         onChange={(v) => f.set('search', v)}
                         placeholder="Search name, code or address…"
+                    />
+                    <FilterBar.Select
+                        value={f.values.organization}
+                        onChange={(v) => f.apply({ organization: v })}
+                        options={organizations}
+                        placeholder="All organizations"
+                        allLabel="All organizations"
+                        className="w-56"
                     />
                 </FilterBar>
             </div>

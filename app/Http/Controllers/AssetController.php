@@ -53,27 +53,6 @@ class AssetController extends Controller
         ]);
     }
 
-    /**
-     * Show an asset nested under its organization
-     * (organizations/{organization}/assets/{asset}). Renders the same page as
-     * show(), but with the breadcrumb trail rooted at the organization.
-     */
-    public function showForOrganization(Organization $organization, Asset $asset): Response
-    {
-        abort_unless($asset->organization_id === $organization->id, 404);
-
-        $this->authorize('view', $asset);
-
-        return Inertia::render('Assets/Show', [
-            'asset' => $this->row($asset->load('organization')),
-            'organizations' => $this->organizationOptions(),
-            'parentOrganization' => [
-                'token' => $organization->token,
-                'name' => $organization->name,
-            ],
-        ]);
-    }
-
     public function update(UpdateAssetRequest $request, Asset $asset): RedirectResponse
     {
         $this->authorize('update', $asset);
@@ -90,21 +69,6 @@ class AssetController extends Controller
         $asset->delete();
 
         return redirect()->route('assets.index')->with('success', 'Asset deleted.');
-    }
-
-    /**
-     * Delete an asset from its organization's page and return there (rather than
-     * the global assets index).
-     */
-    public function destroyForOrganization(Organization $organization, Asset $asset): RedirectResponse
-    {
-        abort_unless($asset->organization_id === $organization->id, 404);
-
-        $this->authorize('delete', $asset);
-
-        $asset->delete();
-
-        return redirect()->route('organizations.show', $organization->token)->with('success', 'Asset deleted.');
     }
 
     /**

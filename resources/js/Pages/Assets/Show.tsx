@@ -20,16 +20,9 @@ import AssetForm from './Partials/AssetForm';
 interface Props {
     asset: AdminAsset;
     organizations: SelectOption[];
-    // When reached via an organization (organizations/:token/assets/:token),
-    // the breadcrumb trail is rooted at that organization instead of Assets.
-    parentOrganization?: { token: string; name: string } | null;
 }
 
-export default function Show({
-    asset,
-    organizations,
-    parentOrganization,
-}: Props) {
+export default function Show({ asset, organizations }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -38,19 +31,10 @@ export default function Show({
             onFinish: () => setConfirmingDelete(false),
         });
 
-    const breadcrumbs: Crumb[] = parentOrganization
-        ? [
-              { label: 'Organizations', href: route('organizations.index') },
-              {
-                  label: parentOrganization.name,
-                  href: route('organizations.show', parentOrganization.token),
-              },
-              { label: asset.name },
-          ]
-        : [
-              { label: 'Assets', href: route('assets.index') },
-              { label: asset.name },
-          ];
+    const breadcrumbs: Crumb[] = [
+        { label: 'Assets', href: route('assets.index') },
+        { label: asset.name },
+    ];
 
     return (
         <AuthenticatedLayout>

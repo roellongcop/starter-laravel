@@ -2,7 +2,6 @@
 
 use App\Enums\SystemRole;
 use App\Models\Organization;
-use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -92,37 +91,19 @@ it('renders organizations on the index page (scroll prop loads on first paint)',
             ->has('organizations.data', 3));
 });
 
-it('lists the organization projects on its show page', function (): void {
+it('renders the organization show page without loading project or asset lists', function (): void {
     actingAsRole(SystemRole::Developer);
     $organization = Organization::factory()->create();
-    Project::factory()->count(2)->create(['organization_id' => $organization->id]);
-    Project::factory()->create(); // belongs to a different org
 
+    // The show page links out to the projects/assets indexes (filtered by org)
+    // rather than embedding their lists, so those props must be absent.
     $this->get(route('organizations.show', $organization))
+        ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('Organizations/Show')
-            ->has('projects.data', 2)
-            ->where('projectsTotal', 2));
-});
-
-it('searches the projects on the organization show page', function (): void {
-    actingAsRole(SystemRole::Developer);
-    $organization = Organization::factory()->create();
-    Project::factory()->create([
-        'organization_id' => $organization->id,
-        'name' => 'Apollo Launch',
-    ]);
-    Project::factory()->create([
-        'organization_id' => $organization->id,
-        'name' => 'Zephyr Build',
-    ]);
-
-    $this->get(route('organizations.show', [$organization, 'search' => 'Apollo']))
-        ->assertInertia(fn ($page) => $page
-            ->has('projects.data', 1)
-            ->where('projects.data.0.name', 'Apollo Launch')
-            ->where('projectsTotal', 1)
-            ->where('projectFilters.search', 'Apollo'));
+            ->where('organization.token', $organization->token)
+            ->missing('projects')
+            ->missing('assets'));
 });
 
 it('forbids organization access without permission', function (): void {
