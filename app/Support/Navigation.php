@@ -155,7 +155,7 @@ class Navigation
 
         // Highest priority first so it wins label/icon/position on conflicts.
         /** @var Role $role */
-        foreach ($user->roles()->orderByDesc('priority')->orderBy('id')->get() as $role) {
+        foreach ($user->roles()->with('permissions')->orderByDesc('priority')->orderBy('id')->get() as $role) {
             $menu = is_array($role->main_navigation) && $role->main_navigation !== []
                 ? $role->main_navigation
                 : self::navigationFor(self::modulesFor($role->permissions->pluck('name')->all()));
