@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read User|null $pointOfContact
  * @property-read Collection<int, Project> $projects
+ * @property-read Collection<int, Asset> $assets
  */
 class Organization extends BaseModel
 {
@@ -44,5 +45,13 @@ class Organization extends BaseModel
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    /**
+     * @return HasMany<Asset, $this>
+     */
+    public function assets(): HasMany
+    {
+        return $this->hasMany(Asset::class);
     }
 }

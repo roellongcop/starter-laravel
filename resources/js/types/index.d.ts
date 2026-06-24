@@ -153,6 +153,18 @@ export interface AdminProject {
     created_at: string | null;
 }
 
+/** An asset as serialized by AssetController. */
+export interface AdminAsset {
+    token: string;
+    name: string;
+    id_code: string;
+    address: string;
+    organization: string | null; // organization token
+    organization_name: string | null; // display name
+    record_status: number;
+    created_at: string | null;
+}
+
 /** A node in the sidebar tree shared as `navigation`. */
 export interface NavItem {
     key?: string;

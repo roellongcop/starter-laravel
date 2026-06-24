@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Filters\AssetFilters;
 use App\Filters\OrganizationFilters;
 use App\Filters\ProjectFilters;
 use App\Http\Requests\StoreOrganizationRequest;
 use App\Http\Requests\UpdateOrganizationRequest;
+use App\Models\Asset;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
@@ -45,7 +47,7 @@ class OrganizationController extends Controller
         return redirect()->route('organizations.index')->with('success', 'Organization created.');
     }
 
-    public function show(Organization $organization, ProjectFilters $filters): Response
+    public function show(Organization $organization, ProjectFilters $filters, AssetFilters $assetFilters): Response
     {
         $this->authorize('view', $organization);
 
@@ -57,7 +59,9 @@ class OrganizationController extends Controller
 
         $projects = $projectsQuery
             ->keysetByToken()
-            ->cursorPaginate(config('keen.pagination_size'))
+            // Distinct cursor name: this page hosts two <InfiniteScroll> lists
+            // (projects + assets), which must not share the default ?cursor=.
+            ->cursorPaginate(config('keen.pagination_size'), ['*'], 'projects_cursor')
             ->withQueryString()
             ->through(fn (Project $project) => [
                 'token' => $project->token,
@@ -69,6 +73,25 @@ class OrganizationController extends Controller
                 'created_at' => $project->created_at?->toIso8601String(),
             ]);
 
+        // Assets list mirrors the projects list, but reads its own search param
+        // (asset_search) so the two search boxes on this page stay independent.
+        $assetsQuery = $assetFilters->usingSearchKey('asset_search')
+            ->apply($organization->assets()->getQuery());
+
+        $assetsTotal = (clone $assetsQuery)->count();
+
+        $assets = $assetsQuery
+            ->keysetByToken()
+            ->cursorPaginate(config('keen.pagination_size'), ['*'], 'assets_cursor')
+            ->withQueryString()
+            ->through(fn (Asset $asset) => [
+                'token' => $asset->token,
+                'name' => $asset->name,
+                'id_code' => $asset->id_code,
+                'address' => $asset->address,
+                'created_at' => $asset->created_at?->toIso8601String(),
+            ]);
+
         return Inertia::render('Organizations/Show', [
             'organization' => $this->row($organization->load('pointOfContact')),
             // Keyset-paginated + searchable via <InfiniteScroll>; the search
@@ -76,9 +99,12 @@ class OrganizationController extends Controller
             'projects' => Inertia::scroll($projects),
             'projectsTotal' => $projectsTotal,
             'projectFilters' => $filters->echoBack(),
+            'assets' => Inertia::scroll($assets),
+            'assetsTotal' => $assetsTotal,
+            'assetFilters' => $assetFilters->echoBack(),
             'users' => $this->userOptions(),
-            // Org options for the inline project edit form (a project may be
-            // reassigned to another organization).
+            // Org options for the inline project/asset edit forms (a record may
+            // be reassigned to another organization).
             'organizationOptions' => Organization::query()
                 ->orderBy('name')
                 ->get(['token', 'name'])

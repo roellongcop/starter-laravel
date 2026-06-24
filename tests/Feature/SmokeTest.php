@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\SystemRole;
+use App\Models\Asset;
 use App\Models\File;
 use App\Models\Ip;
 use App\Models\Organization;
@@ -42,6 +43,8 @@ it('renders every page route with a 200', function (): void {
     Organization::factory()->count($pageSize)->create();
     Project::factory()->count($pageSize + 1)->create(['organization_id' => $organization->id]);
     $project = $organization->projects()->firstOrFail();
+    Asset::factory()->count($pageSize + 1)->create(['organization_id' => $organization->id]);
+    $asset = $organization->assets()->firstOrFail();
     $role = Role::query()->firstOrFail();
 
     /** @var array<int, array{0: string, 1: array<int, mixed>}> $pages */
@@ -83,6 +86,9 @@ it('renders every page route with a 200', function (): void {
         ['projects.index', []],
         ['projects.show', [$project]],
         ['organizations.projects.show', [$project->organization, $project]],
+        ['assets.index', []],
+        ['assets.show', [$asset]],
+        ['organizations.assets.show', [$asset->organization, $asset]],
     ];
 
     foreach ($pages as [$name, $params]) {

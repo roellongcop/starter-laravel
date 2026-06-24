@@ -1,6 +1,7 @@
 import {
     Archive,
     Bell,
+    Boxes,
     Building2,
     Circle,
     Database,
@@ -44,6 +45,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
     Download,
     Upload,
     Archive,
+    Boxes,
     Building2,
     Settings,
     Network,

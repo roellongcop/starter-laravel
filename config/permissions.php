@@ -28,6 +28,7 @@ return [
         'ips',
         'organizations',
         'projects',
+        'assets',
         'themes',
         'notifications',
         'backups',

@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             IpSeeder::class,
             OrganizationSeeder::class,
             ProjectSeeder::class,
+            AssetSeeder::class,
             MonitoringSeeder::class,
         ]);
     }
