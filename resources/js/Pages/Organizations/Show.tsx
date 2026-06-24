@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Boxes, ChevronRight, FolderKanban } from 'lucide-react';
+import { Boxes, ChevronRight, ClipboardList, FolderKanban } from 'lucide-react';
 import { useState } from 'react';
 
 import Can from '@/Components/Can';
@@ -129,6 +129,30 @@ export default function Show({ organization, users }: Props) {
                                 </Link>
                                 <p className="text-sm text-muted-foreground">
                                     View assets for this organization
+                                </p>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </CardContent>
+                    </Card>
+                </Can>
+
+                <Can ability="forms.index">
+                    <Card className="relative transition-shadow hover:shadow-md">
+                        <CardContent className="flex items-center gap-4 pt-6">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                                <ClipboardList className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <Link
+                                    href={route('forms.index', {
+                                        organization: organization.token,
+                                    })}
+                                    className="font-medium after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                >
+                                    Forms
+                                </Link>
+                                <p className="text-sm text-muted-foreground">
+                                    View forms for this organization
                                 </p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground" />

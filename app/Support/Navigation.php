@@ -88,6 +88,7 @@ class Navigation
                     ['key' => 'organizations', 'label' => 'Organizations', 'icon' => 'Building2', 'href' => '/organizations'],
                     ['key' => 'projects', 'label' => 'Projects', 'icon' => 'FolderKanban', 'href' => '/projects'],
                     ['key' => 'assets', 'label' => 'Assets', 'icon' => 'Boxes', 'href' => '/assets'],
+                    ['key' => 'forms', 'label' => 'Forms', 'icon' => 'ClipboardList', 'href' => '/forms'],
                 ],
             ],
             [

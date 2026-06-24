@@ -29,6 +29,7 @@ return [
         'organizations',
         'projects',
         'assets',
+        'forms',
         'themes',
         'notifications',
         'backups',
@@ -48,6 +49,9 @@ return [
         'dashboard' => ['index', 'search'],
         'settings' => ['index', 'update'],
         'queue' => ['index', 'manage'],
+        // Form submissions: viewing/deleting is admin-gated; submitting a
+        // response is gated by forms.show (no create/update ability).
+        'form-responses' => ['index', 'show', 'delete'],
     ],
 
     'crud_abilities' => ['index', 'show', 'create', 'update', 'delete'],

@@ -3,6 +3,8 @@
 use App\Enums\SystemRole;
 use App\Models\Asset;
 use App\Models\File;
+use App\Models\Form;
+use App\Models\FormResponse;
 use App\Models\Ip;
 use App\Models\Organization;
 use App\Models\Project;
@@ -45,6 +47,8 @@ it('renders every page route with a 200', function (): void {
     $project = $organization->projects()->firstOrFail();
     Asset::factory()->count($pageSize + 1)->create(['organization_id' => $organization->id]);
     $asset = $organization->assets()->firstOrFail();
+    $form = Form::factory()->create(['organization_id' => $organization->id]);
+    $response = FormResponse::factory()->forForm($form)->create();
     $role = Role::query()->firstOrFail();
 
     /** @var array<int, array{0: string, 1: array<int, mixed>}> $pages */
@@ -87,6 +91,13 @@ it('renders every page route with a 200', function (): void {
         ['projects.show', [$project]],
         ['assets.index', []],
         ['assets.show', [$asset]],
+        ['forms.index', []],
+        ['forms.create', []],
+        ['forms.show', [$form]],
+        ['forms.edit', [$form]],
+        ['forms.respond', [$form]],
+        ['forms.responses.index', [$form]],
+        ['responses.show', [$response]],
     ];
 
     foreach ($pages as [$name, $params]) {

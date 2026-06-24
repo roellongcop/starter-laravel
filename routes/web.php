@@ -9,6 +9,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\FormController;
+use App\Http\Controllers\FormResponseController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\IpController;
 use App\Http\Controllers\LogController;
@@ -137,6 +139,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
     Route::resource('assets', AssetController::class)->except(['create', 'edit']);
+
+    // Forms have full create/edit pages (the field builder is too rich for a sheet).
+    Route::resource('forms', FormController::class);
+    // Filling a form + viewing its submissions.
+    Route::get('forms/{form}/respond', [FormResponseController::class, 'create'])->name('forms.respond');
+    Route::get('forms/{form}/responses', [FormResponseController::class, 'index'])->name('forms.responses.index');
+    Route::post('forms/{form}/responses', [FormResponseController::class, 'store'])->name('forms.responses.store');
+    Route::get('responses/{response}', [FormResponseController::class, 'show'])->name('responses.show');
+    Route::delete('responses/{response}', [FormResponseController::class, 'destroy'])->name('responses.destroy');
 
     // Notifications
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');

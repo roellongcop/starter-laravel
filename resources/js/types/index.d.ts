@@ -165,6 +165,71 @@ export interface AdminAsset {
     created_at: string | null;
 }
 
+/** The kind of a form field; mirrors App\Enums\FieldType. */
+export type FieldType =
+    | 'text'
+    | 'paragraph'
+    | 'date'
+    | 'duration'
+    | 'range'
+    | 'list';
+
+/** Per-type field settings (only the keys relevant to a field's type are set). */
+export interface FormFieldConfig {
+    placeholder?: string;
+    include_time?: boolean;
+    multiple?: boolean;
+    items?: string[];
+    min?: number;
+    max?: number;
+    step?: number;
+    min_label?: string;
+    max_label?: string;
+}
+
+/** One field definition in a Form's `form_fields` array. */
+export interface FormField {
+    id: string;
+    type: FieldType;
+    label: string;
+    description?: string | null;
+    required: boolean;
+    config: FormFieldConfig;
+}
+
+/** A submitted answer value, keyed by field id in a response's `answers`. */
+export type AnswerValue = string | number | string[] | null;
+
+/** A form as serialized by FormController. */
+export interface AdminForm {
+    token: string;
+    title: string;
+    description: string | null;
+    form_fields: FormField[];
+    organization: string | null; // organization token
+    organization_name: string | null; // display name
+    responses_count: number | null;
+    record_status: number;
+    created_at: string | null;
+}
+
+/** The lighter form payload the fill/response pages render against. */
+export interface FormDefinition {
+    token: string;
+    title: string;
+    description: string | null;
+    form_fields: FormField[];
+    organization_name: string | null;
+}
+
+/** A single submission, as serialized by FormResponseController. */
+export interface AdminFormResponse {
+    token: string;
+    answers: Record<string, AnswerValue>;
+    respondent: string | null;
+    created_at: string | null;
+}
+
 /** A node in the sidebar tree shared as `navigation`. */
 export interface NavItem {
     key?: string;
