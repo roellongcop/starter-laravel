@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             OrganizationRoleSeeder::class,
             TeamSeeder::class,
             ReferenceFileSeeder::class,
+            DataTagSeeder::class,
             FormSeeder::class,
             MonitoringSeeder::class,
         ]);

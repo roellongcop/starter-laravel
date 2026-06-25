@@ -6,6 +6,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DataTagController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FileController;
@@ -159,6 +160,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('reference-files/upload', [ReferenceFileController::class, 'upload'])->name('reference-files.upload');
     Route::get('reference-files/{referenceFile}/download', [ReferenceFileController::class, 'download'])->name('reference-files.download');
     Route::resource('reference-files', ReferenceFileController::class)->except(['create', 'edit']);
+
+    // Data tags: org-nested coloured tags chosen from a fixed palette.
+    Route::resource('data-tags', DataTagController::class)->except(['create', 'edit']);
 
     // Forms have full create/edit pages (the field builder is too rich for a sheet).
     Route::resource('forms', FormController::class);

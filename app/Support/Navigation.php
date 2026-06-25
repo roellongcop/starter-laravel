@@ -94,6 +94,7 @@ class Navigation
                     ['key' => 'teams', 'label' => 'Teams and People', 'icon' => 'UsersRound', 'href' => '/teams'],
                     ['key' => 'organization-roles', 'label' => 'Organization Roles', 'icon' => 'BadgeCheck', 'href' => '/organization-roles'],
                     ['key' => 'reference-files', 'label' => 'Reference Files', 'icon' => 'FileText', 'href' => '/reference-files'],
+                    ['key' => 'data-tags', 'label' => 'Data Tags', 'icon' => 'Tags', 'href' => '/data-tags'],
                 ],
             ],
             [

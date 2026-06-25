@@ -34,6 +34,7 @@ return [
         'team-categories',
         'organization-roles',
         'reference-files',
+        'data-tags',
         'themes',
         'notifications',
         'backups',

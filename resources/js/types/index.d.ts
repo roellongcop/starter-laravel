@@ -238,6 +238,18 @@ export interface AdminReferenceFile {
     created_at: string | null;
 }
 
+/** A coloured tag as serialized by DataTagController. */
+export interface AdminDataTag {
+    token: string;
+    name: string;
+    description: string | null;
+    color: string; // hex from the DataTag palette
+    organization: string | null; // organization token
+    organization_name: string | null; // display name
+    record_status: number;
+    created_at: string | null;
+}
+
 /** A SelectOption that also carries the org token it belongs to (cascading). */
 export interface OrgScopedOption extends SelectOption {
     organization: string; // organization token

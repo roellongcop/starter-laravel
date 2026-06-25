@@ -6,6 +6,7 @@ import {
     ClipboardList,
     FileText,
     FolderKanban,
+    Tags,
     UsersRound,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -233,6 +234,30 @@ export default function Show({ organization, users }: Props) {
                                 </Link>
                                 <p className="text-sm text-muted-foreground">
                                     View reference files for this organization
+                                </p>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </CardContent>
+                    </Card>
+                </Can>
+
+                <Can ability="data-tags.index">
+                    <Card className="relative transition-shadow hover:shadow-md">
+                        <CardContent className="flex items-center gap-4 pt-6">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                                <Tags className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <Link
+                                    href={route('data-tags.index', {
+                                        organization: organization.token,
+                                    })}
+                                    className="font-medium after:absolute after:inset-0 focus-visible:outline-none"
+                                >
+                                    Data Tags
+                                </Link>
+                                <p className="text-sm text-muted-foreground">
+                                    View data tags for this organization
                                 </p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground" />

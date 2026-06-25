@@ -2,6 +2,7 @@
 
 use App\Enums\SystemRole;
 use App\Models\Asset;
+use App\Models\DataTag;
 use App\Models\File;
 use App\Models\Form;
 use App\Models\FormResponse;
@@ -69,6 +70,7 @@ it('renders every page route with a 200', function (): void {
         'organization_id' => $organization->id,
     ]);
     $referenceFile = ReferenceFile::factory()->create(['organization_id' => $organization->id]);
+    $dataTag = DataTag::factory()->create(['organization_id' => $organization->id]);
 
     /** @var array<int, array{0: string, 1: array<int, mixed>}> $pages */
     $pages = [
@@ -119,6 +121,8 @@ it('renders every page route with a 200', function (): void {
         ['people.index', []],
         ['reference-files.index', []],
         ['reference-files.show', [$referenceFile]],
+        ['data-tags.index', []],
+        ['data-tags.show', [$dataTag]],
         ['forms.index', []],
         ['forms.create', []],
         ['forms.show', [$form]],
