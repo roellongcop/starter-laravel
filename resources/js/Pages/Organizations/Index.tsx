@@ -121,7 +121,7 @@ export default function Index({ organizations, filters, users }: Props) {
                                                 'organizations.show',
                                                 organization.token,
                                             )}
-                                            className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                            className="after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {organization.name}
                                         </Link>

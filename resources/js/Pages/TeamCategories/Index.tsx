@@ -127,7 +127,7 @@ export default function Index({ categories, filters, organizations }: Props) {
                                                 'team-categories.show',
                                                 category.token,
                                             )}
-                                            className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                            className="after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {category.name}
                                         </Link>

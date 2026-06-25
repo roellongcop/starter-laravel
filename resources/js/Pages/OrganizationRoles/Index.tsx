@@ -126,7 +126,7 @@ export default function Index({ roles, filters, organizations }: Props) {
                                                 'organization-roles.show',
                                                 role.token,
                                             )}
-                                            className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                            className="after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {role.name}
                                         </Link>

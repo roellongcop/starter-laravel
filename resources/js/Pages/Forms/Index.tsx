@@ -104,7 +104,7 @@ export default function Index({ forms, filters, organizations }: Props) {
                                                 'forms.show',
                                                 form.token,
                                             )}
-                                            className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                            className="after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {form.title}
                                         </Link>

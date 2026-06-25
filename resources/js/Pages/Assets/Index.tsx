@@ -128,7 +128,7 @@ export default function Index({ assets, filters, organizations }: Props) {
                                                 'assets.show',
                                                 asset.token,
                                             )}
-                                            className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                            className="after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {asset.name}
                                         </Link>

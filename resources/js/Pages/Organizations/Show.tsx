@@ -106,7 +106,7 @@ export default function Show({ organization, users }: Props) {
                                     href={route('projects.index', {
                                         organization: organization.token,
                                     })}
-                                    className="font-medium after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                    className="font-medium after:absolute after:inset-0 focus-visible:outline-none"
                                 >
                                     Projects
                                 </Link>
@@ -130,7 +130,7 @@ export default function Show({ organization, users }: Props) {
                                     href={route('assets.index', {
                                         organization: organization.token,
                                     })}
-                                    className="font-medium after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                    className="font-medium after:absolute after:inset-0 focus-visible:outline-none"
                                 >
                                     Assets
                                 </Link>
@@ -154,7 +154,7 @@ export default function Show({ organization, users }: Props) {
                                     href={route('forms.index', {
                                         organization: organization.token,
                                     })}
-                                    className="font-medium after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                    className="font-medium after:absolute after:inset-0 focus-visible:outline-none"
                                 >
                                     Forms
                                 </Link>
@@ -178,7 +178,7 @@ export default function Show({ organization, users }: Props) {
                                     href={route('organization-roles.index', {
                                         organization: organization.token,
                                     })}
-                                    className="font-medium after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                    className="font-medium after:absolute after:inset-0 focus-visible:outline-none"
                                 >
                                     Organization Roles
                                 </Link>
@@ -202,7 +202,7 @@ export default function Show({ organization, users }: Props) {
                                     href={route('teams.index', {
                                         organization: organization.token,
                                     })}
-                                    className="font-medium after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                    className="font-medium after:absolute after:inset-0 focus-visible:outline-none"
                                 >
                                     Teams and People
                                 </Link>

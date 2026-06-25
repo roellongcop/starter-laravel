@@ -67,7 +67,7 @@ export default function Responses({ form, responses, responsesTotal }: Props) {
                                                     'responses.show',
                                                     response.token,
                                                 )}
-                                                className="font-medium after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                                className="font-medium after:absolute after:inset-0 focus-visible:outline-none"
                                             >
                                                 {response.respondent ??
                                                     'Anonymous'}

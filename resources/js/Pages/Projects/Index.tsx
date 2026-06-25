@@ -129,7 +129,7 @@ export default function Index({ projects, filters, organizations }: Props) {
                                                 'projects.show',
                                                 project.token,
                                             )}
-                                            className="after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                            className="after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {project.name}
                                         </Link>
