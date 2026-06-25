@@ -93,6 +93,7 @@ class Navigation
                     // only the entry point and Organization Roles live in the sidebar.
                     ['key' => 'teams', 'label' => 'Teams and People', 'icon' => 'UsersRound', 'href' => '/teams'],
                     ['key' => 'organization-roles', 'label' => 'Organization Roles', 'icon' => 'BadgeCheck', 'href' => '/organization-roles'],
+                    ['key' => 'reference-files', 'label' => 'Reference Files', 'icon' => 'FileText', 'href' => '/reference-files'],
                 ],
             ],
             [

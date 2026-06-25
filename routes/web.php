@@ -23,6 +23,7 @@ use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QueueController;
+use App\Http\Controllers\ReferenceFileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SessionHeartbeatController;
@@ -151,6 +152,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('teams', TeamController::class)->except(['create', 'edit']);
     // People: read-only roster across teams (members are managed via the team form).
     Route::get('people', [PersonController::class, 'index'])->name('people.index');
+
+    // Reference files: org-nested references with a single uploaded file. The
+    // upload/download routes are declared before the resource so they aren't
+    // shadowed by the {referenceFile} show route.
+    Route::post('reference-files/upload', [ReferenceFileController::class, 'upload'])->name('reference-files.upload');
+    Route::get('reference-files/{referenceFile}/download', [ReferenceFileController::class, 'download'])->name('reference-files.download');
+    Route::resource('reference-files', ReferenceFileController::class)->except(['create', 'edit']);
 
     // Forms have full create/edit pages (the field builder is too rich for a sheet).
     Route::resource('forms', FormController::class);

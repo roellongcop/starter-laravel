@@ -33,6 +33,7 @@ return [
         'teams',
         'team-categories',
         'organization-roles',
+        'reference-files',
         'themes',
         'notifications',
         'backups',

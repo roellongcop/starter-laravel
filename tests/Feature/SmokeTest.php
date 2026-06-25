@@ -10,6 +10,7 @@ use App\Models\Organization;
 use App\Models\OrganizationRole;
 use App\Models\Person;
 use App\Models\Project;
+use App\Models\ReferenceFile;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\TeamCategory;
@@ -67,6 +68,7 @@ it('renders every page route with a 200', function (): void {
         'organization_role_id' => $organizationRole->id,
         'organization_id' => $organization->id,
     ]);
+    $referenceFile = ReferenceFile::factory()->create(['organization_id' => $organization->id]);
 
     /** @var array<int, array{0: string, 1: array<int, mixed>}> $pages */
     $pages = [
@@ -115,6 +117,8 @@ it('renders every page route with a 200', function (): void {
         ['organization-roles.index', []],
         ['organization-roles.show', [$organizationRole]],
         ['people.index', []],
+        ['reference-files.index', []],
+        ['reference-files.show', [$referenceFile]],
         ['forms.index', []],
         ['forms.create', []],
         ['forms.show', [$form]],

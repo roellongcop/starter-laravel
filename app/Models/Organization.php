@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Team> $teams
  * @property-read Collection<int, TeamCategory> $teamCategories
  * @property-read Collection<int, OrganizationRole> $organizationRoles
+ * @property-read Collection<int, ReferenceFile> $referenceFiles
  */
 class Organization extends BaseModel
 {
@@ -80,5 +81,13 @@ class Organization extends BaseModel
     public function organizationRoles(): HasMany
     {
         return $this->hasMany(OrganizationRole::class);
+    }
+
+    /**
+     * @return HasMany<ReferenceFile, $this>
+     */
+    public function referenceFiles(): HasMany
+    {
+        return $this->hasMany(ReferenceFile::class);
     }
 }

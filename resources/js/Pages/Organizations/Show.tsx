@@ -4,6 +4,7 @@ import {
     Boxes,
     ChevronRight,
     ClipboardList,
+    FileText,
     FolderKanban,
     UsersRound,
 } from 'lucide-react';
@@ -208,6 +209,30 @@ export default function Show({ organization, users }: Props) {
                                 </Link>
                                 <p className="text-sm text-muted-foreground">
                                     View teams and people for this organization
+                                </p>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </CardContent>
+                    </Card>
+                </Can>
+
+                <Can ability="reference-files.index">
+                    <Card className="relative transition-shadow hover:shadow-md">
+                        <CardContent className="flex items-center gap-4 pt-6">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                                <FileText className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <Link
+                                    href={route('reference-files.index', {
+                                        organization: organization.token,
+                                    })}
+                                    className="font-medium after:absolute after:inset-0 focus-visible:outline-none"
+                                >
+                                    Reference Files
+                                </Link>
+                                <p className="text-sm text-muted-foreground">
+                                    View reference files for this organization
                                 </p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground" />

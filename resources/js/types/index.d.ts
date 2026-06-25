@@ -224,6 +224,20 @@ export interface AdminPerson {
     created_at: string | null;
 }
 
+/** A reference (with an optional single file) as serialized by ReferenceFileController. */
+export interface AdminReferenceFile {
+    token: string;
+    name: string;
+    description: string | null;
+    organization: string | null; // organization token
+    organization_name: string | null; // display name
+    file_token: string | null;
+    file_name: string | null;
+    file_url: string | null; // gated download url, when a file is attached
+    record_status: number;
+    created_at: string | null;
+}
+
 /** A SelectOption that also carries the org token it belongs to (cascading). */
 export interface OrgScopedOption extends SelectOption {
     organization: string; // organization token
