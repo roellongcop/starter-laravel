@@ -30,6 +30,9 @@ return [
         'projects',
         'assets',
         'forms',
+        'teams',
+        'team-categories',
+        'organization-roles',
         'themes',
         'notifications',
         'backups',
@@ -42,6 +45,7 @@ return [
         'sessions',
         'logs',
         'login-history',
+        'people',
     ],
 
     // Resources with bespoke ability sets

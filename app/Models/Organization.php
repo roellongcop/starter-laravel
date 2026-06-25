@@ -23,6 +23,9 @@ use Illuminate\Support\Carbon;
  * @property-read User|null $pointOfContact
  * @property-read Collection<int, Project> $projects
  * @property-read Collection<int, Asset> $assets
+ * @property-read Collection<int, Team> $teams
+ * @property-read Collection<int, TeamCategory> $teamCategories
+ * @property-read Collection<int, OrganizationRole> $organizationRoles
  */
 class Organization extends BaseModel
 {
@@ -53,5 +56,29 @@ class Organization extends BaseModel
     public function assets(): HasMany
     {
         return $this->hasMany(Asset::class);
+    }
+
+    /**
+     * @return HasMany<Team, $this>
+     */
+    public function teams(): HasMany
+    {
+        return $this->hasMany(Team::class);
+    }
+
+    /**
+     * @return HasMany<TeamCategory, $this>
+     */
+    public function teamCategories(): HasMany
+    {
+        return $this->hasMany(TeamCategory::class);
+    }
+
+    /**
+     * @return HasMany<OrganizationRole, $this>
+     */
+    public function organizationRoles(): HasMany
+    {
+        return $this->hasMany(OrganizationRole::class);
     }
 }

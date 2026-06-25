@@ -7,8 +7,12 @@ use App\Models\Form;
 use App\Models\FormResponse;
 use App\Models\Ip;
 use App\Models\Organization;
+use App\Models\OrganizationRole;
+use App\Models\Person;
 use App\Models\Project;
 use App\Models\Role;
+use App\Models\Team;
+use App\Models\TeamCategory;
 use App\Models\Theme;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -50,6 +54,19 @@ it('renders every page route with a 200', function (): void {
     $form = Form::factory()->create(['organization_id' => $organization->id]);
     $response = FormResponse::factory()->forForm($form)->create();
     $role = Role::query()->firstOrFail();
+    $teamCategory = TeamCategory::factory()->create(['organization_id' => $organization->id]);
+    $organizationRole = OrganizationRole::factory()->create(['organization_id' => $organization->id]);
+    $team = Team::factory()->create([
+        'organization_id' => $organization->id,
+        'team_category_id' => $teamCategory->id,
+        'organization_role_id' => $organizationRole->id,
+    ]);
+    Person::factory()->create([
+        'team_id' => $team->id,
+        'user_id' => $user->id,
+        'organization_role_id' => $organizationRole->id,
+        'organization_id' => $organization->id,
+    ]);
 
     /** @var array<int, array{0: string, 1: array<int, mixed>}> $pages */
     $pages = [
@@ -91,6 +108,13 @@ it('renders every page route with a 200', function (): void {
         ['projects.show', [$project]],
         ['assets.index', []],
         ['assets.show', [$asset]],
+        ['teams.index', []],
+        ['teams.show', [$team]],
+        ['team-categories.index', []],
+        ['team-categories.show', [$teamCategory]],
+        ['organization-roles.index', []],
+        ['organization-roles.show', [$organizationRole]],
+        ['people.index', []],
         ['forms.index', []],
         ['forms.create', []],
         ['forms.show', [$form]],

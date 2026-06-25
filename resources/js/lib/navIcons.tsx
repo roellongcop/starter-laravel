@@ -1,5 +1,6 @@
 import {
     Archive,
+    BadgeCheck,
     Bell,
     Boxes,
     Building2,
@@ -28,6 +29,7 @@ import {
     Tags,
     Upload,
     Users,
+    UsersRound,
 } from 'lucide-react';
 
 /** Icon names selectable in the menu builder and rendered in the sidebar. */
@@ -35,6 +37,8 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
     LayoutDashboard,
     ShieldCheck,
     Users,
+    UsersRound,
+    BadgeCheck,
     Tags,
     KeyRound,
     FolderOpen,

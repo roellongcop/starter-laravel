@@ -89,6 +89,10 @@ class Navigation
                     ['key' => 'projects', 'label' => 'Projects', 'icon' => 'FolderKanban', 'href' => '/projects'],
                     ['key' => 'assets', 'label' => 'Assets', 'icon' => 'Boxes', 'href' => '/assets'],
                     ['key' => 'forms', 'label' => 'Forms', 'icon' => 'ClipboardList', 'href' => '/forms'],
+                    // Teams & People is a tabbed page (Teams / Team Categories / People);
+                    // only the entry point and Organization Roles live in the sidebar.
+                    ['key' => 'teams', 'label' => 'Teams and People', 'icon' => 'UsersRound', 'href' => '/teams'],
+                    ['key' => 'organization-roles', 'label' => 'Organization Roles', 'icon' => 'BadgeCheck', 'href' => '/organization-roles'],
                 ],
             ],
             [

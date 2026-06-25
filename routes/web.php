@@ -18,6 +18,8 @@ use App\Http\Controllers\LoginHistoryController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\OrganizationRoleController;
+use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QueueController;
@@ -26,6 +28,8 @@ use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SessionHeartbeatController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\TeamCategoryController;
+use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ThemeController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnableSsr;
@@ -139,6 +143,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
     Route::resource('assets', AssetController::class)->except(['create', 'edit']);
+
+    // Teams & People: org-nested teams, their category + organization-role
+    // lookups. People are an internal roster managed via TeamController.
+    Route::resource('team-categories', TeamCategoryController::class)->except(['create', 'edit']);
+    Route::resource('organization-roles', OrganizationRoleController::class)->except(['create', 'edit']);
+    Route::resource('teams', TeamController::class)->except(['create', 'edit']);
+    // People: read-only roster across teams (members are managed via the team form).
+    Route::get('people', [PersonController::class, 'index'])->name('people.index');
 
     // Forms have full create/edit pages (the field builder is too rich for a sheet).
     Route::resource('forms', FormController::class);

@@ -165,6 +165,70 @@ export interface AdminAsset {
     created_at: string | null;
 }
 
+/** A team category as serialized by TeamCategoryController. */
+export interface AdminTeamCategory {
+    token: string;
+    name: string;
+    description: string | null;
+    organization: string | null; // organization token
+    organization_name: string | null; // display name
+    record_status: number;
+    created_at: string | null;
+}
+
+/** An organization role as serialized by OrganizationRoleController. */
+export interface AdminOrganizationRole {
+    token: string;
+    name: string;
+    description: string | null;
+    organization: string | null; // organization token
+    organization_name: string | null; // display name
+    record_status: number;
+    created_at: string | null;
+}
+
+/** A team member roster row (a `people` row joined to its user + org-role). */
+export interface TeamMember {
+    token: string; // person token
+    user: string; // user token
+    name: string; // user's name
+    role: string; // organization-role name
+}
+
+/** A team as serialized by TeamController. */
+export interface AdminTeam {
+    token: string;
+    name: string;
+    description: string | null;
+    organization: string | null; // organization token
+    organization_name: string | null; // display name
+    team_category: string | null; // category token
+    team_category_name: string | null;
+    organization_role: string | null; // org-role token
+    organization_role_name: string | null;
+    members: string[]; // user tokens of current members (feeds the picker)
+    members_count: number;
+    record_status: number;
+    created_at: string | null;
+    // detailed-only (show page)
+    roster?: TeamMember[];
+}
+
+/** A person (team member) as serialized by PersonController — read-only roster. */
+export interface AdminPerson {
+    token: string;
+    name: string; // user's name
+    team: string; // team name
+    role: string; // organization-role name
+    organization: string; // organization name
+    created_at: string | null;
+}
+
+/** A SelectOption that also carries the org token it belongs to (cascading). */
+export interface OrgScopedOption extends SelectOption {
+    organization: string; // organization token
+}
+
 /** The kind of a form field; mirrors App\Enums\FieldType. */
 export type FieldType =
     | 'text'

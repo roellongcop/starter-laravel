@@ -26,6 +26,9 @@ class DatabaseSeeder extends Seeder
             OrganizationSeeder::class,
             ProjectSeeder::class,
             AssetSeeder::class,
+            TeamCategorySeeder::class,
+            OrganizationRoleSeeder::class,
+            TeamSeeder::class,
             FormSeeder::class,
             MonitoringSeeder::class,
         ]);

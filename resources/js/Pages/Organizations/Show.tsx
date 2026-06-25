@@ -1,5 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Boxes, ChevronRight, ClipboardList, FolderKanban } from 'lucide-react';
+import {
+    BadgeCheck,
+    Boxes,
+    ChevronRight,
+    ClipboardList,
+    FolderKanban,
+    UsersRound,
+} from 'lucide-react';
 import { useState } from 'react';
 
 import Can from '@/Components/Can';
@@ -153,6 +160,54 @@ export default function Show({ organization, users }: Props) {
                                 </Link>
                                 <p className="text-sm text-muted-foreground">
                                     View forms for this organization
+                                </p>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </CardContent>
+                    </Card>
+                </Can>
+
+                <Can ability="organization-roles.index">
+                    <Card className="relative transition-shadow hover:shadow-md">
+                        <CardContent className="flex items-center gap-4 pt-6">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                                <BadgeCheck className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <Link
+                                    href={route('organization-roles.index', {
+                                        organization: organization.token,
+                                    })}
+                                    className="font-medium after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                >
+                                    Organization Roles
+                                </Link>
+                                <p className="text-sm text-muted-foreground">
+                                    View roles for this organization
+                                </p>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </CardContent>
+                    </Card>
+                </Can>
+
+                <Can ability="teams.index">
+                    <Card className="relative transition-shadow hover:shadow-md">
+                        <CardContent className="flex items-center gap-4 pt-6">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                                <UsersRound className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <Link
+                                    href={route('teams.index', {
+                                        organization: organization.token,
+                                    })}
+                                    className="font-medium after:absolute after:inset-0 hover:underline focus-visible:outline-none"
+                                >
+                                    Teams and People
+                                </Link>
+                                <p className="text-sm text-muted-foreground">
+                                    View teams and people for this organization
                                 </p>
                             </div>
                             <ChevronRight className="h-5 w-5 text-muted-foreground" />
