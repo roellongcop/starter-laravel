@@ -49,7 +49,7 @@ export default function Authenticated({
             )}
             <ThemeStyle />
             <nav className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between gap-2">
                         <div className="flex min-w-0 items-center">
                             <Link
@@ -195,7 +195,7 @@ export default function Authenticated({
                 </div>
             )}
 
-            <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 sm:px-6 lg:px-8">
+            <div className="flex w-full gap-6 px-4 sm:px-6 lg:px-8">
                 <aside className="scrollbar-hover sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 self-start overflow-y-auto py-6 md:block">
                     <Sidebar />
                 </aside>
