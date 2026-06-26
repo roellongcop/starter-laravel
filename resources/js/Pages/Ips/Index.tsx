@@ -199,7 +199,10 @@ export default function Index({ ips, filters, listTypes }: Props) {
                                         {ip.list_type}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">
+                                <TableCell
+                                    className="max-w-sm truncate text-sm text-muted-foreground"
+                                    title={ip.description ?? undefined}
+                                >
                                     {ip.description ?? '—'}
                                 </TableCell>
                                 <TableCell className="text-right">

@@ -120,7 +120,10 @@ export default function Index({ stats, pending, failed, can }: Props) {
                             )}
                             {pending.map((j) => (
                                 <TableRow key={j.id}>
-                                    <TableCell className="text-sm">
+                                    <TableCell
+                                        className="max-w-xs truncate text-sm"
+                                        title={j.name}
+                                    >
                                         {j.name}
                                     </TableCell>
                                     <TableCell>{j.queue}</TableCell>
@@ -158,7 +161,10 @@ export default function Index({ stats, pending, failed, can }: Props) {
                             )}
                             {failed.map((j) => (
                                 <TableRow key={j.id}>
-                                    <TableCell className="text-sm">
+                                    <TableCell
+                                        className="max-w-xs truncate text-sm"
+                                        title={j.name}
+                                    >
                                         {j.name}
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">

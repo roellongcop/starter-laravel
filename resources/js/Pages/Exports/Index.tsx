@@ -126,7 +126,10 @@ export default function Index({ exports, filters }: Props) {
                                 <TableCell>
                                     <StatusBadge status={e.status} />
                                     {e.error_message && (
-                                        <span className="ml-2 text-xs text-destructive">
+                                        <span
+                                            className="ml-2 inline-block max-w-[16rem] truncate align-bottom text-xs text-destructive"
+                                            title={e.error_message}
+                                        >
                                             {e.error_message}
                                         </span>
                                     )}

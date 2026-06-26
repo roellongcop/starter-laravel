@@ -112,7 +112,10 @@ export default function Index({ roles, filters }: Props) {
                                         {role.role_type}
                                     </Badge>
                                 </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">
+                                <TableCell
+                                    className="max-w-sm truncate text-sm text-muted-foreground"
+                                    title={role.description ?? undefined}
+                                >
                                     {role.description || '—'}
                                 </TableCell>
                                 <TableCell>{role.permissions_count}</TableCell>

@@ -339,7 +339,10 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                                     </TableCell>
                                 )}
                                 {columns.roles && (
-                                    <TableCell className="text-sm text-muted-foreground">
+                                    <TableCell
+                                        className="max-w-xs truncate text-sm text-muted-foreground"
+                                        title={user.roles.join(', ')}
+                                    >
                                         {user.roles.join(', ') || '—'}
                                     </TableCell>
                                 )}

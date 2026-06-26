@@ -100,7 +100,10 @@ export default function Index({ themes, filters }: Props) {
                                         {theme.name}
                                     </Link>
                                 </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">
+                                <TableCell
+                                    className="max-w-sm truncate text-sm text-muted-foreground"
+                                    title={theme.description ?? undefined}
+                                >
                                     {theme.description || '—'}
                                 </TableCell>
                                 <TableCell>
