@@ -1,9 +1,11 @@
 import { useForm } from '@inertiajs/react';
 import { Plus, X } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useMemo } from 'react';
 
 import InputError from '@/Components/InputError';
+import ThemePreview from '@/Components/ThemePreview';
 import { Button } from '@/Components/ui/button';
+import { Card, CardContent } from '@/Components/ui/card';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Switch } from '@/Components/ui/switch';
@@ -210,54 +212,78 @@ export default function ThemeForm({ theme }: { theme?: AdminTheme }) {
         }
     };
 
+    const lightObj = useMemo(() => toObject(data.light), [data.light]);
+    const darkObj = useMemo(() => toObject(data.dark), [data.dark]);
+
     return (
-        <form onSubmit={submit} className="space-y-6">
-            <div className="grid max-w-2xl gap-4 sm:grid-cols-2">
-                <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                        id="name"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        className="mt-1"
-                    />
-                    <InputError message={errors.name} className="mt-1" />
-                </div>
-                <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Input
-                        id="description"
-                        value={data.description}
-                        onChange={(e) => setData('description', e.target.value)}
-                        className="mt-1"
-                    />
-                </div>
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
+            <Card>
+                <CardContent className="pt-6">
+                    <form onSubmit={submit} className="space-y-6">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <Label htmlFor="name">Name</Label>
+                                <Input
+                                    id="name"
+                                    value={data.name}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
+                                    className="mt-1"
+                                />
+                                <InputError
+                                    message={errors.name}
+                                    className="mt-1"
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="description">Description</Label>
+                                <Input
+                                    id="description"
+                                    value={data.description}
+                                    onChange={(e) =>
+                                        setData('description', e.target.value)
+                                    }
+                                    className="mt-1"
+                                />
+                            </div>
+                        </div>
+
+                        <label className="flex items-center justify-between rounded-md border p-3">
+                            <span className="text-sm">
+                                Set as default theme
+                            </span>
+                            <Switch
+                                checked={data.is_default}
+                                onCheckedChange={(c) =>
+                                    setData('is_default', c)
+                                }
+                            />
+                        </label>
+
+                        <div className="space-y-4">
+                            <TokenEditor
+                                title="Light tokens"
+                                rows={data.light}
+                                onChange={(r) => setData('light', r)}
+                            />
+                            <TokenEditor
+                                title="Dark tokens"
+                                rows={data.dark}
+                                onChange={(r) => setData('dark', r)}
+                            />
+                        </div>
+
+                        <Button type="submit" disabled={processing}>
+                            {editing ? 'Save changes' : 'Create theme'}
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
+
+            <div className="xl:sticky xl:top-20">
+                <ThemePreview light={lightObj} dark={darkObj} />
             </div>
-
-            <label className="flex max-w-2xl items-center justify-between rounded-md border p-3">
-                <span className="text-sm">Set as default theme</span>
-                <Switch
-                    checked={data.is_default}
-                    onCheckedChange={(c) => setData('is_default', c)}
-                />
-            </label>
-
-            <div className="grid gap-4 lg:grid-cols-2">
-                <TokenEditor
-                    title="Light tokens"
-                    rows={data.light}
-                    onChange={(r) => setData('light', r)}
-                />
-                <TokenEditor
-                    title="Dark tokens"
-                    rows={data.dark}
-                    onChange={(r) => setData('dark', r)}
-                />
-            </div>
-
-            <Button type="submit" disabled={processing}>
-                {editing ? 'Save changes' : 'Create theme'}
-            </Button>
-        </form>
+        </div>
     );
 }
