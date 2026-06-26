@@ -1,7 +1,6 @@
 import { Head } from '@inertiajs/react';
 
 import PageHeader from '@/Components/PageHeader';
-import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { type AdminTheme } from '@/types';
 import ThemeForm from './Partials/ThemeForm';
@@ -21,11 +20,7 @@ export default function Edit({ theme }: { theme: AdminTheme }) {
                     { label: 'Edit' },
                 ]}
             />
-            <Card>
-                <CardContent className="pt-6">
-                    <ThemeForm theme={theme} />
-                </CardContent>
-            </Card>
+            <ThemeForm theme={theme} />
         </AuthenticatedLayout>
     );
 }
