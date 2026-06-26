@@ -186,6 +186,7 @@ export default function Index({ users, filters, can, exportFormats }: Props) {
                                         onCheckedChange={(v) =>
                                             setColumn(c, Boolean(v))
                                         }
+                                        onSelect={(e) => e.preventDefault()}
                                         className="capitalize"
                                     >
                                         {c}
