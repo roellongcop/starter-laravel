@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ProjectStatus;
 use App\Enums\SystemRole;
 use App\Models\Asset;
 use App\Models\Organization;
@@ -164,4 +165,93 @@ it('forbids managing project assets without update permission', function (): voi
         ->assertForbidden();
 
     expect($project->fresh()->assets)->toHaveCount(0);
+});
+
+it('defaults a newly attached asset to pending status', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+
+    $this->put(route('projects.assets.update', $project), [
+        'assets' => [$asset->token],
+    ])->assertRedirect();
+
+    expect($project->assets()->first()->pivot->status)->toBe(ProjectStatus::Pending->value);
+});
+
+it('serializes the per-project asset status on the show page', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+    $project->assets()->attach($asset->id, ['status' => ProjectStatus::InProgress->value]);
+
+    $this->get(route('projects.show', $project))
+        ->assertInertia(fn ($page) => $page
+            ->where('projectAssets.data.0.status', ProjectStatus::InProgress->value)
+            ->has('statusOptions', 4));
+});
+
+it('updates a single project asset status', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+    $project->assets()->attach($asset->id);
+
+    $this->patch(route('projects.assets.status', [$project, $asset]), [
+        'status' => ProjectStatus::Approved->value,
+    ])->assertRedirect();
+
+    expect($project->assets()->first()->pivot->status)->toBe(ProjectStatus::Approved->value);
+});
+
+it('returns json for an xhr asset status update', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+    $project->assets()->attach($asset->id);
+
+    $this->patchJson(route('projects.assets.status', [$project, $asset]), [
+        'status' => ProjectStatus::Approved->value,
+    ])->assertOk()->assertJson(['status' => ProjectStatus::Approved->value]);
+
+    expect($project->assets()->first()->pivot->status)->toBe(ProjectStatus::Approved->value);
+});
+
+it('rejects an invalid project asset status', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+    $project->assets()->attach($asset->id);
+
+    $this->patch(route('projects.assets.status', [$project, $asset]), ['status' => 'Bogus'])
+        ->assertSessionHasErrors('status');
+});
+
+it('404s when setting status for an asset not bound to the project', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+
+    $this->patch(route('projects.assets.status', [$project, $asset]), [
+        'status' => ProjectStatus::Approved->value,
+    ])->assertNotFound();
+});
+
+it('forbids updating asset status without update permission', function (): void {
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+    $project->assets()->attach($asset->id);
+
+    $noRole = User::factory()->create();
+    $this->actingAs($noRole)
+        ->patch(route('projects.assets.status', [$project, $asset]), [
+            'status' => ProjectStatus::Approved->value,
+        ])->assertForbidden();
 });

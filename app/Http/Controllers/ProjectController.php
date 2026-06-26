@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProjectStatus;
 use App\Filters\ProjectAssetFilters;
 use App\Filters\ProjectFilters;
 use App\Http\Controllers\Concerns\SerializesAssets;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Http\Requests\UpdateProjectStatusRequest;
 use App\Models\Asset;
 use App\Models\Organization;
 use App\Models\Project;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\CursorPaginator;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,6 +42,7 @@ class ProjectController extends Controller
             'filters' => $filters->echoBack(),
             'organizations' => $this->organizationOptions(),
             'dataTags' => $this->dataTagOptions(),
+            'statusOptions' => ProjectStatus::options(),
         ]);
     }
 
@@ -63,16 +68,28 @@ class ProjectController extends Controller
 
         // The project's bound assets — keyset cursor-paginated and server-side
         // searchable (the set can be large), serialized identically to the Assets
-        // module (by reference; a renamed asset reflects here on next load).
-        $assets = $filters->apply(
-            Asset::query()
-                ->whereHas('projects', fn (Builder $query) => $query->whereKey($project->getKey()))
-                ->with(['organization', 'tags'])
-        )
+        // module (by reference; a renamed asset reflects here on next load) plus
+        // the per-project pivot status. Filters mutate the relation's underlying
+        // query in place; pagination then runs through the relation so the pivot
+        // (and its select columns) hydrate.
+        $relation = $project->assets()->with(['organization', 'tags']);
+        $filters->apply($relation->getQuery());
+
+        /** @var CursorPaginator<int, Asset> $paginator */
+        $paginator = $relation
             ->keysetByToken()
             ->cursorPaginate(config('keen.pagination_size'))
-            ->withQueryString()
-            ->through(fn (Asset $asset) => $this->assetRow($asset));
+            ->withQueryString();
+
+        $assets = $paginator->through(function (Asset $asset): array {
+            /** @var Pivot $pivot */
+            $pivot = $asset->getRelation('pivot');
+
+            return [
+                ...$this->assetRow($asset),
+                'status' => $pivot->getAttribute('status'),
+            ];
+        });
 
         $canManage = $request->user()?->can('update', $project) ?? false;
 
@@ -80,6 +97,7 @@ class ProjectController extends Controller
             'project' => $this->row($project),
             'organizations' => $this->organizationOptions(),
             'dataTags' => $this->dataTagOptions(),
+            'statusOptions' => ProjectStatus::options(),
             'projectAssets' => Inertia::scroll($assets),
             'assetsTotal' => $project->assets()->count(),
             'filters' => $filters->echoBack(),
@@ -103,6 +121,25 @@ class ProjectController extends Controller
         $project->syncDataTags($tags);
 
         return back()->with('success', 'Project updated.');
+    }
+
+    /**
+     * Inline status change for a project (from the card/detail dropdown), kept
+     * separate from the full update form.
+     */
+    public function updateStatus(UpdateProjectStatusRequest $request, Project $project): RedirectResponse|JsonResponse
+    {
+        $this->authorize('update', $project);
+
+        $project->update(['status' => $request->validated()['status']]);
+
+        // The inline dropdown posts via axios and expects JSON (no page reload);
+        // a plain form submit still gets the flash + redirect.
+        if ($request->expectsJson()) {
+            return response()->json(['status' => $project->status->value]);
+        }
+
+        return back()->with('success', 'Project status updated.');
     }
 
     public function destroy(Project $project): RedirectResponse
@@ -153,6 +190,7 @@ class ProjectController extends Controller
             'name' => $project->name,
             'description' => $project->description,
             'private' => $project->private,
+            'status' => $project->status->value,
             'organization' => $project->organization->token,
             'organization_name' => $project->organization->name,
             'tags' => $this->serializeTags($project->tags),

@@ -145,8 +145,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('organizations', OrganizationController::class)->except(['create', 'edit']);
 
     Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
+    Route::patch('projects/{project}/status', [ProjectController::class, 'updateStatus'])
+        ->name('projects.status');
     Route::put('projects/{project}/assets', [ProjectAssetController::class, 'update'])
         ->name('projects.assets.update');
+    Route::patch('projects/{project}/assets/{asset}', [ProjectAssetController::class, 'updateStatus'])
+        ->name('projects.assets.status');
     Route::resource('assets', AssetController::class)->except(['create', 'edit']);
 
     // Teams & People: org-nested teams, their category + organization-role

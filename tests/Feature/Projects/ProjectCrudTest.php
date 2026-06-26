@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ProjectStatus;
 use App\Enums\SystemRole;
 use App\Models\Organization;
 use App\Models\Project;
@@ -27,6 +28,96 @@ it('creates a project and resolves the organization token to an id', function ()
     expect($project)->not->toBeNull()
         ->and($project->private)->toBeTrue()
         ->and($project->organization_id)->toBe($organization->id);
+});
+
+it('defaults a new project to pending status', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+
+    $this->post(route('projects.store'), [
+        'name' => 'No Status',
+        'private' => false,
+        'organization' => $organization->token,
+    ])->assertRedirect(route('projects.index'));
+
+    expect(Project::where('name', 'No Status')->first()->status)
+        ->toBe(ProjectStatus::Pending);
+});
+
+it('stores and updates the project status', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+
+    $this->post(route('projects.store'), [
+        'name' => 'With Status',
+        'private' => false,
+        'status' => ProjectStatus::Approved->value,
+        'organization' => $organization->token,
+    ])->assertRedirect();
+
+    $project = Project::where('name', 'With Status')->firstOrFail();
+    expect($project->status)->toBe(ProjectStatus::Approved);
+
+    $this->patch(route('projects.update', $project), [
+        'name' => 'With Status',
+        'private' => false,
+        'status' => ProjectStatus::Cancelled->value,
+        'organization' => $organization->token,
+    ])->assertRedirect();
+
+    expect($project->fresh()->status)->toBe(ProjectStatus::Cancelled);
+});
+
+it('rejects an invalid project status', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+
+    $this->post(route('projects.store'), [
+        'name' => 'Bad Status',
+        'private' => false,
+        'status' => 'Nonsense',
+        'organization' => $organization->token,
+    ])->assertSessionHasErrors('status');
+});
+
+it('updates the project status via the status endpoint', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $project = Project::factory()->create();
+
+    $this->patch(route('projects.status', $project), [
+        'status' => ProjectStatus::Approved->value,
+    ])->assertRedirect();
+
+    expect($project->fresh()->status)->toBe(ProjectStatus::Approved);
+});
+
+it('returns json for an xhr status update', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $project = Project::factory()->create();
+
+    $this->patchJson(route('projects.status', $project), [
+        'status' => ProjectStatus::Approved->value,
+    ])->assertOk()->assertJson(['status' => ProjectStatus::Approved->value]);
+
+    expect($project->fresh()->status)->toBe(ProjectStatus::Approved);
+});
+
+it('rejects an invalid status on the status endpoint', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $project = Project::factory()->create();
+
+    $this->patch(route('projects.status', $project), ['status' => 'Bogus'])
+        ->assertSessionHasErrors('status');
+});
+
+it('forbids updating project status without update permission', function (): void {
+    $project = Project::factory()->create();
+    $noRole = User::factory()->create();
+
+    $this->actingAs($noRole)
+        ->patch(route('projects.status', $project), [
+            'status' => ProjectStatus::Approved->value,
+        ])->assertForbidden();
 });
 
 it('requires a valid organization token', function (): void {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProjectStatus;
 use App\Enums\RecordStatus;
 use App\Models\Concerns\HasDataTags;
 use Database\Factories\ProjectFactory;
@@ -18,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property string|null $description
  * @property bool $private
+ * @property ProjectStatus $status
  * @property int $organization_id
  * @property RecordStatus $record_status
  * @property Carbon|null $created_at
@@ -33,7 +35,7 @@ class Project extends BaseModel
     /** @use HasFactory<ProjectFactory> */
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'private', 'organization_id'];
+    protected $fillable = ['name', 'description', 'private', 'status', 'organization_id'];
 
     /**
      * @return array<string, string>
@@ -42,6 +44,7 @@ class Project extends BaseModel
     {
         return array_merge(parent::casts(), [
             'private' => 'boolean',
+            'status' => ProjectStatus::class,
         ]);
     }
 
@@ -61,6 +64,7 @@ class Project extends BaseModel
      */
     public function assets(): BelongsToMany
     {
-        return $this->belongsToMany(Asset::class, 'project_assets');
+        return $this->belongsToMany(Asset::class, 'project_assets')
+            ->withPivot('status');
     }
 }

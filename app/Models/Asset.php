@@ -50,6 +50,7 @@ class Asset extends BaseModel
      */
     public function projects(): BelongsToMany
     {
-        return $this->belongsToMany(Project::class, 'project_assets');
+        return $this->belongsToMany(Project::class, 'project_assets')
+            ->withPivot('status');
     }
 }

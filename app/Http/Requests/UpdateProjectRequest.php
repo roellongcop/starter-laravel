@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ProjectStatus;
 use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Validation\Rule;
@@ -29,6 +30,7 @@ class UpdateProjectRequest extends BaseFormRequest
             ],
             'description' => ['nullable', 'string', 'max:1000'],
             'private' => ['required', 'boolean'],
+            'status' => ['sometimes', Rule::enum(ProjectStatus::class)],
             'organization' => ['required', 'string', 'exists:organizations,token'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'exists:data_tags,token'],

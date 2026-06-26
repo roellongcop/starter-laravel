@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SyncProjectAssetsRequest;
+use App\Http\Requests\UpdateProjectAssetStatusRequest;
 use App\Models\Asset;
 use App\Models\Project;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
 class ProjectAssetController extends Controller
@@ -29,5 +31,29 @@ class ProjectAssetController extends Controller
         $project->assets()->sync($ids);
 
         return back()->with('success', 'Project assets updated.');
+    }
+
+    /**
+     * Update the workflow status of a single asset bound to the project (the
+     * pivot row). Only assets actually attached to this project can be updated.
+     */
+    public function updateStatus(
+        UpdateProjectAssetStatusRequest $request,
+        Project $project,
+        Asset $asset,
+    ): RedirectResponse|JsonResponse {
+        $this->authorize('update', $project);
+
+        abort_unless($project->assets()->whereKey($asset->getKey())->exists(), 404);
+
+        $status = $request->validated()['status'];
+        $project->assets()->updateExistingPivot($asset->getKey(), ['status' => $status]);
+
+        // Inline dropdown posts via axios and expects JSON (no page reload).
+        if ($request->expectsJson()) {
+            return response()->json(['status' => $status]);
+        }
+
+        return back()->with('success', 'Asset status updated.');
     }
 }
