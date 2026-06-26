@@ -115,7 +115,10 @@ export default function Index({ files, filters }: Props) {
                         )}
                         {files.data.map((file) => (
                             <TableRow key={file.token}>
-                                <TableCell className="font-medium">
+                                <TableCell
+                                    className="max-w-xs truncate font-medium"
+                                    title={file.original_name}
+                                >
                                     <Link
                                         href={route('files.show', file.token)}
                                         className="hover:underline"

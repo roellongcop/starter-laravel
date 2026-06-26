@@ -6,7 +6,7 @@ import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
-import TagBadges from '@/Components/TagBadges';
+import TagBadgesRow from '@/Components/TagBadgesRow';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -95,22 +95,22 @@ export default function Index({ forms, filters, organizations }: Props) {
                     {forms.data.map((form) => (
                         <Card
                             key={form.token}
-                            className="relative flex flex-col transition-shadow hover:shadow-md"
+                            className="relative flex h-full flex-col transition-shadow hover:shadow-md"
                         >
                             <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-                                <div className="space-y-1">
+                                <div className="min-w-0 space-y-1">
                                     <CardTitle className="text-base leading-tight">
                                         <Link
                                             href={route(
                                                 'forms.show',
                                                 form.token,
                                             )}
-                                            className="after:absolute after:inset-0 focus-visible:outline-none"
+                                            className="line-clamp-1 after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {form.title}
                                         </Link>
                                     </CardTitle>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="truncate text-sm text-muted-foreground">
                                         {form.organization_name ??
                                             'No organization'}
                                     </p>
@@ -156,8 +156,8 @@ export default function Index({ forms, filters, organizations }: Props) {
                                     </DropdownMenu>
                                 </Can>
                             </CardHeader>
-                            <CardContent className="space-y-2">
-                                <p className="line-clamp-2 text-sm text-muted-foreground">
+                            <CardContent className="flex flex-1 flex-col gap-2">
+                                <p className="line-clamp-2 min-h-10 text-sm text-muted-foreground">
                                     {form.description ?? '—'}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
@@ -166,7 +166,9 @@ export default function Index({ forms, filters, organizations }: Props) {
                                     {typeof form.responses_count === 'number' &&
                                         ` · ${form.responses_count} response${form.responses_count === 1 ? '' : 's'}`}
                                 </p>
-                                <TagBadges tags={form.tags} />
+                                <div className="mt-auto pt-2">
+                                    <TagBadgesRow tags={form.tags} />
+                                </div>
                             </CardContent>
                         </Card>
                     ))}

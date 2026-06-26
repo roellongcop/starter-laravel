@@ -6,7 +6,7 @@ import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
-import TagBadges from '@/Components/TagBadges';
+import TagBadgesRow from '@/Components/TagBadgesRow';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -125,11 +125,11 @@ export default function Index({
                     {assets.data.map((asset) => (
                         <Card
                             key={asset.token}
-                            className="relative flex flex-col transition-shadow hover:shadow-md"
+                            className="relative flex h-full flex-col transition-shadow hover:shadow-md"
                         >
                             <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-                                <div className="space-y-1">
-                                    <CardTitle className="flex items-center gap-2 text-base leading-tight">
+                                <div className="min-w-0 space-y-1">
+                                    <CardTitle className="flex min-w-0 items-center gap-2 text-base leading-tight">
                                         {/* Stretched link: the ::after overlay
                                             makes the whole card navigate to the
                                             show page, while the z-10 menu stays
@@ -139,12 +139,12 @@ export default function Index({
                                                 'assets.show',
                                                 asset.token,
                                             )}
-                                            className="after:absolute after:inset-0 focus-visible:outline-none"
+                                            className="line-clamp-1 after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {asset.name}
                                         </Link>
                                     </CardTitle>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="truncate text-sm text-muted-foreground">
                                         {asset.organization_name ??
                                             'No organization'}
                                     </p>
@@ -187,14 +187,16 @@ export default function Index({
                                     </DropdownMenu>
                                 </Can>
                             </CardHeader>
-                            <CardContent className="space-y-2">
+                            <CardContent className="flex flex-1 flex-col gap-2">
                                 <p className="font-mono text-xs text-muted-foreground">
                                     {asset.id_code}
                                 </p>
-                                <p className="line-clamp-2 text-sm text-muted-foreground">
+                                <p className="line-clamp-2 min-h-10 text-sm text-muted-foreground">
                                     {asset.address || '—'}
                                 </p>
-                                <TagBadges tags={asset.tags} />
+                                <div className="mt-auto pt-2">
+                                    <TagBadgesRow tags={asset.tags} />
+                                </div>
                             </CardContent>
                         </Card>
                     ))}

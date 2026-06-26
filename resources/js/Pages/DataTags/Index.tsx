@@ -118,11 +118,11 @@ export default function Index({
                     {dataTags.data.map((tag) => (
                         <Card
                             key={tag.token}
-                            className="relative flex flex-col transition-shadow hover:shadow-md"
+                            className="relative flex h-full flex-col transition-shadow hover:shadow-md"
                         >
                             <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-                                <div className="space-y-1">
-                                    <CardTitle className="flex items-center gap-2 text-base leading-tight">
+                                <div className="min-w-0 space-y-1">
+                                    <CardTitle className="flex min-w-0 items-center gap-2 text-base leading-tight">
                                         <span
                                             className="h-3 w-3 shrink-0 rounded-full"
                                             style={{
@@ -135,12 +135,12 @@ export default function Index({
                                                 'data-tags.show',
                                                 tag.token,
                                             )}
-                                            className="after:absolute after:inset-0 focus-visible:outline-none"
+                                            className="line-clamp-1 after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {tag.name}
                                         </Link>
                                     </CardTitle>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="truncate text-sm text-muted-foreground">
                                         {tag.organization_name ??
                                             'No organization'}
                                     </p>
@@ -188,8 +188,8 @@ export default function Index({
                                     </DropdownMenu>
                                 </Can>
                             </CardHeader>
-                            <CardContent>
-                                <p className="line-clamp-2 text-sm text-muted-foreground">
+                            <CardContent className="flex flex-1 flex-col">
+                                <p className="line-clamp-2 min-h-10 text-sm text-muted-foreground">
                                     {tag.description || '—'}
                                 </p>
                             </CardContent>

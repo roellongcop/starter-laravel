@@ -142,7 +142,10 @@ export default function Index({ backups, filters, can }: Props) {
                         )}
                         {backups.data.map((b) => (
                             <TableRow key={b.token}>
-                                <TableCell className="font-mono text-sm">
+                                <TableCell
+                                    className="max-w-xs truncate font-mono text-sm"
+                                    title={b.filename ?? undefined}
+                                >
                                     {b.filename ?? '—'}
                                 </TableCell>
                                 <TableCell>{humanSize(b.size)}</TableCell>

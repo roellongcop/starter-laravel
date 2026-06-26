@@ -10,6 +10,7 @@ import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
 import StatusDropdown from '@/Components/StatusDropdown';
 import TagBadges from '@/Components/TagBadges';
+import TagBadgesRow from '@/Components/TagBadgesRow';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -233,7 +234,7 @@ export default function Show({
                                         {projectAssets.data.map((asset) => (
                                             <Card
                                                 key={asset.token}
-                                                className="relative flex items-stretch overflow-hidden transition-shadow hover:shadow-md"
+                                                className="relative flex min-h-[4.75rem] items-stretch overflow-hidden transition-shadow hover:shadow-md"
                                             >
                                                 {/* Status as a leading, fully-clickable "addon" cell */}
                                                 <div className="flex items-stretch border-r bg-muted/30">
@@ -293,11 +294,9 @@ export default function Show({
                                                             ? ` · ${asset.address}`
                                                             : ''}
                                                     </p>
-                                                    {asset.tags.length > 0 && (
-                                                        <TagBadges
-                                                            tags={asset.tags}
-                                                        />
-                                                    )}
+                                                    <TagBadgesRow
+                                                        tags={asset.tags}
+                                                    />
                                                 </div>
                                             </Card>
                                         ))}

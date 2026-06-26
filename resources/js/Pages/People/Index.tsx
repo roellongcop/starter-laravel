@@ -82,16 +82,28 @@ export default function Index({ people, filters, organizations }: Props) {
                         )}
                         {people.data.map((person) => (
                             <TableRow key={person.token}>
-                                <TableCell className="text-sm font-medium">
+                                <TableCell
+                                    className="max-w-[12rem] truncate text-sm font-medium"
+                                    title={person.name}
+                                >
                                     {person.name}
                                 </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">
+                                <TableCell
+                                    className="max-w-[12rem] truncate text-sm text-muted-foreground"
+                                    title={person.team}
+                                >
                                     {person.team}
                                 </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">
+                                <TableCell
+                                    className="max-w-[12rem] truncate text-sm text-muted-foreground"
+                                    title={person.role}
+                                >
                                     {person.role}
                                 </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">
+                                <TableCell
+                                    className="max-w-[12rem] truncate text-sm text-muted-foreground"
+                                    title={person.organization}
+                                >
                                     {person.organization}
                                 </TableCell>
                             </TableRow>

@@ -133,7 +133,8 @@ export default function Index({
                                     />
                                 </TableCell>
                                 <TableCell
-                                    className={n.read ? '' : 'font-medium'}
+                                    className={`max-w-md truncate ${n.read ? '' : 'font-medium'}`}
+                                    title={n.message}
                                 >
                                     {n.message}
                                 </TableCell>

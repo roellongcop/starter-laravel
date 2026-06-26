@@ -9,7 +9,7 @@ import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
 import StatusDropdown from '@/Components/StatusDropdown';
-import TagBadges from '@/Components/TagBadges';
+import TagBadgesRow from '@/Components/TagBadgesRow';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -131,7 +131,7 @@ export default function Index({
                     {projects.data.map((project) => (
                         <Card
                             key={project.token}
-                            className="relative flex items-stretch overflow-hidden transition-shadow hover:shadow-md"
+                            className="relative flex min-h-[4.75rem] items-stretch overflow-hidden transition-shadow hover:shadow-md"
                         >
                             {/* Status as a leading, fully-clickable "addon" cell */}
                             <div className="flex items-stretch border-r bg-muted/30">
@@ -189,9 +189,7 @@ export default function Index({
                                             ? ` · ${project.description}`
                                             : ''}
                                     </p>
-                                    {project.tags.length > 0 && (
-                                        <TagBadges tags={project.tags} />
-                                    )}
+                                    <TagBadgesRow tags={project.tags} />
                                 </div>
                                 <Can
                                     anyOf={[
