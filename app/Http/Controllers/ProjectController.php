@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Filters\ProjectAssetFilters;
 use App\Filters\ProjectFilters;
-use App\Http\Controllers\Concerns\ResolvesDataTags;
+use App\Http\Controllers\Concerns\SerializesAssets;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Models\Asset;
 use App\Models\Organization;
 use App\Models\Project;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,7 +18,7 @@ use Inertia\Response;
 
 class ProjectController extends Controller
 {
-    use ResolvesDataTags;
+    use SerializesAssets;
 
     public function index(Request $request, ProjectFilters $filters): Response
     {
@@ -52,14 +55,39 @@ class ProjectController extends Controller
         return redirect()->route('projects.index')->with('success', 'Project created.');
     }
 
-    public function show(Project $project): Response
+    public function show(Request $request, ProjectAssetFilters $filters, Project $project): Response
     {
         $this->authorize('view', $project);
 
+        $project->loadMissing(['organization', 'tags']);
+
+        // The project's bound assets — keyset cursor-paginated and server-side
+        // searchable (the set can be large), serialized identically to the Assets
+        // module (by reference; a renamed asset reflects here on next load).
+        $assets = $filters->apply(
+            Asset::query()
+                ->whereHas('projects', fn (Builder $query) => $query->whereKey($project->getKey()))
+                ->with(['organization', 'tags'])
+        )
+            ->keysetByToken()
+            ->cursorPaginate(config('keen.pagination_size'))
+            ->withQueryString()
+            ->through(fn (Asset $asset) => $this->assetRow($asset));
+
+        $canManage = $request->user()?->can('update', $project) ?? false;
+
         return Inertia::render('Projects/Show', [
-            'project' => $this->row($project->load(['organization', 'tags'])),
+            'project' => $this->row($project),
             'organizations' => $this->organizationOptions(),
             'dataTags' => $this->dataTagOptions(),
+            'projectAssets' => Inertia::scroll($assets),
+            'assetsTotal' => $project->assets()->count(),
+            'filters' => $filters->echoBack(),
+            // Manager-only: the org's attachable assets for the picker, plus the
+            // full set of currently-bound tokens to seed it (the paginated list
+            // above only carries the first page).
+            'assetOptions' => $canManage ? $this->assetOptions($project->organization_id) : [],
+            'selectedAssetTokens' => $canManage ? $project->assets()->pluck('assets.token')->all() : [],
         ]);
     }
 

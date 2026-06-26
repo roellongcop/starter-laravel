@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Filters\AssetFilters;
-use App\Http\Controllers\Concerns\ResolvesDataTags;
+use App\Http\Controllers\Concerns\SerializesAssets;
 use App\Http\Requests\StoreAssetRequest;
 use App\Http\Requests\UpdateAssetRequest;
 use App\Models\Asset;
@@ -15,7 +15,7 @@ use Inertia\Response;
 
 class AssetController extends Controller
 {
-    use ResolvesDataTags;
+    use SerializesAssets;
 
     public function index(Request $request, AssetFilters $filters): Response
     {
@@ -25,7 +25,7 @@ class AssetController extends Controller
             ->keysetByToken()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString()
-            ->through(fn (Asset $asset) => $this->row($asset));
+            ->through(fn (Asset $asset) => $this->assetRow($asset));
 
         return Inertia::render('Assets/Index', [
             // Inertia::scroll() merges (appends) the paginator's `data` wrapper on
@@ -57,7 +57,7 @@ class AssetController extends Controller
         $this->authorize('view', $asset);
 
         return Inertia::render('Assets/Show', [
-            'asset' => $this->row($asset->load(['organization', 'tags'])),
+            'asset' => $this->assetRow($asset->load(['organization', 'tags'])),
             'organizations' => $this->organizationOptions(),
             'dataTags' => $this->dataTagOptions(),
         ]);
@@ -113,23 +113,5 @@ class AssetController extends Controller
             ->get(['token', 'name'])
             ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
             ->all();
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function row(Asset $asset): array
-    {
-        return [
-            'token' => $asset->token,
-            'name' => $asset->name,
-            'id_code' => $asset->id_code,
-            'address' => $asset->address,
-            'organization' => $asset->organization->token,
-            'organization_name' => $asset->organization->name,
-            'tags' => $this->serializeTags($asset->tags),
-            'record_status' => $asset->record_status->value,
-            'created_at' => $asset->created_at?->toIso8601String(),
-        ];
     }
 }

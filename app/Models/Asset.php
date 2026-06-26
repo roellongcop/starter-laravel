@@ -8,6 +8,7 @@ use Database\Factories\AssetFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -23,6 +24,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Organization $organization
  * @property-read Collection<int, DataTag> $tags
+ * @property-read Collection<int, Project> $projects
  */
 class Asset extends BaseModel
 {
@@ -39,5 +41,15 @@ class Asset extends BaseModel
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    /**
+     * Projects this asset is bound to through the project_assets pivot.
+     *
+     * @return BelongsToMany<Project, $this>
+     */
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'project_assets');
     }
 }

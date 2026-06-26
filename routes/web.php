@@ -22,6 +22,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationRoleController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectAssetController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\ReferenceFileController;
@@ -144,6 +145,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('organizations', OrganizationController::class)->except(['create', 'edit']);
 
     Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
+    Route::put('projects/{project}/assets', [ProjectAssetController::class, 'update'])
+        ->name('projects.assets.update');
     Route::resource('assets', AssetController::class)->except(['create', 'edit']);
 
     // Teams & People: org-nested teams, their category + organization-role
