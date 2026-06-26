@@ -71,5 +71,7 @@ from the map below.
   login/me/logout for the `/api/v1` surface. ✅ written
 - [SEO & SSR](features/seo-and-ssr.md) — selective Inertia SSR for public pages, the `Seo`
   meta object, sitemap/robots. ✅ written
+- [Demo data seeder](features/demo-data.md) — `make seed-demo`: bulk combinatorial fake data
+  for UI/filter/performance testing, separate from the default seed. ✅ written
 
 > Fill a room when you next touch that area — leave it better-documented than you found it.

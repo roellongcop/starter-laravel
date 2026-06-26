@@ -53,6 +53,12 @@ helper. `tests/Feature/SmokeTest.php` GETs every Inertia page route asserting 20
 Demo logins (seeded by `make setup`/`make fresh`): `developer@developer.com`,
 `superadmin@superadmin.com`, `admin@admin.com` — **password equals the email**.
 
+**Bulk demo data** for UI/filter/performance testing (NOT in the default seed chain):
+`make seed-demo` (tune volume with `make seed-demo DEMO_SCALE=200`, default 1000 per entity)
+runs `DemoSeeder` — large combinatorial data across every module (all enum/status values,
+active+inactive rows, long text for overflow, year-spread dates, populated pivots). Deep
+dive: `docs/features/demo-data.md`.
+
 ## Stack
 
 Laravel 12 + Inertia + React + TypeScript + Tailwind + shadcn/ui. Services (see

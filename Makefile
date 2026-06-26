@@ -15,7 +15,7 @@ export GID := $(shell id -g)
 
 .DEFAULT_GOAL := help
 .PHONY: help build up down down-v refresh restart install setup shell migrate \
-        fresh seed queue dev assets test test-pg pint stan lint is-mergeable logs ps tinker \
+        fresh seed seed-demo queue dev assets test test-pg pint stan lint is-mergeable logs ps tinker \
         ide-helper wait-db key storage-link clean hooks mail fix \
         backup backup-prune backup-monitor schedule-list
 
@@ -105,6 +105,13 @@ fresh: ## DB only: drop all tables and re-migrate + seed (use `refresh` for a fu
 
 seed: ## Run database seeders
 	$(APP) php artisan db:seed
+
+# Standalone large/combinatorial demo data for UI + filter + performance testing.
+# NOT part of the default seed chain. Tune volume per entity with DEMO_SCALE,
+# e.g. `make seed-demo DEMO_SCALE=200` (default 1000). Best run on a fresh DB.
+DEMO_SCALE ?= 1000
+seed-demo: ## Seed bulk demo data (per-entity volume = DEMO_SCALE, default 1000)
+	$(DC) exec -T -e DEMO_SCALE=$(DEMO_SCALE) app php artisan db:seed --class=DemoSeeder --force
 
 queue: ## Run a queue worker in the foreground
 	$(APP) php artisan queue:work --tries=3
