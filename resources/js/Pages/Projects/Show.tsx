@@ -1,4 +1,5 @@
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
+import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -6,6 +7,8 @@ import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
+import StatusBadge from '@/Components/StatusBadge';
+import StatusDropdown from '@/Components/StatusDropdown';
 import TagBadges from '@/Components/TagBadges';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -20,10 +23,10 @@ import {
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
-    type AdminAsset,
     type AdminProject,
     type Crumb,
     type DataTagOption,
+    type ProjectAsset,
     type SelectOption,
 } from '@/types';
 import ManageProjectAssets from './Partials/ManageProjectAssets';
@@ -34,11 +37,12 @@ interface Props {
     organizations: SelectOption[];
     dataTags: DataTagOption[];
     // Inertia::scroll() cursor paginator; <InfiniteScroll> appends pages into `data`.
-    projectAssets: { data: AdminAsset[] };
+    projectAssets: { data: ProjectAsset[] };
     assetsTotal: number;
     filters: { search: string };
     assetOptions: SelectOption[];
     selectedAssetTokens: string[];
+    statusOptions: SelectOption[];
 }
 
 export default function Show({
@@ -50,6 +54,7 @@ export default function Show({
     filters,
     assetOptions,
     selectedAssetTokens,
+    statusOptions,
 }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [manageOpen, setManageOpen] = useState(false);
@@ -102,20 +107,19 @@ export default function Show({
 
             <div className="space-y-6">
                 <Card>
-                    <CardContent className="space-y-4 pt-6">
-                        <div>
-                            <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                    <CardContent className="p-4">
+                        <dl className="grid grid-cols-[6.5rem_1fr] items-center gap-x-4 gap-y-2.5 text-sm">
+                            <dt className="text-muted-foreground">
                                 Organization
-                            </span>
-                            <p className="mt-1 text-sm">
+                            </dt>
+                            <dd className="truncate">
                                 {project.organization_name || '—'}
-                            </p>
-                        </div>
-                        <div>
-                            <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                            </dd>
+
+                            <dt className="text-muted-foreground">
                                 Visibility
-                            </span>
-                            <div className="mt-1">
+                            </dt>
+                            <dd>
                                 <Badge
                                     variant={
                                         project.private
@@ -125,31 +129,52 @@ export default function Show({
                                 >
                                     {project.private ? 'Private' : 'Public'}
                                 </Badge>
-                            </div>
-                        </div>
-                        <div>
-                            <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                            </dd>
+
+                            <dt className="text-muted-foreground">Status</dt>
+                            <dd>
+                                <Can
+                                    ability="projects.update"
+                                    fallback={
+                                        <StatusBadge status={project.status} />
+                                    }
+                                >
+                                    <StatusDropdown
+                                        value={project.status}
+                                        options={statusOptions}
+                                        onSelect={(status) =>
+                                            axios.patch(
+                                                route(
+                                                    'projects.status',
+                                                    project.token,
+                                                ),
+                                                { status },
+                                            )
+                                        }
+                                    />
+                                </Can>
+                            </dd>
+
+                            <dt className="self-start text-muted-foreground">
                                 Description
-                            </span>
-                            <p className="mt-1 text-sm">
+                            </dt>
+                            <dd className="whitespace-pre-line">
                                 {project.description || '—'}
-                            </p>
-                        </div>
-                        <div>
-                            <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                            </dd>
+
+                            <dt className="self-start text-muted-foreground">
                                 Tags
-                            </span>
-                            {project.tags.length > 0 ? (
-                                <TagBadges
-                                    tags={project.tags}
-                                    className="mt-1"
-                                />
-                            ) : (
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    No tags.
-                                </p>
-                            )}
-                        </div>
+                            </dt>
+                            <dd>
+                                {project.tags.length > 0 ? (
+                                    <TagBadges tags={project.tags} />
+                                ) : (
+                                    <span className="text-muted-foreground">
+                                        —
+                                    </span>
+                                )}
+                            </dd>
+                        </dl>
                     </CardContent>
                 </Card>
 
@@ -198,7 +223,7 @@ export default function Show({
                                     <InfiniteScroll
                                         data="projectAssets"
                                         buffer={300}
-                                        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                                        className="grid gap-3 xl:grid-cols-2"
                                         loading={
                                             <div className="col-span-full flex justify-center py-6 text-muted-foreground">
                                                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -208,38 +233,72 @@ export default function Show({
                                         {projectAssets.data.map((asset) => (
                                             <Card
                                                 key={asset.token}
-                                                className="relative flex flex-col transition-shadow hover:shadow-md"
+                                                className="relative flex items-stretch overflow-hidden transition-shadow hover:shadow-md"
                                             >
-                                                <CardHeader className="space-y-1">
-                                                    <CardTitle className="text-base leading-tight">
-                                                        {/* Stretched link makes the
-                                                            whole card open the asset. */}
-                                                        <Link
-                                                            href={route(
-                                                                'assets.show',
-                                                                asset.token,
-                                                            )}
-                                                            className="after:absolute after:inset-0 focus-visible:outline-none"
-                                                        >
-                                                            {asset.name}
-                                                        </Link>
-                                                    </CardTitle>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {asset.organization_name ??
-                                                            'No organization'}
+                                                {/* Status as a leading, fully-clickable "addon" cell */}
+                                                <div className="flex items-stretch border-r bg-muted/30">
+                                                    <Can
+                                                        ability="projects.update"
+                                                        fallback={
+                                                            <span className="flex items-center px-3">
+                                                                <StatusBadge
+                                                                    status={
+                                                                        asset.status
+                                                                    }
+                                                                />
+                                                            </span>
+                                                        }
+                                                    >
+                                                        <StatusDropdown
+                                                            iconOnly
+                                                            variant="ghost"
+                                                            className="h-full w-auto rounded-none px-3"
+                                                            value={asset.status}
+                                                            options={
+                                                                statusOptions
+                                                            }
+                                                            onSelect={(
+                                                                status,
+                                                            ) =>
+                                                                axios.patch(
+                                                                    route(
+                                                                        'projects.assets.status',
+                                                                        [
+                                                                            project.token,
+                                                                            asset.token,
+                                                                        ],
+                                                                    ),
+                                                                    { status },
+                                                                )
+                                                            }
+                                                        />
+                                                    </Can>
+                                                </div>
+
+                                                <div className="min-w-0 flex-1 space-y-1 p-3">
+                                                    <Link
+                                                        href={route(
+                                                            'assets.show',
+                                                            asset.token,
+                                                        )}
+                                                        className="block truncate font-medium after:absolute after:inset-0 focus-visible:outline-none"
+                                                    >
+                                                        {asset.name}
+                                                    </Link>
+                                                    <p className="truncate text-xs text-muted-foreground">
+                                                        <span className="font-mono">
+                                                            {asset.id_code}
+                                                        </span>
+                                                        {asset.address
+                                                            ? ` · ${asset.address}`
+                                                            : ''}
                                                     </p>
-                                                </CardHeader>
-                                                <CardContent className="space-y-2">
-                                                    <p className="font-mono text-xs text-muted-foreground">
-                                                        {asset.id_code}
-                                                    </p>
-                                                    <p className="line-clamp-2 text-sm text-muted-foreground">
-                                                        {asset.address || '—'}
-                                                    </p>
-                                                    <TagBadges
-                                                        tags={asset.tags}
-                                                    />
-                                                </CardContent>
+                                                    {asset.tags.length > 0 && (
+                                                        <TagBadges
+                                                            tags={asset.tags}
+                                                        />
+                                                    )}
+                                                </div>
                                             </Card>
                                         ))}
                                     </InfiniteScroll>

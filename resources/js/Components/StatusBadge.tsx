@@ -7,12 +7,15 @@ const VARIANT: Record<
     Generated: 'default',
     Restored: 'default',
     Done: 'default',
+    Approved: 'default',
     Failed: 'destructive',
     RestoreFailed: 'destructive',
+    Cancelled: 'destructive',
     Pending: 'secondary',
     Generating: 'secondary',
     Restoring: 'secondary',
     Running: 'secondary',
+    'In Progress': 'secondary',
 };
 
 /** Maps a lifecycle status enum value to a coloured badge. */

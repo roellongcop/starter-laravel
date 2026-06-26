@@ -147,6 +147,7 @@ export interface AdminProject {
     name: string;
     description: string | null;
     private: boolean;
+    status: string; // ProjectStatus value
     organization: string | null; // organization token
     organization_name: string | null; // display name
     tags: TagChip[];
@@ -165,6 +166,11 @@ export interface AdminAsset {
     tags: TagChip[];
     record_status: number;
     created_at: string | null;
+}
+
+/** An asset bound to a project — an AdminAsset plus its per-project pivot status. */
+export interface ProjectAsset extends AdminAsset {
+    status: string; // ProjectStatus value
 }
 
 /** A team category as serialized by TeamCategoryController. */

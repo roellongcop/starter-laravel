@@ -1,4 +1,5 @@
 import { Head, InfiniteScroll, Link, router } from '@inertiajs/react';
+import axios from 'axios';
 import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -6,10 +7,12 @@ import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
+import StatusBadge from '@/Components/StatusBadge';
+import StatusDropdown from '@/Components/StatusDropdown';
 import TagBadges from '@/Components/TagBadges';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Card } from '@/Components/ui/card';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -39,6 +42,7 @@ interface Props {
     filters: { search: string; organization: string; inactive: boolean };
     organizations: SelectOption[];
     dataTags: DataTagOption[];
+    statusOptions: SelectOption[];
 }
 
 export default function Index({
@@ -46,6 +50,7 @@ export default function Index({
     filters,
     organizations,
     dataTags,
+    statusOptions,
 }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'projects.index',
@@ -116,7 +121,7 @@ export default function Index({
                 <InfiniteScroll
                     data="projects"
                     buffer={300}
-                    className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                    className="grid gap-3 xl:grid-cols-2"
                     loading={
                         <div className="col-span-full flex justify-center py-6 text-muted-foreground">
                             <Loader2 className="h-5 w-5 animate-spin" />
@@ -126,21 +131,48 @@ export default function Index({
                     {projects.data.map((project) => (
                         <Card
                             key={project.token}
-                            className="relative flex flex-col transition-shadow hover:shadow-md"
+                            className="relative flex items-stretch overflow-hidden transition-shadow hover:shadow-md"
                         >
-                            <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-                                <div className="space-y-1">
-                                    <CardTitle className="flex items-center gap-2 text-base leading-tight">
-                                        {/* Stretched link: the ::after overlay
-                                            makes the whole card navigate to the
-                                            show page, while the z-10 menu stays
-                                            clickable above it. */}
+                            {/* Status as a leading, fully-clickable "addon" cell */}
+                            <div className="flex items-stretch border-r bg-muted/30">
+                                <Can
+                                    ability="projects.update"
+                                    fallback={
+                                        <span className="flex items-center px-3">
+                                            <StatusBadge
+                                                status={project.status}
+                                            />
+                                        </span>
+                                    }
+                                >
+                                    <StatusDropdown
+                                        iconOnly
+                                        variant="ghost"
+                                        className="h-full w-auto rounded-none px-3"
+                                        value={project.status}
+                                        options={statusOptions}
+                                        onSelect={(status) =>
+                                            axios.patch(
+                                                route(
+                                                    'projects.status',
+                                                    project.token,
+                                                ),
+                                                { status },
+                                            )
+                                        }
+                                    />
+                                </Can>
+                            </div>
+
+                            <div className="flex min-w-0 flex-1 items-center gap-3 p-3">
+                                <div className="min-w-0 flex-1 space-y-1">
+                                    <div className="flex items-center gap-2">
                                         <Link
                                             href={route(
                                                 'projects.show',
                                                 project.token,
                                             )}
-                                            className="after:absolute after:inset-0 focus-visible:outline-none"
+                                            className="truncate font-medium after:absolute after:inset-0 focus-visible:outline-none"
                                         >
                                             {project.name}
                                         </Link>
@@ -149,11 +181,17 @@ export default function Index({
                                                 Private
                                             </Badge>
                                         )}
-                                    </CardTitle>
-                                    <p className="text-sm text-muted-foreground">
+                                    </div>
+                                    <p className="truncate text-sm text-muted-foreground">
                                         {project.organization_name ??
                                             'No organization'}
+                                        {project.description
+                                            ? ` · ${project.description}`
+                                            : ''}
                                     </p>
+                                    {project.tags.length > 0 && (
+                                        <TagBadges tags={project.tags} />
+                                    )}
                                 </div>
                                 <Can
                                     anyOf={[
@@ -197,13 +235,7 @@ export default function Index({
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </Can>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                                <p className="line-clamp-3 text-sm text-muted-foreground">
-                                    {project.description ?? '—'}
-                                </p>
-                                <TagBadges tags={project.tags} />
-                            </CardContent>
+                            </div>
                         </Card>
                     ))}
                 </InfiniteScroll>
