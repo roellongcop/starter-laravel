@@ -3,15 +3,16 @@ import { Head } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type SelectOption } from '@/types';
+import { type DataTagOption, type SelectOption } from '@/types';
 import FormBuilder from './Partials/FormBuilder';
 
 interface Props {
     organizations: SelectOption[];
     fieldTypes: SelectOption[];
+    dataTags: DataTagOption[];
 }
 
-export default function Create({ organizations, fieldTypes }: Props) {
+export default function Create({ organizations, fieldTypes, dataTags }: Props) {
     return (
         <AuthenticatedLayout>
             <Head title="New Form" />
@@ -27,6 +28,7 @@ export default function Create({ organizations, fieldTypes }: Props) {
                     <FormBuilder
                         organizations={organizations}
                         fieldTypes={fieldTypes}
+                        dataTags={dataTags}
                     />
                 </CardContent>
             </Card>

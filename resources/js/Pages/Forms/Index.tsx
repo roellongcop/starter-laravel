@@ -6,6 +6,7 @@ import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
+import TagBadges from '@/Components/TagBadges';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -155,16 +156,17 @@ export default function Index({ forms, filters, organizations }: Props) {
                                     </DropdownMenu>
                                 </Can>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="space-y-2">
                                 <p className="line-clamp-2 text-sm text-muted-foreground">
                                     {form.description ?? '—'}
                                 </p>
-                                <p className="mt-2 text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                     {form.form_fields.length} field
                                     {form.form_fields.length === 1 ? '' : 's'}
                                     {typeof form.responses_count === 'number' &&
                                         ` · ${form.responses_count} response${form.responses_count === 1 ? '' : 's'}`}
                                 </p>
+                                <TagBadges tags={form.tags} />
                             </CardContent>
                         </Card>
                     ))}

@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\RecordStatus;
+use App\Models\Concerns\HasDataTags;
 use Database\Factories\ProjectFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -20,9 +22,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Organization $organization
+ * @property-read Collection<int, DataTag> $tags
  */
 class Project extends BaseModel
 {
+    use HasDataTags;
+
     /** @use HasFactory<ProjectFactory> */
     use HasFactory;
 

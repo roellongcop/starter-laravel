@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import PageHeader from '@/Components/PageHeader';
+import TagBadges from '@/Components/TagBadges';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -86,6 +87,14 @@ export default function Show({ form }: Props) {
                             {form.organization_name || '—'}
                         </p>
                     </div>
+                    {form.tags.length > 0 && (
+                        <div>
+                            <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                                Tags
+                            </span>
+                            <TagBadges tags={form.tags} className="mt-1" />
+                        </div>
+                    )}
                     {form.description && (
                         <p className="text-sm text-muted-foreground">
                             {form.description}

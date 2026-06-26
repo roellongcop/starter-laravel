@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\FieldType;
 use App\Filters\FormFilters;
+use App\Http\Controllers\Concerns\ResolvesDataTags;
 use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
@@ -15,11 +16,13 @@ use Inertia\Response;
 
 class FormController extends Controller
 {
+    use ResolvesDataTags;
+
     public function index(Request $request, FormFilters $filters): Response
     {
         $this->authorize('viewAny', Form::class);
 
-        $forms = $filters->apply(Form::query()->with('organization')->withCount('responses'))
+        $forms = $filters->apply(Form::query()->with(['organization', 'tags'])->withCount('responses'))
             ->keysetByToken()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString()
@@ -39,6 +42,7 @@ class FormController extends Controller
         return Inertia::render('Forms/Create', [
             'organizations' => $this->organizationOptions(),
             'fieldTypes' => FieldType::options(),
+            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -46,7 +50,12 @@ class FormController extends Controller
     {
         $this->authorize('create', Form::class);
 
-        $form = Form::create($this->resolveOrganization($request->validated()));
+        $data = $this->resolveOrganization($request->validated());
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
+
+        $form = Form::create($data);
+        $form->syncDataTags($tags);
 
         return redirect()->route('forms.show', $form->token)->with('success', 'Form created.');
     }
@@ -56,7 +65,7 @@ class FormController extends Controller
         $this->authorize('view', $form);
 
         return Inertia::render('Forms/Show', [
-            'form' => $this->row($form->load('organization')->loadCount('responses')),
+            'form' => $this->row($form->load(['organization', 'tags'])->loadCount('responses')),
         ]);
     }
 
@@ -65,9 +74,10 @@ class FormController extends Controller
         $this->authorize('update', $form);
 
         return Inertia::render('Forms/Edit', [
-            'form' => $this->row($form->load('organization')),
+            'form' => $this->row($form->load(['organization', 'tags'])),
             'organizations' => $this->organizationOptions(),
             'fieldTypes' => FieldType::options(),
+            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -75,7 +85,12 @@ class FormController extends Controller
     {
         $this->authorize('update', $form);
 
-        $form->update($this->resolveOrganization($request->validated()));
+        $data = $this->resolveOrganization($request->validated());
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
+
+        $form->update($data);
+        $form->syncDataTags($tags);
 
         return redirect()->route('forms.show', $form->token)->with('success', 'Form updated.');
     }
@@ -131,6 +146,7 @@ class FormController extends Controller
             'organization' => $form->organization->token,
             'organization_name' => $form->organization->name,
             'responses_count' => $form->responses_count,
+            'tags' => $this->serializeTags($form->tags),
             'record_status' => $form->record_status->value,
             'created_at' => $form->created_at?->toIso8601String(),
         ];

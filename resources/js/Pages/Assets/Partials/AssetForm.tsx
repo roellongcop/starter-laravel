@@ -1,7 +1,8 @@
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useMemo } from 'react';
 
 import InputError from '@/Components/InputError';
+import MultiSelect from '@/Components/MultiSelect';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -13,18 +14,28 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { type AdminAsset, type SelectOption } from '@/types';
+import {
+    type AdminAsset,
+    type DataTagOption,
+    type SelectOption,
+} from '@/types';
 
 interface Props {
     asset?: Pick<
         AdminAsset,
-        'token' | 'name' | 'id_code' | 'address' | 'organization'
+        'token' | 'name' | 'id_code' | 'address' | 'organization' | 'tags'
     >;
     organizations: SelectOption[];
+    dataTags: DataTagOption[];
     onSuccess?: () => void;
 }
 
-export default function AssetForm({ asset, organizations, onSuccess }: Props) {
+export default function AssetForm({
+    asset,
+    organizations,
+    dataTags,
+    onSuccess,
+}: Props) {
     const editing = Boolean(asset);
 
     const { data, setData, post, patch, processing, errors } = useForm({
@@ -33,7 +44,26 @@ export default function AssetForm({ asset, organizations, onSuccess }: Props) {
         address: asset?.address ?? '',
         organization:
             asset?.organization ?? String(organizations[0]?.value ?? ''),
+        tags: asset?.tags?.map((t) => t.token) ?? [],
     });
+
+    // Tags are per-organization: only offer those belonging to the chosen org.
+    const availableTags = useMemo(
+        () => dataTags.filter((t) => t.organization === data.organization),
+        [dataTags, data.organization],
+    );
+
+    const changeOrganization = (value: string) => {
+        // Drop tags that no longer belong to the chosen organization.
+        const validTags = data.tags.filter((token) =>
+            dataTags.some((t) => t.organization === value && t.value === token),
+        );
+        setData((current) => ({
+            ...current,
+            organization: value,
+            tags: validTags,
+        }));
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -88,7 +118,7 @@ export default function AssetForm({ asset, organizations, onSuccess }: Props) {
                 <Label htmlFor="organization">Organization</Label>
                 <Select
                     value={data.organization}
-                    onValueChange={(v) => setData('organization', v)}
+                    onValueChange={changeOrganization}
                 >
                     <SelectTrigger id="organization" className="mt-1">
                         <SelectValue placeholder="Select an organization" />
@@ -102,6 +132,22 @@ export default function AssetForm({ asset, organizations, onSuccess }: Props) {
                     </SelectContent>
                 </Select>
                 <InputError message={errors.organization} className="mt-1" />
+            </div>
+
+            <div>
+                <Label htmlFor="tags">Tags</Label>
+                <MultiSelect
+                    id="tags"
+                    className="mt-1"
+                    options={availableTags}
+                    selected={data.tags}
+                    onChange={(values) => setData('tags', values)}
+                    placeholder="Select tags"
+                    title="Select tags"
+                    description="Only tags from the chosen organization are shown."
+                    emptyText="No tags for this organization."
+                />
+                <InputError message={errors.tags} className="mt-1" />
             </div>
 
             <Button type="submit" disabled={processing}>

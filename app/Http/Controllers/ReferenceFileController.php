@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\StoreUploadedFile;
 use App\Filters\ReferenceFileFilters;
+use App\Http\Controllers\Concerns\ResolvesDataTags;
 use App\Http\Requests\StoreReferenceFileRequest;
 use App\Http\Requests\UpdateReferenceFileRequest;
 use App\Models\File;
@@ -19,11 +20,13 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReferenceFileController extends Controller
 {
+    use ResolvesDataTags;
+
     public function index(Request $request, ReferenceFileFilters $filters): Response
     {
         $this->authorize('viewAny', ReferenceFile::class);
 
-        $references = $filters->apply(ReferenceFile::query()->with(['organization', 'file']))
+        $references = $filters->apply(ReferenceFile::query()->with(['organization', 'file', 'tags']))
             ->keysetByToken()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString()
@@ -33,6 +36,7 @@ class ReferenceFileController extends Controller
             'references' => Inertia::scroll($references),
             'filters' => $filters->echoBack(),
             'organizations' => $this->organizationOptions(),
+            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -40,7 +44,12 @@ class ReferenceFileController extends Controller
     {
         $this->authorize('create', ReferenceFile::class);
 
-        ReferenceFile::create($this->resolveData($request->validated()));
+        $data = $this->resolveData($request->validated());
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
+
+        $reference = ReferenceFile::create($data);
+        $reference->syncDataTags($tags);
 
         return redirect()->route('reference-files.index')->with('success', 'Reference created.');
     }
@@ -50,8 +59,9 @@ class ReferenceFileController extends Controller
         $this->authorize('view', $referenceFile);
 
         return Inertia::render('ReferenceFiles/Show', [
-            'reference' => $this->row($referenceFile->load(['organization', 'file'])),
+            'reference' => $this->row($referenceFile->load(['organization', 'file', 'tags'])),
             'organizations' => $this->organizationOptions(),
+            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -61,8 +71,11 @@ class ReferenceFileController extends Controller
 
         $previousFileId = $referenceFile->file_id;
         $data = $this->resolveData($request->validated());
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
 
         $referenceFile->update($data);
+        $referenceFile->syncDataTags($tags);
 
         // The reference owns its single file; drop the previous one when it was
         // replaced or removed so uploads don't accumulate orphaned File rows.
@@ -183,6 +196,7 @@ class ReferenceFileController extends Controller
             'file_token' => $reference->file?->token,
             'file_name' => $reference->file?->original_name,
             'file_url' => $reference->file ? route('reference-files.download', $reference->token) : null,
+            'tags' => $this->serializeTags($reference->tags),
             'record_status' => $reference->record_status->value,
             'created_at' => $reference->created_at?->toIso8601String(),
         ];

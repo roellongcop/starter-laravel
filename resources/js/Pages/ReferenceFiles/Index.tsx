@@ -13,6 +13,7 @@ import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
+import TagBadges from '@/Components/TagBadges';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -30,16 +31,26 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminReferenceFile, type SelectOption } from '@/types';
+import {
+    type AdminReferenceFile,
+    type DataTagOption,
+    type SelectOption,
+} from '@/types';
 import ReferenceFileForm from './Partials/ReferenceFileForm';
 
 interface Props {
     references: { data: AdminReferenceFile[] };
     filters: { search: string; organization: string; inactive: boolean };
     organizations: SelectOption[];
+    dataTags: DataTagOption[];
 }
 
-export default function Index({ references, filters, organizations }: Props) {
+export default function Index({
+    references,
+    filters,
+    organizations,
+    dataTags,
+}: Props) {
     const f = useFilters<Props['filters']>({
         route: 'reference-files.index',
         reset: ['references'],
@@ -196,6 +207,7 @@ export default function Index({ references, filters, organizations }: Props) {
                                         {reference.file_name ?? 'Download'}
                                     </a>
                                 )}
+                                <TagBadges tags={reference.tags} />
                             </CardContent>
                         </Card>
                     ))}
@@ -222,6 +234,7 @@ export default function Index({ references, filters, organizations }: Props) {
                             key={formReference?.token ?? 'new'}
                             reference={formReference ?? undefined}
                             organizations={organizations}
+                            dataTags={dataTags}
                             onSuccess={() => setFormOpen(false)}
                         />
                     </div>

@@ -30,6 +30,8 @@ class UpdateReferenceFileRequest extends BaseFormRequest
             'description' => ['nullable', 'string', 'max:1000'],
             'organization' => ['required', 'string', 'exists:organizations,token'],
             'file_token' => ['nullable', 'string', 'exists:files,token'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['string', 'exists:data_tags,token'],
         ];
     }
 

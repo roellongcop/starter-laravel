@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Filters\AssetFilters;
+use App\Http\Controllers\Concerns\ResolvesDataTags;
 use App\Http\Requests\StoreAssetRequest;
 use App\Http\Requests\UpdateAssetRequest;
 use App\Models\Asset;
@@ -14,11 +15,13 @@ use Inertia\Response;
 
 class AssetController extends Controller
 {
+    use ResolvesDataTags;
+
     public function index(Request $request, AssetFilters $filters): Response
     {
         $this->authorize('viewAny', Asset::class);
 
-        $assets = $filters->apply(Asset::query()->with('organization'))
+        $assets = $filters->apply(Asset::query()->with(['organization', 'tags']))
             ->keysetByToken()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString()
@@ -31,6 +34,7 @@ class AssetController extends Controller
             'assets' => Inertia::scroll($assets),
             'filters' => $filters->echoBack(),
             'organizations' => $this->organizationOptions(),
+            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -38,7 +42,12 @@ class AssetController extends Controller
     {
         $this->authorize('create', Asset::class);
 
-        Asset::create($this->resolveOrganization($request->validated()));
+        $data = $this->resolveOrganization($request->validated());
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
+
+        $asset = Asset::create($data);
+        $asset->syncDataTags($tags);
 
         return redirect()->route('assets.index')->with('success', 'Asset created.');
     }
@@ -48,8 +57,9 @@ class AssetController extends Controller
         $this->authorize('view', $asset);
 
         return Inertia::render('Assets/Show', [
-            'asset' => $this->row($asset->load('organization')),
+            'asset' => $this->row($asset->load(['organization', 'tags'])),
             'organizations' => $this->organizationOptions(),
+            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -57,7 +67,12 @@ class AssetController extends Controller
     {
         $this->authorize('update', $asset);
 
-        $asset->update($this->resolveOrganization($request->validated()));
+        $data = $this->resolveOrganization($request->validated());
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
+
+        $asset->update($data);
+        $asset->syncDataTags($tags);
 
         return back()->with('success', 'Asset updated.');
     }
@@ -112,6 +127,7 @@ class AssetController extends Controller
             'address' => $asset->address,
             'organization' => $asset->organization->token,
             'organization_name' => $asset->organization->name,
+            'tags' => $this->serializeTags($asset->tags),
             'record_status' => $asset->record_status->value,
             'created_at' => $asset->created_at?->toIso8601String(),
         ];

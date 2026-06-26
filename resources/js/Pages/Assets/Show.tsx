@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import PageHeader from '@/Components/PageHeader';
+import TagBadges from '@/Components/TagBadges';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import {
@@ -14,15 +15,21 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminAsset, type Crumb, type SelectOption } from '@/types';
+import {
+    type AdminAsset,
+    type Crumb,
+    type DataTagOption,
+    type SelectOption,
+} from '@/types';
 import AssetForm from './Partials/AssetForm';
 
 interface Props {
     asset: AdminAsset;
     organizations: SelectOption[];
+    dataTags: DataTagOption[];
 }
 
-export default function Show({ asset, organizations }: Props) {
+export default function Show({ asset, organizations, dataTags }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -86,6 +93,18 @@ export default function Show({ asset, organizations }: Props) {
                         </span>
                         <p className="mt-1 text-sm">{asset.address || '—'}</p>
                     </div>
+                    <div>
+                        <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                            Tags
+                        </span>
+                        {asset.tags.length > 0 ? (
+                            <TagBadges tags={asset.tags} className="mt-1" />
+                        ) : (
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                No tags.
+                            </p>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
 
@@ -104,6 +123,7 @@ export default function Show({ asset, organizations }: Props) {
                         <AssetForm
                             asset={asset}
                             organizations={organizations}
+                            dataTags={dataTags}
                             onSuccess={() => setEditOpen(false)}
                         />
                     </div>

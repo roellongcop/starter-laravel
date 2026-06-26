@@ -6,6 +6,7 @@ import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
+import TagBadges from '@/Components/TagBadges';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -23,7 +24,11 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminAsset, type SelectOption } from '@/types';
+import {
+    type AdminAsset,
+    type DataTagOption,
+    type SelectOption,
+} from '@/types';
 import AssetForm from './Partials/AssetForm';
 
 interface Props {
@@ -32,9 +37,15 @@ interface Props {
     assets: { data: AdminAsset[] };
     filters: { search: string; organization: string; inactive: boolean };
     organizations: SelectOption[];
+    dataTags: DataTagOption[];
 }
 
-export default function Index({ assets, filters, organizations }: Props) {
+export default function Index({
+    assets,
+    filters,
+    organizations,
+    dataTags,
+}: Props) {
     const f = useFilters<Props['filters']>({
         route: 'assets.index',
         reset: ['assets'],
@@ -176,13 +187,14 @@ export default function Index({ assets, filters, organizations }: Props) {
                                     </DropdownMenu>
                                 </Can>
                             </CardHeader>
-                            <CardContent className="space-y-1">
+                            <CardContent className="space-y-2">
                                 <p className="font-mono text-xs text-muted-foreground">
                                     {asset.id_code}
                                 </p>
                                 <p className="line-clamp-2 text-sm text-muted-foreground">
                                     {asset.address || '—'}
                                 </p>
+                                <TagBadges tags={asset.tags} />
                             </CardContent>
                         </Card>
                     ))}
@@ -207,6 +219,7 @@ export default function Index({ assets, filters, organizations }: Props) {
                             key={formAsset?.token ?? 'new'}
                             asset={formAsset ?? undefined}
                             organizations={organizations}
+                            dataTags={dataTags}
                             onSuccess={() => setFormOpen(false)}
                         />
                     </div>

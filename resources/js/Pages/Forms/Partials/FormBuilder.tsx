@@ -23,9 +23,10 @@ import {
     GripVertical,
     Trash2,
 } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler, useMemo, useState } from 'react';
 
 import InputError from '@/Components/InputError';
+import MultiSelect from '@/Components/MultiSelect';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -41,6 +42,7 @@ import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
 import {
     type AdminForm,
+    type DataTagOption,
     type FieldType,
     type FormField,
     type FormFieldConfig,
@@ -52,6 +54,7 @@ interface Props {
     form?: AdminForm;
     organizations: SelectOption[];
     fieldTypes: SelectOption[];
+    dataTags: DataTagOption[];
 }
 
 function defaultConfig(type: FieldType): FormFieldConfig {
@@ -73,6 +76,7 @@ export default function FormBuilder({
     form,
     organizations,
     fieldTypes,
+    dataTags,
 }: Props) {
     const editing = Boolean(form);
     const typeLabel = (type: FieldType) =>
@@ -83,15 +87,35 @@ export default function FormBuilder({
         description: string;
         organization: string;
         form_fields: FormField[];
+        tags: string[];
     }>({
         title: form?.title ?? '',
         description: form?.description ?? '',
         organization:
             form?.organization ?? String(organizations[0]?.value ?? ''),
         form_fields: form?.form_fields ?? [],
+        tags: form?.tags?.map((t) => t.token) ?? [],
     });
 
     const fieldErrors = errors as Record<string, string>;
+
+    // Tags are per-organization: only offer those belonging to the chosen org.
+    const availableTags = useMemo(
+        () => dataTags.filter((t) => t.organization === data.organization),
+        [dataTags, data.organization],
+    );
+
+    const changeOrganization = (value: string) => {
+        // Drop tags that no longer belong to the chosen organization.
+        const validTags = data.tags.filter((token) =>
+            dataTags.some((t) => t.organization === value && t.value === token),
+        );
+        setData((current) => ({
+            ...current,
+            organization: value,
+            tags: validTags,
+        }));
+    };
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -185,7 +209,7 @@ export default function FormBuilder({
                     <Label htmlFor="organization">Organization</Label>
                     <Select
                         value={data.organization}
-                        onValueChange={(v) => setData('organization', v)}
+                        onValueChange={changeOrganization}
                     >
                         <SelectTrigger id="organization" className="mt-1">
                             <SelectValue placeholder="Select an organization" />
@@ -205,6 +229,21 @@ export default function FormBuilder({
                         message={errors.organization}
                         className="mt-1"
                     />
+                </div>
+                <div>
+                    <Label htmlFor="tags">Tags</Label>
+                    <MultiSelect
+                        id="tags"
+                        className="mt-1"
+                        options={availableTags}
+                        selected={data.tags}
+                        onChange={(values) => setData('tags', values)}
+                        placeholder="Select tags"
+                        title="Select tags"
+                        description="Only tags from the chosen organization are shown."
+                        emptyText="No tags for this organization."
+                    />
+                    <InputError message={errors.tags} className="mt-1" />
                 </div>
             </div>
 

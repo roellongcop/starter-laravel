@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import PageHeader from '@/Components/PageHeader';
+import TagBadges from '@/Components/TagBadges';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import {
@@ -18,6 +19,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     type AdminReferenceFile,
     type Crumb,
+    type DataTagOption,
     type SelectOption,
 } from '@/types';
 import ReferenceFileForm from './Partials/ReferenceFileForm';
@@ -25,9 +27,10 @@ import ReferenceFileForm from './Partials/ReferenceFileForm';
 interface Props {
     reference: AdminReferenceFile;
     organizations: SelectOption[];
+    dataTags: DataTagOption[];
 }
 
-export default function Show({ reference, organizations }: Props) {
+export default function Show({ reference, organizations, dataTags }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -105,6 +108,18 @@ export default function Show({ reference, organizations }: Props) {
                             </p>
                         )}
                     </div>
+                    <div>
+                        <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                            Tags
+                        </span>
+                        {reference.tags.length > 0 ? (
+                            <TagBadges tags={reference.tags} className="mt-1" />
+                        ) : (
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                No tags.
+                            </p>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
 
@@ -123,6 +138,7 @@ export default function Show({ reference, organizations }: Props) {
                         <ReferenceFileForm
                             reference={reference}
                             organizations={organizations}
+                            dataTags={dataTags}
                             onSuccess={() => setEditOpen(false)}
                         />
                     </div>

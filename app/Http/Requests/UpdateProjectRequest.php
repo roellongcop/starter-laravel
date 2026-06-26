@@ -30,6 +30,8 @@ class UpdateProjectRequest extends BaseFormRequest
             'description' => ['nullable', 'string', 'max:1000'],
             'private' => ['required', 'boolean'],
             'organization' => ['required', 'string', 'exists:organizations,token'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['string', 'exists:data_tags,token'],
         ];
     }
 

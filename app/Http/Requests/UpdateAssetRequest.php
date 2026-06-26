@@ -30,6 +30,8 @@ class UpdateAssetRequest extends BaseFormRequest
             'id_code' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:1000'],
             'organization' => ['required', 'string', 'exists:organizations,token'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['string', 'exists:data_tags,token'],
         ];
     }
 

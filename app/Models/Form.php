@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\RecordStatus;
+use App\Models\Concerns\HasDataTags;
 use Database\Factories\FormFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,9 +26,12 @@ use Illuminate\Support\Carbon;
  * @property-read Organization $organization
  * @property-read Collection<int, FormResponse> $responses
  * @property-read int|null $responses_count
+ * @property-read Collection<int, DataTag> $tags
  */
 class Form extends BaseModel
 {
+    use HasDataTags;
+
     /** @use HasFactory<FormFactory> */
     use HasFactory;
 

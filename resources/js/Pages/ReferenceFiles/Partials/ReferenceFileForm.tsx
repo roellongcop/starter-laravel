@@ -1,9 +1,10 @@
 import { useForm } from '@inertiajs/react';
 import { FileText, X } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler, useMemo, useState } from 'react';
 
 import FileDropzone from '@/Components/FileDropzone';
 import InputError from '@/Components/InputError';
+import MultiSelect from '@/Components/MultiSelect';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -15,7 +16,11 @@ import {
     SelectValue,
 } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { type AdminReferenceFile, type SelectOption } from '@/types';
+import {
+    type AdminReferenceFile,
+    type DataTagOption,
+    type SelectOption,
+} from '@/types';
 
 interface UploadedFile {
     token: string;
@@ -31,8 +36,10 @@ interface Props {
         | 'organization'
         | 'file_token'
         | 'file_name'
+        | 'tags'
     >;
     organizations: SelectOption[];
+    dataTags: DataTagOption[];
     onSuccess?: () => void;
 }
 
@@ -56,6 +63,7 @@ const ACCEPT = {
 export default function ReferenceFileForm({
     reference,
     organizations,
+    dataTags,
     onSuccess,
 }: Props) {
     const editing = Boolean(reference);
@@ -69,7 +77,26 @@ export default function ReferenceFileForm({
         organization:
             reference?.organization ?? String(organizations[0]?.value ?? ''),
         file_token: reference?.file_token ?? '',
+        tags: reference?.tags?.map((t) => t.token) ?? [],
     });
+
+    // Tags are per-organization: only offer those belonging to the chosen org.
+    const availableTags = useMemo(
+        () => dataTags.filter((t) => t.organization === data.organization),
+        [dataTags, data.organization],
+    );
+
+    const changeOrganization = (value: string) => {
+        // Drop tags that no longer belong to the chosen organization.
+        const validTags = data.tags.filter((token) =>
+            dataTags.some((t) => t.organization === value && t.value === token),
+        );
+        setData((current) => ({
+            ...current,
+            organization: value,
+            tags: validTags,
+        }));
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -123,7 +150,7 @@ export default function ReferenceFileForm({
                 <Label htmlFor="organization">Organization</Label>
                 <Select
                     value={data.organization}
-                    onValueChange={(v) => setData('organization', v)}
+                    onValueChange={changeOrganization}
                 >
                     <SelectTrigger id="organization" className="mt-1">
                         <SelectValue placeholder="Select an organization" />
@@ -137,6 +164,22 @@ export default function ReferenceFileForm({
                     </SelectContent>
                 </Select>
                 <InputError message={errors.organization} className="mt-1" />
+            </div>
+
+            <div>
+                <Label htmlFor="tags">Tags</Label>
+                <MultiSelect
+                    id="tags"
+                    className="mt-1"
+                    options={availableTags}
+                    selected={data.tags}
+                    onChange={(values) => setData('tags', values)}
+                    placeholder="Select tags"
+                    title="Select tags"
+                    description="Only tags from the chosen organization are shown."
+                    emptyText="No tags for this organization."
+                />
+                <InputError message={errors.tags} className="mt-1" />
             </div>
 
             <div>

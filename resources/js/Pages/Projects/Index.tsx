@@ -6,6 +6,7 @@ import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
+import TagBadges from '@/Components/TagBadges';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -24,7 +25,11 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminProject, type SelectOption } from '@/types';
+import {
+    type AdminProject,
+    type DataTagOption,
+    type SelectOption,
+} from '@/types';
 import ProjectForm from './Partials/ProjectForm';
 
 interface Props {
@@ -33,9 +38,15 @@ interface Props {
     projects: { data: AdminProject[] };
     filters: { search: string; organization: string; inactive: boolean };
     organizations: SelectOption[];
+    dataTags: DataTagOption[];
 }
 
-export default function Index({ projects, filters, organizations }: Props) {
+export default function Index({
+    projects,
+    filters,
+    organizations,
+    dataTags,
+}: Props) {
     const f = useFilters<Props['filters']>({
         route: 'projects.index',
         reset: ['projects'],
@@ -187,10 +198,11 @@ export default function Index({ projects, filters, organizations }: Props) {
                                     </DropdownMenu>
                                 </Can>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="space-y-2">
                                 <p className="line-clamp-3 text-sm text-muted-foreground">
                                     {project.description ?? '—'}
                                 </p>
+                                <TagBadges tags={project.tags} />
                             </CardContent>
                         </Card>
                     ))}
@@ -217,6 +229,7 @@ export default function Index({ projects, filters, organizations }: Props) {
                             key={formProject?.token ?? 'new'}
                             project={formProject ?? undefined}
                             organizations={organizations}
+                            dataTags={dataTags}
                             onSuccess={() => setFormOpen(false)}
                         />
                     </div>

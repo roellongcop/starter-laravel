@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Filters\ProjectFilters;
+use App\Http\Controllers\Concerns\ResolvesDataTags;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Organization;
@@ -14,11 +15,13 @@ use Inertia\Response;
 
 class ProjectController extends Controller
 {
+    use ResolvesDataTags;
+
     public function index(Request $request, ProjectFilters $filters): Response
     {
         $this->authorize('viewAny', Project::class);
 
-        $projects = $filters->apply(Project::query()->with('organization'))
+        $projects = $filters->apply(Project::query()->with(['organization', 'tags']))
             ->keysetByToken()
             ->cursorPaginate(config('keen.pagination_size'))
             ->withQueryString()
@@ -31,6 +34,7 @@ class ProjectController extends Controller
             'projects' => Inertia::scroll($projects),
             'filters' => $filters->echoBack(),
             'organizations' => $this->organizationOptions(),
+            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -38,7 +42,12 @@ class ProjectController extends Controller
     {
         $this->authorize('create', Project::class);
 
-        Project::create($this->resolveOrganization($request->validated()));
+        $data = $this->resolveOrganization($request->validated());
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
+
+        $project = Project::create($data);
+        $project->syncDataTags($tags);
 
         return redirect()->route('projects.index')->with('success', 'Project created.');
     }
@@ -48,8 +57,9 @@ class ProjectController extends Controller
         $this->authorize('view', $project);
 
         return Inertia::render('Projects/Show', [
-            'project' => $this->row($project->load('organization')),
+            'project' => $this->row($project->load(['organization', 'tags'])),
             'organizations' => $this->organizationOptions(),
+            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -57,7 +67,12 @@ class ProjectController extends Controller
     {
         $this->authorize('update', $project);
 
-        $project->update($this->resolveOrganization($request->validated()));
+        $data = $this->resolveOrganization($request->validated());
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
+
+        $project->update($data);
+        $project->syncDataTags($tags);
 
         return back()->with('success', 'Project updated.');
     }
@@ -112,6 +127,7 @@ class ProjectController extends Controller
             'private' => $project->private,
             'organization' => $project->organization->token,
             'organization_name' => $project->organization->name,
+            'tags' => $this->serializeTags($project->tags),
             'record_status' => $project->record_status->value,
             'created_at' => $project->created_at?->toIso8601String(),
         ];

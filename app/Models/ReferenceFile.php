@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\RecordStatus;
+use App\Models\Concerns\HasDataTags;
 use Database\Factories\ReferenceFileFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -22,9 +24,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Organization $organization
  * @property-read File|null $file
+ * @property-read Collection<int, DataTag> $tags
  */
 class ReferenceFile extends BaseModel
 {
+    use HasDataTags;
+
     /** @use HasFactory<ReferenceFileFactory> */
     use HasFactory;
 

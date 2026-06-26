@@ -149,6 +149,7 @@ export interface AdminProject {
     private: boolean;
     organization: string | null; // organization token
     organization_name: string | null; // display name
+    tags: TagChip[];
     record_status: number;
     created_at: string | null;
 }
@@ -161,6 +162,7 @@ export interface AdminAsset {
     address: string;
     organization: string | null; // organization token
     organization_name: string | null; // display name
+    tags: TagChip[];
     record_status: number;
     created_at: string | null;
 }
@@ -234,6 +236,7 @@ export interface AdminReferenceFile {
     file_token: string | null;
     file_name: string | null;
     file_url: string | null; // gated download url, when a file is attached
+    tags: TagChip[];
     record_status: number;
     created_at: string | null;
 }
@@ -253,6 +256,18 @@ export interface AdminDataTag {
 /** A SelectOption that also carries the org token it belongs to (cascading). */
 export interface OrgScopedOption extends SelectOption {
     organization: string; // organization token
+}
+
+/** A tag attached to a taggable resource, as serialized for display chips. */
+export interface TagChip {
+    token: string;
+    name: string;
+    color: string; // hex from the DataTag palette
+}
+
+/** A DataTag picker option, org-scoped and carrying its swatch colour. */
+export interface DataTagOption extends OrgScopedOption {
+    color: string; // hex from the DataTag palette
 }
 
 /** The kind of a form field; mirrors App\Enums\FieldType. */
@@ -299,6 +314,7 @@ export interface AdminForm {
     organization: string | null; // organization token
     organization_name: string | null; // display name
     responses_count: number | null;
+    tags: TagChip[];
     record_status: number;
     created_at: string | null;
 }
