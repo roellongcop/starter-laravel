@@ -22,6 +22,7 @@ use App\Http\Controllers\SessionHeartbeatController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\ThemeController;
+use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnableSsr;
 use App\Support\Seo;
@@ -126,6 +127,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
     Route::get('files/{file}/preview', [FileController::class, 'preview'])->name('files.preview');
     Route::resource('files', FileController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+
+    // Resumable chunked uploads (FileDropzone `resumable` mode). Init a session,
+    // PUT chunks, resume from the gap, complete into a File. Gated by
+    // files.create + per-session ownership in the controller.
+    Route::post('uploads', [UploadController::class, 'store'])->name('uploads.store');
+    Route::get('uploads/{uploadSession}', [UploadController::class, 'show'])->name('uploads.show');
+    Route::put('uploads/{uploadSession}/parts/{part}', [UploadController::class, 'part'])
+        ->whereNumber('part')->name('uploads.part');
+    Route::post('uploads/{uploadSession}/complete', [UploadController::class, 'complete'])->name('uploads.complete');
+    Route::delete('uploads/{uploadSession}', [UploadController::class, 'destroy'])->name('uploads.destroy');
 
     Route::post('ips/bulk', [IpController::class, 'bulk'])->name('ips.bulk');
     Route::resource('ips', IpController::class)->except(['create', 'edit']);

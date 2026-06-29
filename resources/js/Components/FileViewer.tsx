@@ -27,12 +27,15 @@ interface Props {
 }
 
 const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'avif'];
+// Extensions browsers can play natively in a <video> element.
+const VIDEO_EXT = ['mp4', 'm4v', 'webm', 'ogv', 'mov'];
 
-type Kind = 'image' | 'pdf' | 'sheet' | 'docx' | 'other';
+type Kind = 'image' | 'video' | 'pdf' | 'sheet' | 'docx' | 'other';
 
 function kindOf(ext?: string | null, mime?: string | null): Kind {
     const e = (ext ?? '').toLowerCase();
     if (IMAGE_EXT.includes(e) || mime?.startsWith('image/')) return 'image';
+    if (VIDEO_EXT.includes(e) || mime?.startsWith('video/')) return 'video';
     if (e === 'pdf' || mime === 'application/pdf') return 'pdf';
     if (['csv', 'xls', 'xlsx'].includes(e)) return 'sheet';
     if (e === 'docx') return 'docx';
@@ -61,6 +64,17 @@ export default function FileViewer({ file, onClose }: Props) {
                                 alt={file.name}
                                 className="mx-auto max-h-[70vh] object-contain"
                             />
+                        )}
+                        {kind === 'video' && (
+                            <video
+                                src={file.url}
+                                controls
+                                className="mx-auto max-h-[70vh] w-full rounded bg-black"
+                            >
+                                <a href={file.downloadUrl ?? file.url}>
+                                    Download {file.name}
+                                </a>
+                            </video>
                         )}
                         {kind === 'pdf' && (
                             <iframe

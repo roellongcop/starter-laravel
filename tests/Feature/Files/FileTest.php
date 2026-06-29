@@ -46,6 +46,20 @@ it('accepts document and spreadsheet types and returns JSON for axios uploads', 
         ->and($file->tag)->toBe('reports');
 });
 
+it('accepts a video upload', function (): void {
+    actingAsRole(SystemRole::Developer);
+
+    $this->post(route('files.store'), [
+        'file' => UploadedFile::fake()->create('clip.mp4', 256, 'video/mp4'),
+        'tag' => 'clips',
+    ])->assertRedirect();
+
+    $file = File::first();
+    expect($file)->not->toBeNull()
+        ->and($file->extension)->toBe('mp4')
+        ->and($file->tag)->toBe('clips');
+});
+
 it('rejects a disallowed extension', function (): void {
     actingAsRole(SystemRole::Developer);
 
