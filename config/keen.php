@@ -89,6 +89,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Video upload allowlist
+    |--------------------------------------------------------------------------
+    |
+    | Video extensions the Files admin uploader (/files/create) accepts on top of
+    | the image (keen.image_extensions) and document (keen.file_document_extensions)
+    | types. Large videos take the resumable chunked path (InitUploadRequest);
+    | mp4/webm/ogv play inline in <FileViewer>, the rest fall back to download.
+    |
+    */
+
+    'video_extensions' => ['mp4', 'webm', 'ogv', 'mov', 'm4v', 'avi', 'mkv'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Backup retention window
     |--------------------------------------------------------------------------
     |
@@ -113,5 +127,30 @@ return [
     */
 
     'backup_alert_after_hours' => (int) env('BACKUP_ALERT_AFTER_HOURS', 24),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resumable uploads
+    |--------------------------------------------------------------------------
+    |
+    | The Google-Drive-style chunked uploader (FileDropzone `resumable` mode →
+    | the /uploads endpoints). `upload_chunk_size` is the baseline chunk; it
+    | scales up for very large files to keep the S3 part count under 10,000 and
+    | is capped at 32 MB so each chunk request stays well under the 64 MB
+    | PHP/Caddy body limit (and above S3's 5 MiB minimum part size).
+    | `max_upload_size` bounds the declared total. Sessions abandoned for
+    | `upload_session_ttl_hours` are aborted by `uploads:prune`. On the local
+    | driver, assembling a file larger than the async threshold is queued
+    | (FinalizeUploadJob) instead of done inline; S3 always completes inline.
+    |
+    */
+
+    'upload_chunk_size' => (int) env('UPLOAD_CHUNK_SIZE', 8 * 1024 * 1024),
+
+    'max_upload_size' => (int) env('MAX_UPLOAD_SIZE', 5 * 1024 * 1024 * 1024),
+
+    'upload_session_ttl_hours' => (int) env('UPLOAD_SESSION_TTL_HOURS', 24),
+
+    'upload_local_concat_async_threshold' => (int) env('UPLOAD_LOCAL_CONCAT_ASYNC_THRESHOLD', 100 * 1024 * 1024),
 
 ];

@@ -12,6 +12,7 @@ class StoreFileRequest extends BaseFormRequest
         $allowed = array_values(array_unique(array_merge(
             config('keen.image_extensions'),
             config('keen.file_document_extensions'),
+            config('keen.video_extensions'),
         )));
         $maxKb = (int) (config('media-library.max_file_size', 10 * 1024 * 1024) / 1024);
 

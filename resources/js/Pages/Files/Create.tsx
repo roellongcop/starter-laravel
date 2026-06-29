@@ -26,6 +26,12 @@ const FILE_ACCEPT: Accept = {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [
         '.xlsx',
     ],
+    'video/mp4': ['.mp4', '.m4v'],
+    'video/webm': ['.webm'],
+    'video/ogg': ['.ogv'],
+    'video/quicktime': ['.mov'],
+    'video/x-msvideo': ['.avi'],
+    'video/x-matroska': ['.mkv'],
 };
 
 export default function Create() {
@@ -61,7 +67,8 @@ export default function Create() {
                         multiple
                         field="file"
                         data={tag ? { tag } : undefined}
-                        hint="Images, PDF, Word, CSV or Excel — up to 10 MB each"
+                        resumable
+                        hint="Images, video, PDF, Word, CSV or Excel — large files upload in chunks and resume if the connection drops"
                         onUploaded={() => setUploaded((n) => n + 1)}
                     />
 
