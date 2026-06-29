@@ -19,11 +19,13 @@ use App\Models\Form;
 use App\Models\FormResponse;
 use App\Models\Ip;
 use App\Models\LoginHistory;
+use App\Models\Milestone;
 use App\Models\Organization;
 use App\Models\OrganizationRole;
 use App\Models\Person;
 use App\Models\Project;
 use App\Models\ReferenceFile;
+use App\Models\Task;
 use App\Models\Team;
 use App\Models\TeamCategory;
 use App\Models\Theme;
@@ -134,7 +136,8 @@ class DemoSeeder extends Seeder
                 (new Form)->getMorphClass() => $this->groupBy($forms, 'org', 'id'),
             ], $out);
 
-            $this->seedProjectAssets($projectsByOrg, $assetsByOrg, $out);
+            $bindings = $this->seedProjectAssets($projectsByOrg, $assetsByOrg, $out);
+            $this->seedBoards($scale, $bindings, $tagsByOrg, $refsByOrg, $activeUserIds, $out);
 
             $teams = $this->seedTeams($scale, $richOrgs, $catsByOrg, $rolesByOrg, $out);
             $this->seedPeople($scale, $teams, $activeUserIds, $out);
@@ -692,11 +695,13 @@ class DemoSeeder extends Seeder
     /**
      * @param  array<int, array<int, int>>  $projectsByOrg
      * @param  array<int, array<int, int>>  $assetsByOrg
+     * @return array<int, array{project: int, asset: int, org: int}> the bindings created (board parents)
      */
-    private function seedProjectAssets(array $projectsByOrg, array $assetsByOrg, Output $out): void
+    private function seedProjectAssets(array $projectsByOrg, array $assetsByOrg, Output $out): array
     {
         $statuses = ProjectStatus::cases();
         $rows = [];
+        $bindings = [];
         $total = 0;
         $cursor = 0;
         $pc = 0;
@@ -713,6 +718,7 @@ class DemoSeeder extends Seeder
                         'asset_id' => $assetId,
                         'status' => $statuses[$cursor++ % count($statuses)]->value,
                     ];
+                    $bindings[] = ['project' => $projectId, 'asset' => $assetId, 'org' => $org];
                     $total++;
                 }
                 if (count($rows) >= self::CHUNK) {
@@ -727,6 +733,88 @@ class DemoSeeder extends Seeder
         }
 
         $out->writeln("  project assets  +{$total}");
+
+        return $bindings;
+    }
+
+    /**
+     * Milestone (column) + task (card) boards for a bounded slice of project-asset
+     * bindings. Bindings live in active orgs (richOrgs is active-scoped), so the
+     * board's org-scoped FKs — assignees (active users), tags and reference files —
+     * stay loadable. Tasks exercise every field: assignment trio, private flag,
+     * due dates, an optional reference file and attached tags.
+     *
+     * @param  array<int, array{project: int, asset: int, org: int}>  $bindings
+     * @param  array<int, array<int, int>>  $tagsByOrg
+     * @param  array<int, array<int, int>>  $refsByOrg
+     * @param  array<int, int>  $activeUserIds
+     */
+    private function seedBoards(int $scale, array $bindings, array $tagsByOrg, array $refsByOrg, array $activeUserIds, Output $out): void
+    {
+        if ($bindings === [] || $activeUserIds === []) {
+            return;
+        }
+
+        $boardCount = min(count($bindings), max(20, intdiv($scale, 5)));
+        $milestoneTotal = 0;
+        $taskTotal = 0;
+        $m = 0;
+        $t = 0;
+
+        DB::transaction(function () use ($bindings, $tagsByOrg, $refsByOrg, $activeUserIds, $boardCount, &$milestoneTotal, &$taskTotal, &$m, &$t): void {
+            for ($b = 0; $b < $boardCount; $b++) {
+                $binding = $bindings[$b];
+                $org = $binding['org'];
+                $tags = $tagsByOrg[$org] ?? [];
+                $refs = $refsByOrg[$org] ?? [];
+
+                $columns = 2 + ($b % 4); // 2–5 columns per board
+                for ($p = 0; $p < $columns; $p++) {
+                    $m++;
+                    $milestone = Milestone::create([
+                        'name' => $this->label('Milestone', $m),
+                        'description' => $this->desc($m),
+                        'project_id' => $binding['project'],
+                        'asset_id' => $binding['asset'],
+                        'organization_id' => $org,
+                        'position' => $p,
+                        'record_status' => RecordStatus::Active->value,
+                        'created_at' => $this->madeAt($m),
+                        'updated_at' => $this->madeAt($m),
+                    ]);
+                    $milestoneTotal++;
+
+                    $cards = $p % 6; // 0–5 cards per column
+                    for ($k = 0; $k < $cards; $k++) {
+                        $t++;
+                        $task = Task::create([
+                            'name' => $this->label('Task', $t),
+                            'description' => $this->desc($t),
+                            'milestone_id' => $milestone->id,
+                            'organization_id' => $org,
+                            'assigned_to_id' => $t % 3 === 0 ? null : $activeUserIds[$t % count($activeUserIds)],
+                            'approver_id' => $t % 4 === 0 ? $activeUserIds[($t + 1) % count($activeUserIds)] : null,
+                            'observer_id' => $t % 5 === 0 ? $activeUserIds[($t + 2) % count($activeUserIds)] : null,
+                            'private' => $t % 2 === 0,
+                            'due_date' => $t % 3 === 0 ? null : now()->addDays($t % 30)->toDateString(),
+                            'reference_file_id' => ($refs === [] || $t % 4 === 0) ? null : $refs[$t % count($refs)],
+                            'position' => $k,
+                            'record_status' => $this->rstatus($t),
+                            'created_at' => $this->madeAt($t),
+                            'updated_at' => $this->madeAt($t),
+                        ]);
+                        $taskTotal++;
+
+                        if ($tags !== []) {
+                            $task->tags()->attach($this->pickSome($tags, $k % 3));
+                        }
+                    }
+                }
+            }
+        });
+
+        $out->writeln("  milestones      +{$milestoneTotal}");
+        $out->writeln("  tasks           +{$taskTotal}");
     }
 
     // ── Teams / people / responses ─────────────────────────────────────────────

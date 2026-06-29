@@ -173,6 +173,41 @@ export interface ProjectAsset extends AdminAsset {
     status: string; // ProjectStatus value
 }
 
+/** A user reference on a board task (assignee / approver / observer). */
+export interface BoardUser {
+    token: string;
+    name: string;
+}
+
+/** A task card as serialized by ProjectAssetBoardController. */
+export interface AdminTask {
+    token: string;
+    name: string;
+    description: string | null;
+    milestone: string; // owning milestone token
+    assigned_to: BoardUser | null;
+    approver: BoardUser | null;
+    observer: BoardUser | null;
+    private: boolean;
+    due_date: string | null; // YYYY-MM-DD
+    reference_file: { token: string; name: string } | null;
+    tags: TagChip[];
+    position: number;
+    record_status: number;
+    created_at: string | null;
+}
+
+/** A milestone column with its ordered tasks, as serialized by ProjectAssetBoardController. */
+export interface AdminMilestone {
+    token: string;
+    name: string;
+    description: string | null;
+    position: number;
+    record_status: number;
+    created_at: string | null;
+    tasks: AdminTask[];
+}
+
 /** A team category as serialized by TeamCategoryController. */
 export interface AdminTeamCategory {
     token: string;

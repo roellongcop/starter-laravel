@@ -29,6 +29,8 @@ return [
         'organizations',
         'projects',
         'assets',
+        'milestones',
+        'tasks',
         'forms',
         'teams',
         'team-categories',

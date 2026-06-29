@@ -56,6 +56,9 @@ expect()->extend('toBeOne', function () {
 */
 
 use App\Enums\SystemRole;
+use App\Models\Asset;
+use App\Models\Organization;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -71,6 +74,22 @@ function actingAsRole(SystemRole|string $role): User
     test()->actingAs($user);
 
     return $user;
+}
+
+/**
+ * Create an organization with a project and a single bound asset — the parent
+ * fixture for the project-asset board (milestone/task) tests.
+ *
+ * @return array{0: Organization, 1: Project, 2: Asset}
+ */
+function makeBoard(): array
+{
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+    $project->assets()->attach($asset->id);
+
+    return [$organization, $project, $asset];
 }
 
 /**

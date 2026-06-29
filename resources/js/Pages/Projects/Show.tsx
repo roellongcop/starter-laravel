@@ -279,8 +279,11 @@ export default function Show({
                                                 <div className="min-w-0 flex-1 space-y-1 p-3">
                                                     <Link
                                                         href={route(
-                                                            'assets.show',
-                                                            asset.token,
+                                                            'projects.assets.show',
+                                                            [
+                                                                project.token,
+                                                                asset.token,
+                                                            ],
                                                         )}
                                                         className="block truncate font-medium after:absolute after:inset-0 focus-visible:outline-none"
                                                     >

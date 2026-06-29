@@ -17,11 +17,13 @@ use App\Http\Controllers\IpController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\LoginHistoryController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\MilestoneController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationRoleController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectAssetBoardController;
 use App\Http\Controllers\ProjectAssetController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QueueController;
@@ -31,6 +33,7 @@ use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SessionHeartbeatController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamCategoryController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ThemeController;
@@ -151,6 +154,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('projects.assets.update');
     Route::patch('projects/{project}/assets/{asset}', [ProjectAssetController::class, 'updateStatus'])
         ->name('projects.assets.status');
+
+    // Project-asset board: a project's milestone (column) / task (card) Kanban for
+    // one bound asset. Scoped per project+asset pair; reorder persists the whole
+    // board's drag state in one request. Milestone/task params bind by token.
+    Route::get('projects/{project}/assets/{asset}', [ProjectAssetBoardController::class, 'show'])
+        ->name('projects.assets.show');
+    Route::patch('projects/{project}/assets/{asset}/reorder', [ProjectAssetBoardController::class, 'reorder'])
+        ->name('projects.assets.reorder');
+    Route::post('projects/{project}/assets/{asset}/milestones', [MilestoneController::class, 'store'])
+        ->name('projects.assets.milestones.store');
+    Route::patch('projects/{project}/assets/{asset}/milestones/{milestone}', [MilestoneController::class, 'update'])
+        ->name('projects.assets.milestones.update');
+    Route::delete('projects/{project}/assets/{asset}/milestones/{milestone}', [MilestoneController::class, 'destroy'])
+        ->name('projects.assets.milestones.destroy');
+    Route::post('projects/{project}/assets/{asset}/tasks', [TaskController::class, 'store'])
+        ->name('projects.assets.tasks.store');
+    Route::patch('projects/{project}/assets/{asset}/tasks/{task}', [TaskController::class, 'update'])
+        ->name('projects.assets.tasks.update');
+    Route::delete('projects/{project}/assets/{asset}/tasks/{task}', [TaskController::class, 'destroy'])
+        ->name('projects.assets.tasks.destroy');
+
     Route::resource('assets', AssetController::class)->except(['create', 'edit']);
 
     // Teams & People: org-nested teams, their category + organization-role

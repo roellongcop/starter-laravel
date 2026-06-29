@@ -53,6 +53,8 @@ it('renders every page route with a 200', function (): void {
     $project = $organization->projects()->firstOrFail();
     Asset::factory()->count($pageSize + 1)->create(['organization_id' => $organization->id]);
     $asset = $organization->assets()->firstOrFail();
+    // Bind the asset so the project-asset board route resolves (an unbound asset 404s).
+    $project->assets()->attach($asset->id);
     $form = Form::factory()->create(['organization_id' => $organization->id]);
     $response = FormResponse::factory()->forForm($form)->create();
     $role = Role::query()->firstOrFail();
@@ -112,6 +114,7 @@ it('renders every page route with a 200', function (): void {
         ['projects.show', [$project]],
         ['assets.index', []],
         ['assets.show', [$asset]],
+        ['projects.assets.show', [$project, $asset]],
         ['teams.index', []],
         ['teams.show', [$team]],
         ['team-categories.index', []],
