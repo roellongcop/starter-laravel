@@ -21,3 +21,7 @@ Schedule::command('backups:run')->dailyAt('02:00');
 Schedule::command('backups:prune')->weeklyOn(0, '03:00');
 // Alert developers a few hours after the nightly run if it didn't produce a backup.
 Schedule::command('backups:monitor')->dailyAt('08:00');
+
+// Abort + delete abandoned resumable upload sessions hourly so open S3 multipart
+// uploads don't keep their parts billable.
+Schedule::command('uploads:prune')->hourly();
