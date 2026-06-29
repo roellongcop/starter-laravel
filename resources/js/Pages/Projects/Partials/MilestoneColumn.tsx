@@ -59,7 +59,7 @@ export default function MilestoneColumn({
         <div
             ref={setNodeRef}
             style={{ transform: CSS.Transform.toString(transform), transition }}
-            className={`flex w-72 shrink-0 flex-col rounded-lg border bg-muted/30 ${
+            className={`flex w-full flex-col rounded-lg border bg-muted/30 ${
                 isDragging ? 'opacity-60' : ''
             }`}
         >

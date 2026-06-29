@@ -12,9 +12,9 @@ import {
 } from '@dnd-kit/core';
 import {
     arrayMove,
-    horizontalListSortingStrategy,
     SortableContext,
     sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
@@ -282,7 +282,7 @@ export default function MilestoneBoard({
 
     return (
         <div>
-            <div className="flex items-start gap-4 overflow-x-auto pb-4">
+            <div className="flex flex-col gap-4">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCorners}
@@ -292,7 +292,7 @@ export default function MilestoneBoard({
                 >
                     <SortableContext
                         items={columns.map((c) => c.token)}
-                        strategy={horizontalListSortingStrategy}
+                        strategy={verticalListSortingStrategy}
                     >
                         {columns.map((milestone) => (
                             <MilestoneColumn
@@ -323,7 +323,7 @@ export default function MilestoneBoard({
                                 onDelete={() => undefined}
                             />
                         ) : activeColumn ? (
-                            <div className="w-72 rounded-lg border bg-muted/60 p-2.5 font-semibold shadow">
+                            <div className="w-full rounded-lg border bg-muted/60 p-2.5 font-semibold shadow">
                                 {activeColumn.name}
                             </div>
                         ) : null}
@@ -334,7 +334,7 @@ export default function MilestoneBoard({
                     <button
                         type="button"
                         onClick={openCreateMilestone}
-                        className="flex h-fit w-72 shrink-0 items-center gap-1 rounded-lg border border-dashed p-3 text-sm text-muted-foreground hover:bg-muted/40"
+                        className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed p-3 text-sm text-muted-foreground hover:bg-muted/40"
                     >
                         <Plus className="h-4 w-4" /> Add milestone
                     </button>

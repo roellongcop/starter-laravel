@@ -772,7 +772,8 @@ class DemoSeeder extends Seeder
                 for ($p = 0; $p < $columns; $p++) {
                     $m++;
                     $milestone = Milestone::create([
-                        'name' => $this->label('Milestone', $m),
+                        // First column mirrors the app's default "Misc" milestone.
+                        'name' => $p === 0 ? Milestone::DEFAULT_NAME : $this->label('Milestone', $m),
                         'description' => $this->desc($m),
                         'project_id' => $binding['project'],
                         'asset_id' => $binding['asset'],

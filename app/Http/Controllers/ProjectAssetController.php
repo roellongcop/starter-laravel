@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SyncProjectAssetsRequest;
 use App\Http\Requests\UpdateProjectAssetStatusRequest;
 use App\Models\Asset;
+use App\Models\Milestone;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +29,13 @@ class ProjectAssetController extends Controller
             ->pluck('id')
             ->all();
 
-        $project->assets()->sync($ids);
+        $changes = $project->assets()->sync($ids);
+
+        // Every newly-bound asset starts with a default "Misc" milestone so its
+        // board is never empty on first open.
+        foreach ($changes['attached'] as $assetId) {
+            Milestone::ensureDefaultFor($project, (int) $assetId);
+        }
 
         return back()->with('success', 'Project assets updated.');
     }

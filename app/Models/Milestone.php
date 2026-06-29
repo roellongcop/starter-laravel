@@ -33,6 +33,9 @@ class Milestone extends BaseModel
     /** @use HasFactory<MilestoneFactory> */
     use HasFactory;
 
+    /** The default milestone seeded onto every project–asset board. */
+    public const DEFAULT_NAME = 'Misc';
+
     protected $fillable = ['name', 'description', 'project_id', 'asset_id', 'organization_id', 'position'];
 
     /**
@@ -65,5 +68,18 @@ class Milestone extends BaseModel
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class)->orderBy('position');
+    }
+
+    /**
+     * Ensure a project's view of an asset has its default "Misc" milestone, so a
+     * board is never empty when a binding is first created. Idempotent — re-binding
+     * an already-bound pair won't create a second one.
+     */
+    public static function ensureDefaultFor(Project $project, int $assetId): void
+    {
+        static::firstOrCreate(
+            ['project_id' => $project->getKey(), 'asset_id' => $assetId, 'name' => self::DEFAULT_NAME],
+            ['organization_id' => $project->organization_id, 'position' => 0],
+        );
     }
 }

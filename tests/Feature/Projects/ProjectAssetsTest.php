@@ -3,6 +3,7 @@
 use App\Enums\ProjectStatus;
 use App\Enums\SystemRole;
 use App\Models\Asset;
+use App\Models\Milestone;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\User;
@@ -254,4 +255,40 @@ it('forbids updating asset status without update permission', function (): void 
         ->patch(route('projects.assets.status', [$project, $asset]), [
             'status' => ProjectStatus::Approved->value,
         ])->assertForbidden();
+});
+
+it('seeds a default Misc milestone when an asset is bound to a project', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+
+    $this->put(route('projects.assets.update', $project), [
+        'assets' => [$asset->token],
+    ])->assertRedirect();
+
+    $milestone = Milestone::where('project_id', $project->id)
+        ->where('asset_id', $asset->id)
+        ->first();
+
+    expect($milestone)->not->toBeNull()
+        ->and($milestone->name)->toBe('Misc')
+        ->and($milestone->organization_id)->toBe($organization->id);
+});
+
+it('does not duplicate the Misc milestone when the same asset is re-synced', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $asset = Asset::factory()->create(['organization_id' => $organization->id]);
+
+    $this->put(route('projects.assets.update', $project), ['assets' => [$asset->token]])->assertRedirect();
+    $this->put(route('projects.assets.update', $project), ['assets' => [$asset->token]])->assertRedirect();
+
+    expect(
+        Milestone::where('project_id', $project->id)
+            ->where('asset_id', $asset->id)
+            ->where('name', 'Misc')
+            ->count(),
+    )->toBe(1);
 });
