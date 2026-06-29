@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ProjectStatus;
 use App\Enums\SystemRole;
 use App\Models\Asset;
 use App\Models\DataTag;
@@ -31,9 +32,12 @@ it('renders the board for a bound asset', function (): void {
         ->assertInertia(fn ($page) => $page
             ->component('Projects/AssetBoard')
             ->where('asset.token', $asset->token)
+            ->where('asset.id_code', $asset->id_code)
+            ->where('asset.status', ProjectStatus::Pending->value)
             ->where('project.token', $project->token)
             ->has('milestones', 1)
             ->where('milestones.0.name', 'Design')
+            ->where('milestones.0.is_default', false)
             ->where('canManage', true));
 });
 
@@ -155,4 +159,39 @@ it('forbids creating a milestone without permission', function (): void {
         ->assertForbidden();
 
     expect(Milestone::count())->toBe(0);
+});
+
+it('cannot rename the default Misc milestone', function (): void {
+    actingAsRole(SystemRole::Developer);
+    [$organization, $project, $asset] = makeBoard();
+    $misc = Milestone::factory()->create([
+        'project_id' => $project->id,
+        'asset_id' => $asset->id,
+        'organization_id' => $organization->id,
+        'name' => Milestone::DEFAULT_NAME,
+        'is_default' => true,
+    ]);
+
+    $this->patch(route('projects.assets.milestones.update', [$project, $asset, $misc]), [
+        'name' => 'Renamed',
+    ])->assertForbidden();
+
+    expect($misc->fresh()->name)->toBe(Milestone::DEFAULT_NAME);
+});
+
+it('cannot delete the default Misc milestone', function (): void {
+    actingAsRole(SystemRole::Developer);
+    [$organization, $project, $asset] = makeBoard();
+    $misc = Milestone::factory()->create([
+        'project_id' => $project->id,
+        'asset_id' => $asset->id,
+        'organization_id' => $organization->id,
+        'name' => Milestone::DEFAULT_NAME,
+        'is_default' => true,
+    ]);
+
+    $this->delete(route('projects.assets.milestones.destroy', [$project, $asset, $misc]))
+        ->assertForbidden();
+
+    expect(Milestone::find($misc->id))->not->toBeNull();
 });

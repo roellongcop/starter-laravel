@@ -26,6 +26,7 @@ trait SerializesBoard
             'name' => $milestone->name,
             'description' => $milestone->description,
             'position' => $milestone->position,
+            'is_default' => $milestone->is_default,
             'record_status' => $milestone->record_status->value,
             'created_at' => $milestone->created_at?->toIso8601String(),
             'tasks' => $milestone->tasks

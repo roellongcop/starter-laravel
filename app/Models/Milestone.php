@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property int $asset_id
  * @property int $organization_id
  * @property int $position
+ * @property bool $is_default
  * @property RecordStatus $record_status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -36,7 +37,18 @@ class Milestone extends BaseModel
     /** The default milestone seeded onto every project–asset board. */
     public const DEFAULT_NAME = 'Misc';
 
-    protected $fillable = ['name', 'description', 'project_id', 'asset_id', 'organization_id', 'position'];
+    protected $fillable = ['name', 'description', 'project_id', 'asset_id', 'organization_id', 'position', 'is_default'];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            ...parent::casts(),
+            'is_default' => 'boolean',
+        ];
+    }
 
     /**
      * @return BelongsTo<Project, $this>
@@ -79,7 +91,7 @@ class Milestone extends BaseModel
     {
         static::firstOrCreate(
             ['project_id' => $project->getKey(), 'asset_id' => $assetId, 'name' => self::DEFAULT_NAME],
-            ['organization_id' => $project->organization_id, 'position' => 0],
+            ['organization_id' => $project->organization_id, 'position' => 0, 'is_default' => true],
         );
     }
 }

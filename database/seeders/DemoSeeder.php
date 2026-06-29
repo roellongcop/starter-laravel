@@ -571,13 +571,26 @@ class DemoSeeder extends Seeder
         DB::transaction(function () use ($count, $orgs, &$byOrg): void {
             for ($i = 1; $i <= $count; $i++) {
                 $org = $orgs[$i % count($orgs)];
+
+                // Long-name variety beyond label()'s 1-in-40 baseline so the
+                // top-level Assets list exercises truncation/overflow. The label
+                // base keeps each name unique within its org.
+                $name = match (true) {
+                    $i % 9 === 0 => Str::limit($this->label('Asset', $i).' '.$this->longName, 250, ''),
+                    $i % 5 === 0 => Str::limit($this->label('Asset', $i).' — '.$this->sentences[$i % count($this->sentences)], 250, ''),
+                    default => $this->label('Asset', $i),
+                };
+
+                // Address is the asset's descriptive free-text field — mix empty,
+                // short, multi-line and very-long values.
                 $address = match (true) {
-                    $i % 10 === 0 => $this->longText,
-                    $i % 7 === 0 => '',
+                    $i % 11 === 0 => '',
+                    $i % 9 === 0 => $this->longText,
+                    $i % 6 === 0 => $this->word($i).' Tower, Suite '.$i."\n".$this->word($i * 2).', '.$this->word($i * 3).' '.$this->pad($i),
                     default => $i.' '.$this->word($i).' Street, '.$this->word($i * 2).' City',
                 };
                 $asset = Asset::create([
-                    'name' => $this->label('Asset', $i),
+                    'name' => $name,
                     'id_code' => 'AST-'.$this->runId.'-'.$this->pad($i),
                     'address' => $address,
                     'organization_id' => $org,
@@ -738,11 +751,12 @@ class DemoSeeder extends Seeder
     }
 
     /**
-     * Milestone (column) + task (card) boards for a bounded slice of project-asset
-     * bindings. Bindings live in active orgs (richOrgs is active-scoped), so the
+     * Milestone (column) + task (card) boards. EVERY project-asset binding gets its
+     * default "Misc" milestone; a bounded subset additionally gets extra columns
+     * and cards. Bindings live in active orgs (richOrgs is active-scoped), so the
      * board's org-scoped FKs — assignees (active users), tags and reference files —
-     * stay loadable. Tasks exercise every field: assignment trio, private flag,
-     * due dates, an optional reference file and attached tags.
+     * stay loadable. The detailed tasks exercise every field: assignment trio,
+     * private flag, due dates, an optional reference file and attached tags.
      *
      * @param  array<int, array{project: int, asset: int, org: int}>  $bindings
      * @param  array<int, array<int, int>>  $tagsByOrg
@@ -751,41 +765,51 @@ class DemoSeeder extends Seeder
      */
     private function seedBoards(int $scale, array $bindings, array $tagsByOrg, array $refsByOrg, array $activeUserIds, Output $out): void
     {
-        if ($bindings === [] || $activeUserIds === []) {
+        if ($bindings === []) {
             return;
         }
 
-        $boardCount = min(count($bindings), max(20, intdiv($scale, 5)));
+        // Every binding gets its default "Misc" milestone (mirrors the production
+        // Milestone::ensureDefaultFor on project-asset creation). A bounded,
+        // user-backed subset also gets extra columns + cards so the board UI has
+        // rich data to exercise.
+        $detailedCount = $activeUserIds === [] ? 0 : min(count($bindings), max(20, intdiv($scale, 5)));
         $milestoneTotal = 0;
         $taskTotal = 0;
         $m = 0;
         $t = 0;
 
-        DB::transaction(function () use ($bindings, $tagsByOrg, $refsByOrg, $activeUserIds, $boardCount, &$milestoneTotal, &$taskTotal, &$m, &$t): void {
-            for ($b = 0; $b < $boardCount; $b++) {
-                $binding = $bindings[$b];
+        DB::transaction(function () use ($bindings, $tagsByOrg, $refsByOrg, $activeUserIds, $detailedCount, &$milestoneTotal, &$taskTotal, &$m, &$t): void {
+            foreach ($bindings as $b => $binding) {
                 $org = $binding['org'];
                 $tags = $tagsByOrg[$org] ?? [];
                 $refs = $refsByOrg[$org] ?? [];
+                $detailed = $b < $detailedCount;
 
-                $columns = 2 + ($b % 4); // 2–5 columns per board
+                // Column 0 is always the default Misc; detailed boards add 1–4 more.
+                $columns = $detailed ? 2 + ($b % 4) : 1;
                 for ($p = 0; $p < $columns; $p++) {
                     $m++;
+                    $isDefault = $p === 0;
                     $milestone = Milestone::create([
-                        // First column mirrors the app's default "Misc" milestone.
-                        'name' => $p === 0 ? Milestone::DEFAULT_NAME : $this->label('Milestone', $m),
-                        'description' => $this->desc($m),
+                        'name' => $isDefault ? Milestone::DEFAULT_NAME : $this->label('Milestone', $m),
+                        'description' => $isDefault ? null : $this->desc($m),
                         'project_id' => $binding['project'],
                         'asset_id' => $binding['asset'],
                         'organization_id' => $org,
                         'position' => $p,
+                        'is_default' => $isDefault,
                         'record_status' => RecordStatus::Active->value,
                         'created_at' => $this->madeAt($m),
                         'updated_at' => $this->madeAt($m),
                     ]);
                     $milestoneTotal++;
 
-                    $cards = $p % 6; // 0–5 cards per column
+                    if (! $detailed) {
+                        continue; // Misc-only board (no users to assign).
+                    }
+
+                    $cards = $p % 6; // 0–5 cards per column (Misc stays empty).
                     for ($k = 0; $k < $cards; $k++) {
                         $t++;
                         $task = Task::create([

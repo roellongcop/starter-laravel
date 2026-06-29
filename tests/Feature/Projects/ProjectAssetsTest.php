@@ -273,6 +273,7 @@ it('seeds a default Misc milestone when an asset is bound to a project', functio
 
     expect($milestone)->not->toBeNull()
         ->and($milestone->name)->toBe('Misc')
+        ->and($milestone->is_default)->toBeTrue()
         ->and($milestone->organization_id)->toBe($organization->id);
 });
 

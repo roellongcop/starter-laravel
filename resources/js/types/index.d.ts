@@ -203,6 +203,7 @@ export interface AdminMilestone {
     name: string;
     description: string | null;
     position: number;
+    is_default: boolean; // the auto-seeded "Misc" column — not renamable/deletable
     record_status: number;
     created_at: string | null;
     tasks: AdminTask[];

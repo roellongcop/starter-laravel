@@ -40,6 +40,9 @@ class MilestoneController extends Controller
         $this->assertAssetBound($project, $asset);
         $this->assertMilestoneInBoard($project, $asset, $milestone);
 
+        // The auto-seeded default milestone can't be renamed.
+        abort_if($milestone->is_default, 403, 'The default milestone cannot be renamed.');
+
         $milestone->update($request->validated());
 
         return back()->with('success', 'Milestone updated.');
@@ -50,6 +53,9 @@ class MilestoneController extends Controller
         $this->authorize('delete', $milestone);
         $this->assertAssetBound($project, $asset);
         $this->assertMilestoneInBoard($project, $asset, $milestone);
+
+        // The auto-seeded default milestone can't be deleted.
+        abort_if($milestone->is_default, 403, 'The default milestone cannot be deleted.');
 
         // Delete child tasks through Eloquent so HasDataTags detaches their tag
         // pivots — a DB FK cascade would skip model events and orphan taggables.

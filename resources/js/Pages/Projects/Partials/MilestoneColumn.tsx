@@ -5,6 +5,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
+    ChevronDown,
+    ChevronRight,
     GripVertical,
     MoreHorizontal,
     Pencil,
@@ -26,6 +28,8 @@ import TaskCard from './TaskCard';
 interface Props {
     milestone: AdminMilestone;
     canManage: boolean;
+    collapsed: boolean;
+    onToggleCollapse: () => void;
     onAddTask: () => void;
     onEditMilestone: () => void;
     onDeleteMilestone: () => void;
@@ -36,6 +40,8 @@ interface Props {
 export default function MilestoneColumn({
     milestone,
     canManage,
+    collapsed,
+    onToggleCollapse,
     onAddTask,
     onEditMilestone,
     onDeleteMilestone,
@@ -75,9 +81,24 @@ export default function MilestoneColumn({
                         <GripVertical className="h-4 w-4" />
                     </button>
                 )}
+                <button
+                    type="button"
+                    onClick={onToggleCollapse}
+                    aria-label={
+                        collapsed ? 'Expand milestone' : 'Collapse milestone'
+                    }
+                    aria-expanded={!collapsed}
+                    className="mt-0.5 text-muted-foreground hover:text-foreground"
+                >
+                    {collapsed ? (
+                        <ChevronRight className="h-4 w-4" />
+                    ) : (
+                        <ChevronDown className="h-4 w-4" />
+                    )}
+                </button>
                 <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{milestone.name}</p>
-                    {milestone.description && (
+                    {!collapsed && milestone.description && (
                         <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                             {milestone.description}
                         </p>
@@ -86,7 +107,7 @@ export default function MilestoneColumn({
                 <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                     {milestone.tasks.length}
                 </span>
-                {canManage && (
+                {canManage && !milestone.is_default && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -117,41 +138,45 @@ export default function MilestoneColumn({
                 )}
             </div>
 
-            <div className="flex-1 space-y-2 p-2">
-                <SortableContext
-                    items={milestone.tasks.map((task) => task.token)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    {milestone.tasks.length === 0 ? (
-                        <p className="rounded border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">
-                            No tasks
-                        </p>
-                    ) : (
-                        milestone.tasks.map((task) => (
-                            <TaskCard
-                                key={task.token}
-                                task={task}
-                                canManage={canManage}
-                                onEdit={() => onEditTask(task)}
-                                onDelete={() => onDeleteTask(task)}
-                            />
-                        ))
-                    )}
-                </SortableContext>
-            </div>
+            {!collapsed && (
+                <>
+                    <div className="flex-1 space-y-2 p-2">
+                        <SortableContext
+                            items={milestone.tasks.map((task) => task.token)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {milestone.tasks.length === 0 ? (
+                                <p className="rounded border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">
+                                    No tasks
+                                </p>
+                            ) : (
+                                milestone.tasks.map((task) => (
+                                    <TaskCard
+                                        key={task.token}
+                                        task={task}
+                                        canManage={canManage}
+                                        onEdit={() => onEditTask(task)}
+                                        onDelete={() => onDeleteTask(task)}
+                                    />
+                                ))
+                            )}
+                        </SortableContext>
+                    </div>
 
-            <Can ability="tasks.create">
-                <div className="p-2 pt-0">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start text-muted-foreground"
-                        onClick={onAddTask}
-                    >
-                        <Plus className="mr-1 h-4 w-4" /> Add task
-                    </Button>
-                </div>
-            </Can>
+                    <Can ability="tasks.create">
+                        <div className="p-2 pt-0">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start text-muted-foreground"
+                                onClick={onAddTask}
+                            >
+                                <Plus className="mr-1 h-4 w-4" /> Add task
+                            </Button>
+                        </div>
+                    </Can>
+                </>
+            )}
         </div>
     );
 }

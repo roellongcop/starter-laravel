@@ -18,11 +18,12 @@ import {
 } from '@dnd-kit/sortable';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
-import { Plus } from 'lucide-react';
+import { ChevronsDownUp, ChevronsUpDown, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
+import { Button } from '@/Components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import {
     type AdminMilestone,
@@ -61,6 +62,8 @@ export default function MilestoneBoard({
 }: Props) {
     const [columns, setColumns] = useState<AdminMilestone[]>(milestones);
     const [activeId, setActiveId] = useState<string | null>(null);
+    // Tokens of collapsed milestones (view-only; not persisted server-side).
+    const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
     // Mirror the latest committed board so drag-end can persist the post-drag
     // state without a stale closure (the over/end events span renders).
@@ -280,8 +283,40 @@ export default function MilestoneBoard({
         );
     };
 
+    const allCollapsed =
+        columns.length > 0 && columns.every((c) => collapsed.has(c.token));
+
+    const toggleCollapse = (token: string) =>
+        setCollapsed((prev) => {
+            const next = new Set(prev);
+            if (next.has(token)) {
+                next.delete(token);
+            } else {
+                next.add(token);
+            }
+            return next;
+        });
+
+    const toggleAll = () =>
+        setCollapsed(
+            allCollapsed ? new Set() : new Set(columns.map((c) => c.token)),
+        );
+
     return (
         <div>
+            {columns.length > 0 && (
+                <div className="mb-3 flex justify-end">
+                    <Button variant="outline" size="sm" onClick={toggleAll}>
+                        {allCollapsed ? (
+                            <ChevronsUpDown className="h-4 w-4" />
+                        ) : (
+                            <ChevronsDownUp className="h-4 w-4" />
+                        )}
+                        {allCollapsed ? 'Expand all' : 'Collapse all'}
+                    </Button>
+                </div>
+            )}
+
             <div className="flex flex-col gap-4">
                 <DndContext
                     sensors={sensors}
@@ -299,6 +334,10 @@ export default function MilestoneBoard({
                                 key={milestone.token}
                                 milestone={milestone}
                                 canManage={canManage}
+                                collapsed={collapsed.has(milestone.token)}
+                                onToggleCollapse={() =>
+                                    toggleCollapse(milestone.token)
+                                }
                                 onAddTask={() =>
                                     openCreateTask(milestone.token)
                                 }

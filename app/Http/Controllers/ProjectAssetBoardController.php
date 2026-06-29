@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProjectStatus;
 use App\Http\Controllers\Concerns\ResolvesBoard;
 use App\Http\Controllers\Concerns\SerializesAssets;
 use App\Http\Controllers\Concerns\SerializesBoard;
@@ -33,9 +34,14 @@ class ProjectAssetBoardController extends Controller
     public function show(Request $request, Project $project, Asset $asset): Response
     {
         $this->authorize('view', $project);
-        $this->assertAssetBound($project, $asset);
 
-        $asset->loadMissing(['organization', 'tags']);
+        // Fetch the bound asset with its relations + pivot (per-project workflow
+        // status) for the details panel; 404 if it isn't bound to this project.
+        $binding = $project->assets()
+            ->with(['organization', 'tags'])
+            ->whereKey($asset->getKey())
+            ->first();
+        abort_if($binding === null, 404);
 
         $milestones = Milestone::query()
             ->where('project_id', $project->getKey())
@@ -60,9 +66,14 @@ class ProjectAssetBoardController extends Controller
 
         return Inertia::render('Projects/AssetBoard', [
             'project' => ['token' => $project->token, 'name' => $project->name],
-            'asset' => $this->assetRow($asset),
+            'asset' => [
+                ...$this->assetRow($binding),
+                'status' => $binding->pivot->getAttribute('status'),
+            ],
             'milestones' => $milestones->map(fn (Milestone $milestone): array => $this->milestoneRow($milestone))->all(),
             'canManage' => $canManage,
+            // Workflow statuses for the inline per-project-asset status dropdown.
+            'statusOptions' => ProjectStatus::options(),
             // The task form's pickers — only handed to managers (avoid leaking the
             // user/reference-file lists to view-only roles).
             'userOptions' => $canManage ? $this->userOptions() : [],
