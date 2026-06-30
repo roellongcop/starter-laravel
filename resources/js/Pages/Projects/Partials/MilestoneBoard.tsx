@@ -77,6 +77,11 @@ export default function MilestoneBoard({
     const [taskDefaultMilestone, setTaskDefaultMilestone] = useState<
         string | undefined
     >(undefined);
+    // Bumped on every form open so the sheet's React key changes and the form
+    // remounts — otherwise re-editing the same record reuses a stale useForm
+    // instance seeded at first mount (it never re-reads the fresh props).
+    const [milestoneFormNonce, setMilestoneFormNonce] = useState(0);
+    const [taskFormNonce, setTaskFormNonce] = useState(0);
     const [milestoneToDelete, setMilestoneToDelete] =
         useState<AdminMilestone | null>(null);
     const [taskToDelete, setTaskToDelete] = useState<AdminTask | null>(null);
@@ -225,20 +230,24 @@ export default function MilestoneBoard({
 
     const openCreateMilestone = () => {
         setMilestoneEditing(null);
+        setMilestoneFormNonce((n) => n + 1);
         setMilestoneSheetOpen(true);
     };
     const openEditMilestone = (m: AdminMilestone) => {
         setMilestoneEditing(m);
+        setMilestoneFormNonce((n) => n + 1);
         setMilestoneSheetOpen(true);
     };
     const openCreateTask = (milestoneToken: string) => {
         setTaskEditing(null);
         setTaskDefaultMilestone(milestoneToken);
+        setTaskFormNonce((n) => n + 1);
         setTaskSheetOpen(true);
     };
     const openEditTask = (t: AdminTask) => {
         setTaskEditing(t);
         setTaskDefaultMilestone(undefined);
+        setTaskFormNonce((n) => n + 1);
         setTaskSheetOpen(true);
     };
 
@@ -325,6 +334,9 @@ export default function MilestoneBoard({
                                 milestone={milestone}
                                 canManage={canManage}
                                 collapsed={collapsed.has(milestone.token)}
+                                projectToken={projectToken}
+                                assetToken={assetToken}
+                                taskStatusOptions={taskStatusOptions}
                                 onToggleCollapse={() =>
                                     toggleCollapse(milestone.token)
                                 }
@@ -348,6 +360,9 @@ export default function MilestoneBoard({
                             <TaskCard
                                 task={activeTask}
                                 canManage={false}
+                                projectToken={projectToken}
+                                assetToken={assetToken}
+                                taskStatusOptions={taskStatusOptions}
                                 onEdit={() => undefined}
                                 onDelete={() => undefined}
                             />
@@ -377,7 +392,7 @@ export default function MilestoneBoard({
             )}
 
             <MilestoneFormSheet
-                key={`milestone-${milestoneEditing?.token ?? 'new'}`}
+                key={`milestone-${milestoneEditing?.token ?? 'new'}-${milestoneFormNonce}`}
                 open={milestoneSheetOpen}
                 onOpenChange={setMilestoneSheetOpen}
                 projectToken={projectToken}
@@ -387,7 +402,7 @@ export default function MilestoneBoard({
             />
 
             <TaskFormSheet
-                key={`task-${taskEditing?.token ?? 'new'}-${taskDefaultMilestone ?? ''}`}
+                key={`task-${taskEditing?.token ?? 'new'}-${taskDefaultMilestone ?? ''}-${taskFormNonce}`}
                 open={taskSheetOpen}
                 onOpenChange={setTaskSheetOpen}
                 projectToken={projectToken}
@@ -396,7 +411,6 @@ export default function MilestoneBoard({
                 task={taskEditing}
                 defaultMilestone={taskDefaultMilestone}
                 assetOrganization={assetOrganization}
-                taskStatusOptions={taskStatusOptions}
                 onSuccess={() => setTaskSheetOpen(false)}
             />
 

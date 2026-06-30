@@ -16,11 +16,7 @@ import {
 } from '@/Components/ui/sheet';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
-import {
-    type AdminMilestone,
-    type AdminTask,
-    type SelectOption,
-} from '@/types';
+import { type AdminMilestone, type AdminTask } from '@/types';
 
 type AssigneeField = 'assigned_to' | 'approver' | 'observer';
 
@@ -34,7 +30,6 @@ interface Props {
     defaultMilestone?: string;
     /** The bound asset's organization token — scopes the reference-file + tag pickers. */
     assetOrganization: string | null;
-    taskStatusOptions: SelectOption[];
     onSuccess: () => void;
 }
 
@@ -47,7 +42,6 @@ export default function TaskFormSheet({
     task,
     defaultMilestone,
     assetOrganization,
-    taskStatusOptions,
     onSuccess,
 }: Props) {
     const editing = Boolean(task);
@@ -57,7 +51,6 @@ export default function TaskFormSheet({
         description: task?.description ?? '',
         milestone:
             task?.milestone ?? defaultMilestone ?? columns[0]?.token ?? '',
-        status: task?.status ?? 'Pending',
         assigned_to: task?.assigned_to?.token ?? '',
         approver: task?.approver?.token ?? '',
         observer: task?.observer?.token ?? '',
@@ -138,7 +131,9 @@ export default function TaskFormSheet({
 
                 <form onSubmit={submit} className="mt-6 space-y-4">
                     <div>
-                        <Label htmlFor="task-name">Name</Label>
+                        <Label htmlFor="task-name" required>
+                            Name
+                        </Label>
                         <Input
                             id="task-name"
                             value={data.name}
@@ -167,7 +162,9 @@ export default function TaskFormSheet({
                     </div>
 
                     <div>
-                        <Label htmlFor="task-milestone">Milestone</Label>
+                        <Label htmlFor="task-milestone" required>
+                            Milestone
+                        </Label>
                         <AsyncSelect
                             id="task-milestone"
                             className="mt-1"
@@ -187,23 +184,6 @@ export default function TaskFormSheet({
                             message={errors.milestone}
                             className="mt-1"
                         />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="task-status">Status</Label>
-                        <AsyncSelect
-                            id="task-status"
-                            className="mt-1"
-                            value={data.status || undefined}
-                            onChange={(v) => setData('status', v ?? 'Pending')}
-                            staticOptions={taskStatusOptions}
-                            placeholder="Select a status"
-                            dialogTitle="Select status"
-                            searchPlaceholder="Search statuses…"
-                            emptyText="No statuses."
-                            invalid={Boolean(errors.status)}
-                        />
-                        <InputError message={errors.status} className="mt-1" />
                     </div>
 
                     {assigneeSelect('assigned_to', 'Assigned to')}

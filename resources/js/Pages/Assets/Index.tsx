@@ -44,14 +44,19 @@ export default function Index({ assets, filters }: Props) {
     const [deleting, setDeleting] = useState<AdminAsset | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [formAsset, setFormAsset] = useState<AdminAsset | null>(null);
+    // Bumped on every open so the form's key changes and it remounts with the
+    // fresh record — re-editing the same row otherwise reuses a stale instance.
+    const [formNonce, setFormNonce] = useState(0);
 
     const openCreate = () => {
         setFormAsset(null);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
     const openEdit = (asset: AdminAsset) => {
         setFormAsset(asset);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
@@ -207,7 +212,7 @@ export default function Index({ assets, filters }: Props) {
                     </SheetHeader>
                     <div className="mt-6">
                         <AssetForm
-                            key={formAsset?.token ?? 'new'}
+                            key={`${formAsset?.token ?? 'new'}-${formNonce}`}
                             asset={formAsset ?? undefined}
                             onSuccess={() => setFormOpen(false)}
                         />

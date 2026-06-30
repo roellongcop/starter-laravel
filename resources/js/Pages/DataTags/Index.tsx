@@ -42,14 +42,19 @@ export default function Index({ dataTags, filters, colors }: Props) {
     const [deleting, setDeleting] = useState<AdminDataTag | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [formTag, setFormTag] = useState<AdminDataTag | null>(null);
+    // Bumped on every open so the form's key changes and it remounts with the
+    // fresh record — re-editing the same row otherwise reuses a stale instance.
+    const [formNonce, setFormNonce] = useState(0);
 
     const openCreate = () => {
         setFormTag(null);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
     const openEdit = (tag: AdminDataTag) => {
         setFormTag(tag);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
@@ -207,7 +212,7 @@ export default function Index({ dataTags, filters, colors }: Props) {
                     </SheetHeader>
                     <div className="mt-6">
                         <DataTagForm
-                            key={formTag?.token ?? 'new'}
+                            key={`${formTag?.token ?? 'new'}-${formNonce}`}
                             dataTag={formTag ?? undefined}
                             colors={colors}
                             onSuccess={() => setFormOpen(false)}

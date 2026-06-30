@@ -45,14 +45,19 @@ export default function Index({ roles, filters }: Props) {
     const [formRole, setFormRole] = useState<AdminOrganizationRole | null>(
         null,
     );
+    // Bumped on every open so the form's key changes and it remounts with the
+    // fresh record — re-editing the same row otherwise reuses a stale instance.
+    const [formNonce, setFormNonce] = useState(0);
 
     const openCreate = () => {
         setFormRole(null);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
     const openEdit = (role: AdminOrganizationRole) => {
         setFormRole(role);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
@@ -203,7 +208,7 @@ export default function Index({ roles, filters }: Props) {
                     </SheetHeader>
                     <div className="mt-6">
                         <OrganizationRoleForm
-                            key={formRole?.token ?? 'new'}
+                            key={`${formRole?.token ?? 'new'}-${formNonce}`}
                             role={formRole ?? undefined}
                             onSuccess={() => setFormOpen(false)}
                         />

@@ -44,14 +44,19 @@ export default function Index({ categories, filters }: Props) {
     const [formCategory, setFormCategory] = useState<AdminTeamCategory | null>(
         null,
     );
+    // Bumped on every open so the form's key changes and it remounts with the
+    // fresh record — re-editing the same row otherwise reuses a stale instance.
+    const [formNonce, setFormNonce] = useState(0);
 
     const openCreate = () => {
         setFormCategory(null);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
     const openEdit = (category: AdminTeamCategory) => {
         setFormCategory(category);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
@@ -206,7 +211,7 @@ export default function Index({ categories, filters }: Props) {
                     </SheetHeader>
                     <div className="mt-6">
                         <TeamCategoryForm
-                            key={formCategory?.token ?? 'new'}
+                            key={`${formCategory?.token ?? 'new'}-${formNonce}`}
                             category={formCategory ?? undefined}
                             onSuccess={() => setFormOpen(false)}
                         />

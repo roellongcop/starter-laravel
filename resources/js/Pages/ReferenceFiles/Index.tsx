@@ -50,14 +50,19 @@ export default function Index({ references, filters }: Props) {
     const [formOpen, setFormOpen] = useState(false);
     const [formReference, setFormReference] =
         useState<AdminReferenceFile | null>(null);
+    // Bumped on every open so the form's key changes and it remounts with the
+    // fresh record — re-editing the same row otherwise reuses a stale instance.
+    const [formNonce, setFormNonce] = useState(0);
 
     const openCreate = () => {
         setFormReference(null);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
     const openEdit = (reference: AdminReferenceFile) => {
         setFormReference(reference);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
@@ -225,7 +230,7 @@ export default function Index({ references, filters }: Props) {
                     </SheetHeader>
                     <div className="mt-6">
                         <ReferenceFileForm
-                            key={formReference?.token ?? 'new'}
+                            key={`${formReference?.token ?? 'new'}-${formNonce}`}
                             reference={formReference ?? undefined}
                             onSuccess={() => setFormOpen(false)}
                         />

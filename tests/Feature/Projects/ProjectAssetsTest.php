@@ -68,6 +68,22 @@ it('searches the project assets server-side', function (): void {
             ->where('filters.search', 'Crane'));
 });
 
+it('filters the project assets by pivot status', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $project = Project::factory()->create(['organization_id' => $organization->id]);
+    $approved = Asset::factory()->create(['organization_id' => $organization->id]);
+    $pending = Asset::factory()->create(['organization_id' => $organization->id]);
+    $project->assets()->attach($approved->id, ['status' => ProjectStatus::Approved->value]);
+    $project->assets()->attach($pending->id, ['status' => ProjectStatus::Pending->value]);
+
+    $this->get(route('projects.show', ['project' => $project, 'status' => ProjectStatus::Approved->value]))
+        ->assertInertia(fn ($page) => $page
+            ->has('projectAssets.data', 1)
+            ->where('projectAssets.data.0.token', $approved->token)
+            ->where('filters.status', ProjectStatus::Approved->value));
+});
+
 it('attaches selected assets to a project', function (): void {
     actingAsRole(SystemRole::Developer);
     $organization = Organization::factory()->create();

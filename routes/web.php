@@ -188,6 +188,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('projects.assets.tasks.store');
     Route::patch('projects/{project}/assets/{asset}/tasks/{task}', [TaskController::class, 'update'])
         ->name('projects.assets.tasks.update');
+    Route::patch('projects/{project}/assets/{asset}/tasks/{task}/status', [TaskController::class, 'updateStatus'])
+        ->name('projects.assets.tasks.status');
     Route::delete('projects/{project}/assets/{asset}/tasks/{task}', [TaskController::class, 'destroy'])
         ->name('projects.assets.tasks.destroy');
 

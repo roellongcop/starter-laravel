@@ -168,7 +168,9 @@ export default function FormBuilder({ form, fieldTypes }: Props) {
         <form onSubmit={submit} className="space-y-6">
             <div className="grid max-w-2xl gap-4">
                 <div>
-                    <Label htmlFor="title">Title</Label>
+                    <Label htmlFor="title" required>
+                        Title
+                    </Label>
                     <Input
                         id="title"
                         value={data.title}
@@ -190,7 +192,9 @@ export default function FormBuilder({ form, fieldTypes }: Props) {
                     <InputError message={errors.description} className="mt-1" />
                 </div>
                 <div>
-                    <Label htmlFor="organization">Organization</Label>
+                    <Label htmlFor="organization" required>
+                        Organization
+                    </Label>
                     <OrganizationSelect
                         id="organization"
                         className="mt-1"

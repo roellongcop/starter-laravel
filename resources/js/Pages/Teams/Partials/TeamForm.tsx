@@ -61,7 +61,9 @@ export default function TeamForm({ team, onSuccess }: Props) {
     return (
         <form onSubmit={submit} className="max-w-xl space-y-4">
             <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name" required>
+                    Name
+                </Label>
                 <Input
                     id="name"
                     value={data.name}
@@ -86,7 +88,9 @@ export default function TeamForm({ team, onSuccess }: Props) {
             </div>
 
             <div>
-                <Label htmlFor="organization">Organization</Label>
+                <Label htmlFor="organization" required>
+                    Organization
+                </Label>
                 <OrganizationSelect
                     id="organization"
                     className="mt-1"
@@ -98,7 +102,9 @@ export default function TeamForm({ team, onSuccess }: Props) {
             </div>
 
             <div>
-                <Label htmlFor="team_category">Category</Label>
+                <Label htmlFor="team_category" required>
+                    Category
+                </Label>
                 <AsyncSelect
                     id="team_category"
                     className="mt-1"
@@ -118,7 +124,9 @@ export default function TeamForm({ team, onSuccess }: Props) {
             </div>
 
             <div>
-                <Label htmlFor="organization_role">Role</Label>
+                <Label htmlFor="organization_role" required>
+                    Role
+                </Label>
                 <AsyncSelect
                     id="organization_role"
                     className="mt-1"

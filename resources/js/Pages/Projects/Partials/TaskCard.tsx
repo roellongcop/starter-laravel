@@ -1,5 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import axios from 'axios';
 import {
     Clock,
     GripVertical,
@@ -14,6 +15,7 @@ import {
 
 import Can from '@/Components/Can';
 import StatusBadge from '@/Components/StatusBadge';
+import StatusDropdown from '@/Components/StatusDropdown';
 import TagBadgesRow from '@/Components/TagBadgesRow';
 import { Button } from '@/Components/ui/button';
 import {
@@ -22,16 +24,27 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { type AdminTask } from '@/types';
+import { type AdminTask, type SelectOption } from '@/types';
 
 interface Props {
     task: AdminTask;
     canManage: boolean;
+    projectToken: string;
+    assetToken: string;
+    taskStatusOptions: SelectOption[];
     onEdit: () => void;
     onDelete: () => void;
 }
 
-export default function TaskCard({ task, canManage, onEdit, onDelete }: Props) {
+export default function TaskCard({
+    task,
+    canManage,
+    projectToken,
+    assetToken,
+    taskStatusOptions,
+    onEdit,
+    onDelete,
+}: Props) {
     const {
         attributes,
         listeners,
@@ -106,7 +119,26 @@ export default function TaskCard({ task, canManage, onEdit, onDelete }: Props) {
             )}
 
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                <StatusBadge status={task.status} />
+                <Can
+                    ability="tasks.update"
+                    fallback={<StatusBadge status={task.status} />}
+                >
+                    <StatusDropdown
+                        variant="ghost"
+                        value={task.status}
+                        options={taskStatusOptions}
+                        onSelect={(status) =>
+                            axios.patch(
+                                route('projects.assets.tasks.status', [
+                                    projectToken,
+                                    assetToken,
+                                    task.token,
+                                ]),
+                                { status },
+                            )
+                        }
+                    />
+                </Can>
                 {task.assigned_to && (
                     <span className="flex items-center gap-1">
                         {task.assigned_to.type === 'team' ? (

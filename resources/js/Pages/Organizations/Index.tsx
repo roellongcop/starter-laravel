@@ -43,14 +43,19 @@ export default function Index({ organizations, filters }: Props) {
     const [formOpen, setFormOpen] = useState(false);
     const [formOrganization, setFormOrganization] =
         useState<AdminOrganization | null>(null);
+    // Bumped on every open so the form's key changes and it remounts with the
+    // fresh record — re-editing the same row otherwise reuses a stale instance.
+    const [formNonce, setFormNonce] = useState(0);
 
     const openCreate = () => {
         setFormOrganization(null);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
     const openEdit = (organization: AdminOrganization) => {
         setFormOrganization(organization);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
@@ -202,7 +207,7 @@ export default function Index({ organizations, filters }: Props) {
                     </SheetHeader>
                     <div className="mt-6">
                         <OrganizationForm
-                            key={formOrganization?.token ?? 'new'}
+                            key={`${formOrganization?.token ?? 'new'}-${formNonce}`}
                             organization={formOrganization ?? undefined}
                             onSuccess={() => setFormOpen(false)}
                         />

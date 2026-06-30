@@ -222,7 +222,9 @@ export default function ThemeForm({ theme }: { theme?: AdminTheme }) {
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name" required>
+                                    Name
+                                </Label>
                                 <Input
                                     id="name"
                                     value={data.name}

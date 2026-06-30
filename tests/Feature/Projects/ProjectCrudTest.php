@@ -226,6 +226,18 @@ it('filters the index by organization token', function (): void {
             ->where('filters.organization', $orgA->token));
 });
 
+it('filters the index by status', function (): void {
+    actingAsRole(SystemRole::Developer);
+    Project::factory()->count(2)->create(['status' => ProjectStatus::Approved]);
+    Project::factory()->create(['status' => ProjectStatus::Pending]);
+
+    $this->get(route('projects.index', ['status' => ProjectStatus::Approved->value]))
+        ->assertInertia(fn ($page) => $page
+            ->component('Projects/Index')
+            ->has('projects.data', 2)
+            ->where('filters.status', ProjectStatus::Approved->value));
+});
+
 it('forbids project access without permission', function (): void {
     $this->get(route('projects.index'))->assertRedirect(route('login'));
 

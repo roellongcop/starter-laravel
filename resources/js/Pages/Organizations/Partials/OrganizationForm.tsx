@@ -36,7 +36,9 @@ export default function OrganizationForm({ organization, onSuccess }: Props) {
     return (
         <form onSubmit={submit} className="max-w-xl space-y-4">
             <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name" required>
+                    Name
+                </Label>
                 <Input
                     id="name"
                     value={data.name}

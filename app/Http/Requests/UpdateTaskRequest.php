@@ -2,9 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\TaskStatus;
-use Illuminate\Validation\Rule;
-
 class UpdateTaskRequest extends BaseFormRequest
 {
     /**
@@ -21,7 +18,6 @@ class UpdateTaskRequest extends BaseFormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:10000'],
             'milestone' => ['required', 'string', 'exists:milestones,token'],
-            'status' => ['sometimes', Rule::enum(TaskStatus::class)],
             'assigned_to' => ['nullable', 'string', 'max:255'],
             'approver' => ['nullable', 'string', 'max:255'],
             'observer' => ['nullable', 'string', 'max:255'],

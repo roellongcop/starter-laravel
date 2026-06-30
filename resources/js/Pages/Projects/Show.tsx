@@ -37,7 +37,7 @@ interface Props {
     // Inertia::scroll() cursor paginator; <InfiniteScroll> appends pages into `data`.
     projectAssets: { data: ProjectAsset[] };
     assetsTotal: number;
-    filters: { search: string };
+    filters: { search: string; status: string };
     selectedAssetTokens: string[];
     statusOptions: SelectOption[];
 }
@@ -207,6 +207,19 @@ export default function Show({
                                         }
                                         placeholder="Search name, code or address…"
                                     />
+                                    <FilterBar.Select
+                                        value={
+                                            assetFilters.values.status ||
+                                            undefined
+                                        }
+                                        onChange={(v) =>
+                                            assetFilters.apply({
+                                                status: v ?? '',
+                                            })
+                                        }
+                                        options={statusOptions}
+                                        allLabel="All statuses"
+                                    />
                                 </FilterBar>
 
                                 {projectAssets.data.length === 0 ? (
@@ -251,10 +264,10 @@ export default function Show({
                                                             options={
                                                                 statusOptions
                                                             }
-                                                            onSelect={(
+                                                            onSelect={async (
                                                                 status,
-                                                            ) =>
-                                                                axios.patch(
+                                                            ) => {
+                                                                await axios.patch(
                                                                     route(
                                                                         'projects.assets.status',
                                                                         [
@@ -263,8 +276,19 @@ export default function Show({
                                                                         ],
                                                                     ),
                                                                     { status },
-                                                                )
-                                                            }
+                                                                );
+                                                                // Re-run an active
+                                                                // status filter so a
+                                                                // no-longer-matching
+                                                                // asset drops out.
+                                                                if (
+                                                                    assetFilters
+                                                                        .values
+                                                                        .status
+                                                                ) {
+                                                                    assetFilters.submit();
+                                                                }
+                                                            }}
                                                         />
                                                     </Can>
                                                 </div>

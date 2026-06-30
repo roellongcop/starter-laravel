@@ -36,7 +36,12 @@ interface Props {
     // Serialized CursorPaginator wrapped by Inertia::scroll(); the
     // <InfiniteScroll> component appends pages into `data` as the user scrolls.
     projects: { data: AdminProject[] };
-    filters: { search: string; organization: string; inactive: boolean };
+    filters: {
+        search: string;
+        organization: string;
+        status: string;
+        inactive: boolean;
+    };
     statusOptions: SelectOption[];
 }
 
@@ -49,14 +54,19 @@ export default function Index({ projects, filters, statusOptions }: Props) {
     const [deleting, setDeleting] = useState<AdminProject | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [formProject, setFormProject] = useState<AdminProject | null>(null);
+    // Bumped on every open so the form's key changes and it remounts with the
+    // fresh record — re-editing the same row otherwise reuses a stale instance.
+    const [formNonce, setFormNonce] = useState(0);
 
     const openCreate = () => {
         setFormProject(null);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
     const openEdit = (project: AdminProject) => {
         setFormProject(project);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
@@ -97,6 +107,12 @@ export default function Index({ projects, filters, statusOptions }: Props) {
                         allowClear
                         allLabel="All organizations"
                         className="w-56"
+                    />
+                    <FilterBar.Select
+                        value={f.values.status || undefined}
+                        onChange={(v) => f.apply({ status: v ?? '' })}
+                        options={statusOptions}
+                        allLabel="All statuses"
                     />
                 </FilterBar>
             </div>
@@ -139,15 +155,21 @@ export default function Index({ projects, filters, statusOptions }: Props) {
                                         className="h-full w-auto rounded-none px-3"
                                         value={project.status}
                                         options={statusOptions}
-                                        onSelect={(status) =>
-                                            axios.patch(
+                                        onSelect={async (status) => {
+                                            await axios.patch(
                                                 route(
                                                     'projects.status',
                                                     project.token,
                                                 ),
                                                 { status },
-                                            )
-                                        }
+                                            );
+                                            // A status filter is active: re-run it
+                                            // so a project that no longer matches
+                                            // drops out of the list.
+                                            if (f.values.status) {
+                                                f.submit();
+                                            }
+                                        }}
                                     />
                                 </Can>
                             </div>
@@ -244,7 +266,7 @@ export default function Index({ projects, filters, statusOptions }: Props) {
                     </SheetHeader>
                     <div className="mt-6">
                         <ProjectForm
-                            key={formProject?.token ?? 'new'}
+                            key={`${formProject?.token ?? 'new'}-${formNonce}`}
                             project={formProject ?? undefined}
                             onSuccess={() => setFormOpen(false)}
                         />

@@ -43,7 +43,9 @@ export default function DataTagForm({ dataTag, colors, onSuccess }: Props) {
     return (
         <form onSubmit={submit} className="max-w-xl space-y-4">
             <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name" required>
+                    Name
+                </Label>
                 <Input
                     id="name"
                     value={data.name}
@@ -68,7 +70,9 @@ export default function DataTagForm({ dataTag, colors, onSuccess }: Props) {
             </div>
 
             <div>
-                <Label htmlFor="organization">Organization</Label>
+                <Label htmlFor="organization" required>
+                    Organization
+                </Label>
                 <OrganizationSelect
                     id="organization"
                     className="mt-1"
@@ -80,7 +84,7 @@ export default function DataTagForm({ dataTag, colors, onSuccess }: Props) {
             </div>
 
             <div>
-                <Label>Color</Label>
+                <Label required>Color</Label>
                 <div className="mt-2 flex flex-wrap gap-2">
                     {colors.map((color) => {
                         const selected = data.color === color;

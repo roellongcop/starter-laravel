@@ -86,7 +86,9 @@ export default function MilestoneFormSheet({
 
                 <form onSubmit={submit} className="mt-6 space-y-4">
                     <div>
-                        <Label htmlFor="milestone-name">Name</Label>
+                        <Label htmlFor="milestone-name" required>
+                            Name
+                        </Label>
                         <Input
                             id="milestone-name"
                             value={data.name}

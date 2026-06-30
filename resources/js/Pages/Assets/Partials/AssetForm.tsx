@@ -52,7 +52,9 @@ export default function AssetForm({ asset, onSuccess }: Props) {
     return (
         <form onSubmit={submit} className="max-w-xl space-y-4">
             <div>
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name" required>
+                    Name
+                </Label>
                 <Input
                     id="name"
                     value={data.name}
@@ -64,7 +66,9 @@ export default function AssetForm({ asset, onSuccess }: Props) {
             </div>
 
             <div>
-                <Label htmlFor="id_code">ID Code</Label>
+                <Label htmlFor="id_code" required>
+                    ID Code
+                </Label>
                 <Input
                     id="id_code"
                     value={data.id_code}
@@ -76,7 +80,9 @@ export default function AssetForm({ asset, onSuccess }: Props) {
             </div>
 
             <div>
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="address" required>
+                    Address
+                </Label>
                 <Textarea
                     id="address"
                     value={data.address}
@@ -89,7 +95,9 @@ export default function AssetForm({ asset, onSuccess }: Props) {
             </div>
 
             <div>
-                <Label htmlFor="organization">Organization</Label>
+                <Label htmlFor="organization" required>
+                    Organization
+                </Label>
                 <OrganizationSelect
                     id="organization"
                     className="mt-1"

@@ -32,16 +32,20 @@ function Row({
     label,
     htmlFor,
     error,
+    required,
     children,
 }: {
     label: string;
     htmlFor?: string;
     error?: string;
+    required?: boolean;
     children: React.ReactNode;
 }) {
     return (
         <div className="grid gap-1.5">
-            <Label htmlFor={htmlFor}>{label}</Label>
+            <Label htmlFor={htmlFor} required={required}>
+                {label}
+            </Label>
             {children}
             <InputError message={error} />
         </div>
@@ -78,6 +82,7 @@ function SystemTab({ data: init }: { data: Record<string, unknown> }) {
                 label="Application name"
                 htmlFor="app_name"
                 error={errors.app_name}
+                required
             >
                 <Input
                     id="app_name"
@@ -85,7 +90,12 @@ function SystemTab({ data: init }: { data: Record<string, unknown> }) {
                     onChange={(e) => setData('app_name', e.target.value)}
                 />
             </Row>
-            <Row label="Timezone" htmlFor="timezone" error={errors.timezone}>
+            <Row
+                label="Timezone"
+                htmlFor="timezone"
+                error={errors.timezone}
+                required
+            >
                 <Input
                     id="timezone"
                     value={data.timezone}
@@ -97,6 +107,7 @@ function SystemTab({ data: init }: { data: Record<string, unknown> }) {
                     label="Pagination size"
                     htmlFor="pagination_size"
                     error={errors.pagination_size}
+                    required
                 >
                     <Input
                         id="pagination_size"
@@ -111,6 +122,7 @@ function SystemTab({ data: init }: { data: Record<string, unknown> }) {
                     label="Auto-logout (seconds, 0 = off)"
                     htmlFor="auto_logout_seconds"
                     error={errors.auto_logout_seconds}
+                    required
                 >
                     <Input
                         id="auto_logout_seconds"
@@ -122,7 +134,7 @@ function SystemTab({ data: init }: { data: Record<string, unknown> }) {
                     />
                 </Row>
             </div>
-            <Row label="Default theme" error={errors.default_theme}>
+            <Row label="Default theme" error={errors.default_theme} required>
                 <Select
                     value={data.default_theme}
                     onValueChange={(v) => setData('default_theme', v)}
@@ -189,6 +201,7 @@ function EmailTab({ data: init }: { data: Record<string, unknown> }) {
                     label="From address"
                     htmlFor="from_address"
                     error={errors.from_address}
+                    required
                 >
                     <Input
                         id="from_address"
@@ -202,6 +215,7 @@ function EmailTab({ data: init }: { data: Record<string, unknown> }) {
                     label="From name"
                     htmlFor="from_name"
                     error={errors.from_name}
+                    required
                 >
                     <Input
                         id="from_name"
@@ -215,6 +229,7 @@ function EmailTab({ data: init }: { data: Record<string, unknown> }) {
                     label="SMTP host"
                     htmlFor="smtp_host"
                     error={errors.smtp_host}
+                    required
                 >
                     <Input
                         id="smtp_host"
@@ -226,6 +241,7 @@ function EmailTab({ data: init }: { data: Record<string, unknown> }) {
                     label="SMTP port"
                     htmlFor="smtp_port"
                     error={errors.smtp_port}
+                    required
                 >
                     <Input
                         id="smtp_port"

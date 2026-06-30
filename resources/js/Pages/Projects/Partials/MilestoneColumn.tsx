@@ -22,13 +22,20 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { type AdminMilestone, type AdminTask } from '@/types';
+import {
+    type AdminMilestone,
+    type AdminTask,
+    type SelectOption,
+} from '@/types';
 import TaskCard from './TaskCard';
 
 interface Props {
     milestone: AdminMilestone;
     canManage: boolean;
     collapsed: boolean;
+    projectToken: string;
+    assetToken: string;
+    taskStatusOptions: SelectOption[];
     onToggleCollapse: () => void;
     onAddTask: () => void;
     onEditMilestone: () => void;
@@ -41,6 +48,9 @@ export default function MilestoneColumn({
     milestone,
     canManage,
     collapsed,
+    projectToken,
+    assetToken,
+    taskStatusOptions,
     onToggleCollapse,
     onAddTask,
     onEditMilestone,
@@ -155,6 +165,9 @@ export default function MilestoneColumn({
                                         key={task.token}
                                         task={task}
                                         canManage={canManage}
+                                        projectToken={projectToken}
+                                        assetToken={assetToken}
+                                        taskStatusOptions={taskStatusOptions}
                                         onEdit={() => onEditTask(task)}
                                         onDelete={() => onDeleteTask(task)}
                                     />

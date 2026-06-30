@@ -49,14 +49,19 @@ export default function Index({ teams, filters }: Props) {
     const [deleting, setDeleting] = useState<AdminTeam | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [formTeam, setFormTeam] = useState<AdminTeam | null>(null);
+    // Bumped on every open so the form's key changes and it remounts with the
+    // fresh record — re-editing the same row otherwise reuses a stale instance.
+    const [formNonce, setFormNonce] = useState(0);
 
     const openCreate = () => {
         setFormTeam(null);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
     const openEdit = (team: AdminTeam) => {
         setFormTeam(team);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
@@ -212,7 +217,7 @@ export default function Index({ teams, filters }: Props) {
                     </SheetHeader>
                     <div className="mt-6">
                         <TeamForm
-                            key={formTeam?.token ?? 'new'}
+                            key={`${formTeam?.token ?? 'new'}-${formNonce}`}
                             team={formTeam ?? undefined}
                             onSuccess={() => setFormOpen(false)}
                         />

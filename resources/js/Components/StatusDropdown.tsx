@@ -5,8 +5,10 @@ import {
     CircleCheck,
     CircleDashed,
     CircleDot,
+    CircleX,
     Clock,
     type LucideIcon,
+    Send,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -21,11 +23,13 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { type SelectOption } from '@/types';
 
-/** Icon + accent colour per ProjectStatus value. */
+/** Icon + accent colour per ProjectStatus / TaskStatus value. */
 const META: Record<string, { icon: LucideIcon; className: string }> = {
     Pending: { icon: Clock, className: 'text-amber-500' },
     'In Progress': { icon: CircleDashed, className: 'text-blue-500' },
+    Submitted: { icon: Send, className: 'text-indigo-500' },
     Approved: { icon: CircleCheck, className: 'text-emerald-500' },
+    Rejected: { icon: CircleX, className: 'text-rose-500' },
     Cancelled: { icon: Ban, className: 'text-destructive' },
 };
 

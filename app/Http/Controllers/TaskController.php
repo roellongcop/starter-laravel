@@ -6,6 +6,7 @@ use App\Enums\TaskStatus;
 use App\Http\Controllers\Concerns\ResolvesBoard;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Requests\UpdateTaskStatusRequest;
 use App\Models\Asset;
 use App\Models\Milestone;
 use App\Models\Person;
@@ -13,6 +14,7 @@ use App\Models\Project;
 use App\Models\ReferenceFile;
 use App\Models\Task;
 use App\Models\Team;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
 class TaskController extends Controller
@@ -30,6 +32,8 @@ class TaskController extends Controller
         $data = $this->resolveTaskData($project, $validated);
         $data['milestone_id'] = $milestone->getKey();
         $data['organization_id'] = $project->organization_id;
+        // New tasks always start Pending; status changes happen inline on the card.
+        $data['status'] = TaskStatus::Pending->value;
         $data['position'] = (int) Task::query()
             ->where('milestone_id', $milestone->getKey())
             ->max('position') + 1;
@@ -70,6 +74,25 @@ class TaskController extends Controller
     }
 
     /**
+     * Inline status change for a task card (posted via axios from the board),
+     * kept separate from the full edit form.
+     */
+    public function updateStatus(UpdateTaskStatusRequest $request, Project $project, Asset $asset, Task $task): RedirectResponse|JsonResponse
+    {
+        $this->authorize('update', $task);
+        $this->assertAssetBound($project, $asset);
+        $this->assertTaskInBoard($project, $asset, $task);
+
+        $task->update(['status' => $request->validated()['status']]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['status' => $task->status->value]);
+        }
+
+        return back()->with('success', 'Task status updated.');
+    }
+
+    /**
      * Resolve a milestone token to a Milestone on this board (404 otherwise).
      */
     protected function resolveMilestone(Project $project, Asset $asset, string $token): Milestone
@@ -104,7 +127,6 @@ class TaskController extends Controller
         return [
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
-            'status' => $validated['status'] ?? TaskStatus::Pending->value,
             'private' => $validated['private'] ?? false,
             'due_date' => $validated['due_date'] ?? null,
             'assignee_type' => $assignee['type'],

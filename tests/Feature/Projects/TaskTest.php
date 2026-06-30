@@ -35,7 +35,6 @@ it('creates a task, assigning an org team or person and resolving reference / ta
         'name' => 'Draft proposal',
         'description' => 'First cut.',
         'milestone' => $milestone->token,
-        'status' => TaskStatus::Submitted->value,
         'assigned_to' => $team->token,
         'approver' => $person->token,
         'reference_file' => $reference->token,
@@ -46,7 +45,7 @@ it('creates a task, assigning an org team or person and resolving reference / ta
     expect($task)->not->toBeNull()
         ->and($task->milestone_id)->toBe($milestone->id)
         ->and($task->organization_id)->toBe($organization->id)
-        ->and($task->status)->toBe(TaskStatus::Submitted)
+        ->and($task->status)->toBe(TaskStatus::Pending) // always Pending at create
         ->and($task->assignee_type)->toBe('team')
         ->and($task->assignee_id)->toBe($team->id)
         ->and($task->approver_type)->toBe('person')
@@ -177,6 +176,46 @@ it('updates a task and moves it to another milestone', function (): void {
     expect($task->fresh())
         ->name->toBe('New')
         ->milestone_id->toBe($to->id);
+});
+
+it('updates a task status inline', function (): void {
+    actingAsRole(SystemRole::Developer);
+    [$organization, $project, $asset] = makeBoard();
+    $milestone = Milestone::factory()->create([
+        'project_id' => $project->id,
+        'asset_id' => $asset->id,
+        'organization_id' => $organization->id,
+    ]);
+    $task = Task::factory()->create([
+        'milestone_id' => $milestone->id,
+        'organization_id' => $organization->id,
+        'status' => TaskStatus::Pending,
+    ]);
+
+    $this->patchJson(route('projects.assets.tasks.status', [$project, $asset, $task]), [
+        'status' => TaskStatus::Approved->value,
+    ])->assertOk()->assertJson(['status' => TaskStatus::Approved->value]);
+
+    expect($task->fresh()->status)->toBe(TaskStatus::Approved);
+});
+
+it('404s changing the status of a task from another board', function (): void {
+    actingAsRole(SystemRole::Developer);
+    [, $project, $asset] = makeBoard();
+    [$otherOrg, $otherProject, $otherAsset] = makeBoard();
+    $foreignMilestone = Milestone::factory()->create([
+        'project_id' => $otherProject->id,
+        'asset_id' => $otherAsset->id,
+        'organization_id' => $otherOrg->id,
+    ]);
+    $foreignTask = Task::factory()->create([
+        'milestone_id' => $foreignMilestone->id,
+        'organization_id' => $otherOrg->id,
+    ]);
+
+    $this->patchJson(route('projects.assets.tasks.status', [$project, $asset, $foreignTask]), [
+        'status' => TaskStatus::Approved->value,
+    ])->assertNotFound();
 });
 
 it('deletes a task', function (): void {

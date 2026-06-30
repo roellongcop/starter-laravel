@@ -37,7 +37,9 @@ export default function Contact({ seo }: { seo: SeoData }) {
 
             <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name" required>
+                        Name
+                    </Label>
                     <Input
                         id="name"
                         className="mt-1"
@@ -49,7 +51,9 @@ export default function Contact({ seo }: { seo: SeoData }) {
                 </div>
 
                 <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" required>
+                        Email
+                    </Label>
                     <Input
                         id="email"
                         type="email"
@@ -61,7 +65,9 @@ export default function Contact({ seo }: { seo: SeoData }) {
                 </div>
 
                 <div>
-                    <Label htmlFor="message">Message</Label>
+                    <Label htmlFor="message" required>
+                        Message
+                    </Label>
                     <Textarea
                         id="message"
                         rows={5}

@@ -46,7 +46,9 @@ export default function Login({
 
             <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" required>
+                        Email
+                    </Label>
                     <Input
                         id="email"
                         type="email"
@@ -61,7 +63,9 @@ export default function Login({
                 </div>
 
                 <div>
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" required>
+                        Password
+                    </Label>
                     <Input
                         id="password"
                         type="password"
