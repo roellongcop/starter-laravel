@@ -23,10 +23,11 @@ import {
     GripVertical,
     Trash2,
 } from 'lucide-react';
-import { FormEventHandler, useMemo, useState } from 'react';
+import { FormEventHandler, useState } from 'react';
 
+import AsyncMultiSelect from '@/Components/AsyncMultiSelect';
 import InputError from '@/Components/InputError';
-import MultiSelect from '@/Components/MultiSelect';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -42,7 +43,6 @@ import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
 import {
     type AdminForm,
-    type DataTagOption,
     type FieldType,
     type FormField,
     type FormFieldConfig,
@@ -52,9 +52,7 @@ import FieldEditor from './FieldEditor';
 
 interface Props {
     form?: AdminForm;
-    organizations: SelectOption[];
     fieldTypes: SelectOption[];
-    dataTags: DataTagOption[];
 }
 
 function defaultConfig(type: FieldType): FormFieldConfig {
@@ -72,12 +70,7 @@ function defaultConfig(type: FieldType): FormFieldConfig {
     }
 }
 
-export default function FormBuilder({
-    form,
-    organizations,
-    fieldTypes,
-    dataTags,
-}: Props) {
+export default function FormBuilder({ form, fieldTypes }: Props) {
     const editing = Boolean(form);
     const typeLabel = (type: FieldType) =>
         fieldTypes.find((t) => t.value === type)?.label ?? type;
@@ -91,29 +84,20 @@ export default function FormBuilder({
     }>({
         title: form?.title ?? '',
         description: form?.description ?? '',
-        organization:
-            form?.organization ?? String(organizations[0]?.value ?? ''),
+        organization: form?.organization ?? '',
         form_fields: form?.form_fields ?? [],
         tags: form?.tags?.map((t) => t.token) ?? [],
     });
 
     const fieldErrors = errors as Record<string, string>;
 
-    // Tags are per-organization: only offer those belonging to the chosen org.
-    const availableTags = useMemo(
-        () => dataTags.filter((t) => t.organization === data.organization),
-        [dataTags, data.organization],
-    );
-
-    const changeOrganization = (value: string) => {
-        // Drop tags that no longer belong to the chosen organization.
-        const validTags = data.tags.filter((token) =>
-            dataTags.some((t) => t.organization === value && t.value === token),
-        );
+    const changeOrganization = (value: string | undefined) => {
+        // A tag belongs to exactly one org, so changing org invalidates the
+        // current selection — reset tags whenever the organization changes.
         setData((current) => ({
             ...current,
-            organization: value,
-            tags: validTags,
+            organization: value ?? '',
+            tags: [],
         }));
     };
 
@@ -207,24 +191,13 @@ export default function FormBuilder({
                 </div>
                 <div>
                     <Label htmlFor="organization">Organization</Label>
-                    <Select
-                        value={data.organization}
-                        onValueChange={changeOrganization}
-                    >
-                        <SelectTrigger id="organization" className="mt-1">
-                            <SelectValue placeholder="Select an organization" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {organizations.map((o) => (
-                                <SelectItem
-                                    key={o.value}
-                                    value={String(o.value)}
-                                >
-                                    {o.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <OrganizationSelect
+                        id="organization"
+                        className="mt-1"
+                        value={data.organization || undefined}
+                        onChange={changeOrganization}
+                        invalid={Boolean(errors.organization)}
+                    />
                     <InputError
                         message={errors.organization}
                         className="mt-1"
@@ -232,16 +205,22 @@ export default function FormBuilder({
                 </div>
                 <div>
                     <Label htmlFor="tags">Tags</Label>
-                    <MultiSelect
+                    <AsyncMultiSelect
                         id="tags"
                         className="mt-1"
-                        options={availableTags}
-                        selected={data.tags}
+                        values={data.tags}
                         onChange={(values) => setData('tags', values)}
+                        routeName="data-tags.options"
+                        params={{
+                            organization: data.organization || undefined,
+                        }}
+                        disabled={!data.organization}
+                        disabledHint="Select an organization first"
                         placeholder="Select tags"
                         title="Select tags"
                         description="Only tags from the chosen organization are shown."
                         emptyText="No tags for this organization."
+                        searchPlaceholder="Search tags…"
                     />
                     <InputError message={errors.tags} className="mt-1" />
                 </div>

@@ -128,6 +128,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/avatar/{user}', [AvatarController::class, 'show'])->name('profile.avatar');
 
     Route::post('users/bulk', [UserController::class, 'bulk'])->name('users.bulk');
+    Route::get('users/options', [UserController::class, 'options'])->name('users.options');
     Route::resource('users', UserController::class);
 
     Route::resource('roles', RoleController::class);
@@ -156,6 +157,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('ips/bulk', [IpController::class, 'bulk'])->name('ips.bulk');
     Route::resource('ips', IpController::class)->except(['create', 'edit']);
 
+    // Async organization picker (filters + forms across modules). Registered
+    // before the resource so /organizations/options isn't captured as a {organization} show.
+    Route::get('organizations/options', [OrganizationController::class, 'options'])->name('organizations.options');
     Route::resource('organizations', OrganizationController::class)->except(['create', 'edit']);
 
     Route::resource('projects', ProjectController::class)->except(['create', 'edit']);
@@ -186,11 +190,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('projects/{project}/assets/{asset}/tasks/{task}', [TaskController::class, 'destroy'])
         ->name('projects.assets.tasks.destroy');
 
+    Route::get('assets/options', [AssetController::class, 'options'])->name('assets.options');
     Route::resource('assets', AssetController::class)->except(['create', 'edit']);
 
     // Teams & People: org-nested teams, their category + organization-role
     // lookups. People are an internal roster managed via TeamController.
+    Route::get('team-categories/options', [TeamCategoryController::class, 'options'])->name('team-categories.options');
     Route::resource('team-categories', TeamCategoryController::class)->except(['create', 'edit']);
+    Route::get('organization-roles/options', [OrganizationRoleController::class, 'options'])->name('organization-roles.options');
     Route::resource('organization-roles', OrganizationRoleController::class)->except(['create', 'edit']);
     Route::resource('teams', TeamController::class)->except(['create', 'edit']);
     // People: read-only roster across teams (members are managed via the team form).
@@ -201,9 +208,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // shadowed by the {referenceFile} show route.
     Route::post('reference-files/upload', [ReferenceFileController::class, 'upload'])->name('reference-files.upload');
     Route::get('reference-files/{referenceFile}/download', [ReferenceFileController::class, 'download'])->name('reference-files.download');
+    Route::get('reference-files/options', [ReferenceFileController::class, 'options'])->name('reference-files.options');
     Route::resource('reference-files', ReferenceFileController::class)->except(['create', 'edit']);
 
     // Data tags: org-nested coloured tags chosen from a fixed palette.
+    Route::get('data-tags/options', [DataTagController::class, 'options'])->name('data-tags.options');
     Route::resource('data-tags', DataTagController::class)->except(['create', 'edit']);
 
     // Forms have full create/edit pages (the field builder is too rich for a sheet).

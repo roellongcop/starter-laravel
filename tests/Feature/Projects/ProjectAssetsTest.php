@@ -29,7 +29,6 @@ it('shows the assets bound to a project on the show page', function (): void {
             ->where('projectAssets.data.0.token', $asset->token)
             ->where('projectAssets.data.0.name', $asset->name)
             ->where('assetsTotal', 1)
-            ->has('assetOptions', 1)
             ->where('selectedAssetTokens', [$asset->token]));
 });
 
@@ -147,12 +146,13 @@ it('only offers attachable assets from the project organization', function (): v
     actingAsRole(SystemRole::Developer);
     $organization = Organization::factory()->create();
     $other = Organization::factory()->create();
-    $project = Project::factory()->create(['organization_id' => $organization->id]);
     Asset::factory()->count(2)->create(['organization_id' => $organization->id]);
     Asset::factory()->create(['organization_id' => $other->id]);
 
-    $this->get(route('projects.show', $project))
-        ->assertInertia(fn ($page) => $page->has('assetOptions', 2));
+    // The attach picker now fetches options on demand, scoped to the org.
+    $this->getJson(route('assets.options', ['organization' => $organization->token]))
+        ->assertOk()
+        ->assertJsonCount(2, 'data');
 });
 
 it('forbids managing project assets without update permission', function (): void {

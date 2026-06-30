@@ -31,20 +31,4 @@ trait SerializesAssets
             'created_at' => $asset->created_at?->toIso8601String(),
         ];
     }
-
-    /**
-     * Selectable assets for an attach picker, scoped to one organization and keyed
-     * by token (ids never cross the wire).
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function assetOptions(int $organizationId): array
-    {
-        return Asset::query()
-            ->where('organization_id', $organizationId)
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Asset $asset): array => ['value' => $asset->token, 'label' => $asset->name])
-            ->all();
-    }
 }

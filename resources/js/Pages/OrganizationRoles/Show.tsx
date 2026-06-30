@@ -14,19 +14,14 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    type AdminOrganizationRole,
-    type Crumb,
-    type SelectOption,
-} from '@/types';
+import { type AdminOrganizationRole, type Crumb } from '@/types';
 import OrganizationRoleForm from './Partials/OrganizationRoleForm';
 
 interface Props {
     role: AdminOrganizationRole;
-    organizations: SelectOption[];
 }
 
-export default function Show({ role, organizations }: Props) {
+export default function Show({ role }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -104,7 +99,6 @@ export default function Show({ role, organizations }: Props) {
                     <div className="mt-6">
                         <OrganizationRoleForm
                             role={role}
-                            organizations={organizations}
                             onSuccess={() => setEditOpen(false)}
                         />
                     </div>

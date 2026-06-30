@@ -2,6 +2,7 @@ import { Head } from '@inertiajs/react';
 
 import CursorPager from '@/Components/CursorPager';
 import FilterBar from '@/Components/FilterBar';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
 import TeamsPeopleTabs from '@/Components/TeamsPeopleTabs';
 import {
@@ -14,19 +15,14 @@ import {
 } from '@/Components/ui/table';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    type AdminPerson,
-    type CursorResponse,
-    type SelectOption,
-} from '@/types';
+import { type AdminPerson, type CursorResponse } from '@/types';
 
 interface Props {
     people: CursorResponse<AdminPerson>;
     filters: { search: string; organization: string; inactive: boolean };
-    organizations: SelectOption[];
 }
 
-export default function Index({ people, filters, organizations }: Props) {
+export default function Index({ people, filters }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'people.index',
         initial: filters,
@@ -49,11 +45,10 @@ export default function Index({ people, filters, organizations }: Props) {
                     onChange={(v) => f.set('search', v)}
                     placeholder="Search by member name or email…"
                 />
-                <FilterBar.Select
-                    value={f.values.organization}
+                <OrganizationSelect
+                    value={f.values.organization || undefined}
                     onChange={(v) => f.apply({ organization: v })}
-                    options={organizations}
-                    placeholder="All organizations"
+                    allowClear
                     allLabel="All organizations"
                     className="w-56"
                 />

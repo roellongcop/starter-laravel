@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
 import TagBadgesRow from '@/Components/TagBadgesRow';
 import { Button } from '@/Components/ui/button';
@@ -17,15 +18,14 @@ import {
 } from '@/Components/ui/dropdown-menu';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminForm, type SelectOption } from '@/types';
+import { type AdminForm } from '@/types';
 
 interface Props {
     forms: { data: AdminForm[] };
     filters: { search: string; organization: string; inactive: boolean };
-    organizations: SelectOption[];
 }
 
-export default function Index({ forms, filters, organizations }: Props) {
+export default function Index({ forms, filters }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'forms.index',
         reset: ['forms'],
@@ -66,11 +66,10 @@ export default function Index({ forms, filters, organizations }: Props) {
                         onChange={(v) => f.set('search', v)}
                         placeholder="Search title or description…"
                     />
-                    <FilterBar.Select
-                        value={f.values.organization}
+                    <OrganizationSelect
+                        value={f.values.organization || undefined}
                         onChange={(v) => f.apply({ organization: v })}
-                        options={organizations}
-                        placeholder="All organizations"
+                        allowClear
                         allLabel="All organizations"
                         className="w-56"
                     />
@@ -95,7 +94,7 @@ export default function Index({ forms, filters, organizations }: Props) {
                     {forms.data.map((form) => (
                         <Card
                             key={form.token}
-                            className="relative flex h-full flex-col transition-shadow hover:shadow-md"
+                            className="relative flex h-full flex-col transition-all hover:border-ring hover:shadow-md"
                         >
                             <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
                                 <div className="min-w-0 space-y-1">

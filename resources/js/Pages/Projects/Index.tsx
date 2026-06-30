@@ -6,6 +6,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
 import StatusDropdown from '@/Components/StatusDropdown';
@@ -28,11 +29,7 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    type AdminProject,
-    type DataTagOption,
-    type SelectOption,
-} from '@/types';
+import { type AdminProject, type SelectOption } from '@/types';
 import ProjectForm from './Partials/ProjectForm';
 
 interface Props {
@@ -40,18 +37,10 @@ interface Props {
     // <InfiniteScroll> component appends pages into `data` as the user scrolls.
     projects: { data: AdminProject[] };
     filters: { search: string; organization: string; inactive: boolean };
-    organizations: SelectOption[];
-    dataTags: DataTagOption[];
     statusOptions: SelectOption[];
 }
 
-export default function Index({
-    projects,
-    filters,
-    organizations,
-    dataTags,
-    statusOptions,
-}: Props) {
+export default function Index({ projects, filters, statusOptions }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'projects.index',
         reset: ['projects'],
@@ -102,11 +91,10 @@ export default function Index({
                         onChange={(v) => f.set('search', v)}
                         placeholder="Search name or description…"
                     />
-                    <FilterBar.Select
-                        value={f.values.organization}
+                    <OrganizationSelect
+                        value={f.values.organization || undefined}
                         onChange={(v) => f.apply({ organization: v })}
-                        options={organizations}
-                        placeholder="All organizations"
+                        allowClear
                         allLabel="All organizations"
                         className="w-56"
                     />
@@ -131,7 +119,7 @@ export default function Index({
                     {projects.data.map((project) => (
                         <Card
                             key={project.token}
-                            className="relative flex min-h-[4.75rem] items-stretch overflow-hidden transition-shadow hover:shadow-md"
+                            className="relative flex min-h-[4.75rem] items-stretch overflow-hidden transition-all hover:border-ring hover:shadow-md"
                         >
                             {/* Status as a leading, fully-clickable "addon" cell */}
                             <div className="flex items-stretch border-r bg-muted/30">
@@ -258,8 +246,6 @@ export default function Index({
                         <ProjectForm
                             key={formProject?.token ?? 'new'}
                             project={formProject ?? undefined}
-                            organizations={organizations}
-                            dataTags={dataTags}
                             onSuccess={() => setFormOpen(false)}
                         />
                     </div>

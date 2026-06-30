@@ -110,7 +110,10 @@ export default function TagBadgesRow({
     return (
         <div
             ref={containerRef}
-            className={cn('relative flex h-6 items-center', className)}
+            className={cn(
+                'relative flex h-6 items-center overflow-hidden',
+                className,
+            )}
         >
             {/* Off-flow copy of the full set, used only to measure widths. */}
             <div

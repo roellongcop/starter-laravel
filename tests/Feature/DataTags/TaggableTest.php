@@ -116,16 +116,17 @@ it('serializes attached tags as token/name/color without leaking ids', function 
             ->missing('asset.tags.0.id'));
 });
 
-it('exposes the org-scoped tag picker options to the page', function (): void {
+it('exposes the org-scoped tag picker options via the options endpoint', function (): void {
     actingAsRole(SystemRole::Developer);
     $organization = Organization::factory()->create();
     $tag = DataTag::factory()->create(['organization_id' => $organization->id]);
+    DataTag::factory()->create(); // a tag in another org, must not appear
 
-    $this->get(route('assets.index'))
-        ->assertInertia(fn ($page) => $page
-            ->where('dataTags.0.value', $tag->token)
-            ->where('dataTags.0.organization', $organization->token)
-            ->where('dataTags.0.color', $tag->color));
+    $this->getJson(route('data-tags.options', ['organization' => $organization->token]))
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.value', $tag->token)
+        ->assertJsonPath('data.0.label', $tag->name);
 });
 
 it('replaces tags on update', function (): void {

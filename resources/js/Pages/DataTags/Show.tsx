@@ -14,16 +14,15 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminDataTag, type Crumb, type SelectOption } from '@/types';
+import { type AdminDataTag, type Crumb } from '@/types';
 import DataTagForm from './Partials/DataTagForm';
 
 interface Props {
     dataTag: AdminDataTag;
-    organizations: SelectOption[];
     colors: string[];
 }
 
-export default function Show({ dataTag, organizations, colors }: Props) {
+export default function Show({ dataTag, colors }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -111,7 +110,6 @@ export default function Show({ dataTag, organizations, colors }: Props) {
                     <div className="mt-6">
                         <DataTagForm
                             dataTag={dataTag}
-                            organizations={organizations}
                             colors={colors}
                             onSuccess={() => setEditOpen(false)}
                         />

@@ -16,21 +16,14 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    type AdminReferenceFile,
-    type Crumb,
-    type DataTagOption,
-    type SelectOption,
-} from '@/types';
+import { type AdminReferenceFile, type Crumb } from '@/types';
 import ReferenceFileForm from './Partials/ReferenceFileForm';
 
 interface Props {
     reference: AdminReferenceFile;
-    organizations: SelectOption[];
-    dataTags: DataTagOption[];
 }
 
-export default function Show({ reference, organizations, dataTags }: Props) {
+export default function Show({ reference }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -137,8 +130,6 @@ export default function Show({ reference, organizations, dataTags }: Props) {
                     <div className="mt-6">
                         <ReferenceFileForm
                             reference={reference}
-                            organizations={organizations}
-                            dataTags={dataTags}
                             onSuccess={() => setEditOpen(false)}
                         />
                     </div>

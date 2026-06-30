@@ -23,7 +23,7 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminOrganization, type SelectOption } from '@/types';
+import { type AdminOrganization } from '@/types';
 import OrganizationForm from './Partials/OrganizationForm';
 
 interface Props {
@@ -31,10 +31,9 @@ interface Props {
     // <InfiniteScroll> component appends pages into `data` as the user scrolls.
     organizations: { data: AdminOrganization[] };
     filters: { search: string; inactive: boolean };
-    users: SelectOption[];
 }
 
-export default function Index({ organizations, filters, users }: Props) {
+export default function Index({ organizations, filters }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'organizations.index',
         reset: ['organizations'],
@@ -107,7 +106,7 @@ export default function Index({ organizations, filters, users }: Props) {
                     {organizations.data.map((organization) => (
                         <Card
                             key={organization.token}
-                            className="relative flex h-full flex-col transition-shadow hover:shadow-md"
+                            className="relative flex h-full flex-col transition-all hover:border-ring hover:shadow-md"
                         >
                             <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
                                 <div className="min-w-0 space-y-1">
@@ -205,7 +204,6 @@ export default function Index({ organizations, filters, users }: Props) {
                         <OrganizationForm
                             key={formOrganization?.token ?? 'new'}
                             organization={formOrganization ?? undefined}
-                            users={users}
                             onSuccess={() => setFormOpen(false)}
                         />
                     </div>

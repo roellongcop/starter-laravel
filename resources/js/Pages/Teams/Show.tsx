@@ -22,29 +22,14 @@ import {
     TableRow,
 } from '@/Components/ui/table';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    type AdminTeam,
-    type Crumb,
-    type OrgScopedOption,
-    type SelectOption,
-} from '@/types';
+import { type AdminTeam, type Crumb } from '@/types';
 import TeamForm from './Partials/TeamForm';
 
 interface Props {
     team: AdminTeam;
-    organizations: SelectOption[];
-    categories: OrgScopedOption[];
-    organizationRoles: OrgScopedOption[];
-    users: SelectOption[];
 }
 
-export default function Show({
-    team,
-    organizations,
-    categories,
-    organizationRoles,
-    users,
-}: Props) {
+export default function Show({ team }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -173,10 +158,6 @@ export default function Show({
                     <div className="mt-6">
                         <TeamForm
                             team={team}
-                            organizations={organizations}
-                            categories={categories}
-                            organizationRoles={organizationRoles}
-                            users={users}
                             onSuccess={() => setEditOpen(false)}
                         />
                     </div>

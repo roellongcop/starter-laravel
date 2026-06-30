@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\StoreUploadedFile;
 use App\Filters\ReferenceFileFilters;
+use App\Http\Controllers\Concerns\ProvidesOptions;
 use App\Http\Controllers\Concerns\ResolvesDataTags;
 use App\Http\Requests\StoreReferenceFileRequest;
 use App\Http\Requests\UpdateReferenceFileRequest;
@@ -20,6 +21,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReferenceFileController extends Controller
 {
+    use ProvidesOptions;
     use ResolvesDataTags;
 
     public function index(Request $request, ReferenceFileFilters $filters): Response
@@ -35,9 +37,17 @@ class ReferenceFileController extends Controller
         return Inertia::render('ReferenceFiles/Index', [
             'references' => Inertia::scroll($references),
             'filters' => $filters->echoBack(),
-            'organizations' => $this->organizationOptions(),
-            'dataTags' => $this->dataTagOptions(),
         ]);
+    }
+
+    public function options(Request $request): JsonResponse
+    {
+        return $this->optionsResponse(
+            $request,
+            ReferenceFile::class,
+            fn (ReferenceFile $reference): array => ['value' => $reference->token, 'label' => $reference->name],
+            organizationScoped: true,
+        );
     }
 
     public function store(StoreReferenceFileRequest $request): RedirectResponse
@@ -60,8 +70,6 @@ class ReferenceFileController extends Controller
 
         return Inertia::render('ReferenceFiles/Show', [
             'reference' => $this->row($referenceFile->load(['organization', 'file', 'tags'])),
-            'organizations' => $this->organizationOptions(),
-            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -168,18 +176,6 @@ class ReferenceFileController extends Controller
         unset($data['organization'], $data['file_token']);
 
         return $data;
-    }
-
-    /**
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function organizationOptions(): array
-    {
-        return Organization::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
-            ->all();
     }
 
     /**

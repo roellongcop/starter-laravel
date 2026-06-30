@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Filters\PersonFilters;
-use App\Models\Organization;
 use App\Models\Person;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,22 +27,7 @@ class PersonController extends Controller
         return Inertia::render('People/Index', [
             'people' => cursorResponse($people, fn (Person $person) => $this->row($person)),
             'filters' => $filters->echoBack(),
-            'organizations' => $this->organizationOptions(),
         ]);
-    }
-
-    /**
-     * Selectable organizations for the filter, keyed by token.
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function organizationOptions(): array
-    {
-        return Organization::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
-            ->all();
     }
 
     /**

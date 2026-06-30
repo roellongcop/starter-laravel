@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -23,22 +24,16 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminDataTag, type SelectOption } from '@/types';
+import { type AdminDataTag } from '@/types';
 import DataTagForm from './Partials/DataTagForm';
 
 interface Props {
     dataTags: { data: AdminDataTag[] };
     filters: { search: string; organization: string; inactive: boolean };
-    organizations: SelectOption[];
     colors: string[];
 }
 
-export default function Index({
-    dataTags,
-    filters,
-    organizations,
-    colors,
-}: Props) {
+export default function Index({ dataTags, filters, colors }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'data-tags.index',
         reset: ['dataTags'],
@@ -89,11 +84,10 @@ export default function Index({
                         onChange={(v) => f.set('search', v)}
                         placeholder="Search name or description…"
                     />
-                    <FilterBar.Select
-                        value={f.values.organization}
+                    <OrganizationSelect
+                        value={f.values.organization || undefined}
                         onChange={(v) => f.apply({ organization: v })}
-                        options={organizations}
-                        placeholder="All organizations"
+                        allowClear
                         allLabel="All organizations"
                         className="w-56"
                     />
@@ -118,7 +112,7 @@ export default function Index({
                     {dataTags.data.map((tag) => (
                         <Card
                             key={tag.token}
-                            className="relative flex h-full flex-col transition-shadow hover:shadow-md"
+                            className="relative flex h-full flex-col transition-all hover:border-ring hover:shadow-md"
                         >
                             <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
                                 <div className="min-w-0 space-y-1">
@@ -215,7 +209,6 @@ export default function Index({
                         <DataTagForm
                             key={formTag?.token ?? 'new'}
                             dataTag={formTag ?? undefined}
-                            organizations={organizations}
                             colors={colors}
                             onSuccess={() => setFormOpen(false)}
                         />

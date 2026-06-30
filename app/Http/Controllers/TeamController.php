@@ -32,7 +32,6 @@ class TeamController extends Controller
         return Inertia::render('Teams/Index', [
             'teams' => Inertia::scroll($teams),
             'filters' => $filters->echoBack(),
-            ...$this->formOptions(),
         ]);
     }
 
@@ -56,7 +55,6 @@ class TeamController extends Controller
 
         return Inertia::render('Teams/Show', [
             'team' => $this->row($team, detailed: true),
-            ...$this->formOptions(),
         ]);
     }
 
@@ -131,59 +129,6 @@ class TeamController extends Controller
             'organization_role_id' => $team->organization_role_id,
             'organization_id' => $team->organization_id,
         ]);
-    }
-
-    /**
-     * Dropdown data shared by the index (sheet form) and show pages.
-     *
-     * @return array<string, mixed>
-     */
-    protected function formOptions(): array
-    {
-        return [
-            'organizations' => $this->organizationOptions(),
-            // Each category carries its organization token so the form can filter
-            // the category options to the selected organization (cascading select).
-            'categories' => TeamCategory::query()
-                ->with('organization:id,token')
-                ->orderBy('name')
-                ->get(['token', 'name', 'organization_id'])
-                ->map(fn (TeamCategory $category) => [
-                    'value' => $category->token,
-                    'label' => $category->name,
-                    'organization' => $category->organization->token,
-                ])
-                ->all(),
-            // Each role carries its organization token so the form can filter the
-            // role options to the selected organization (cascading select).
-            'organizationRoles' => OrganizationRole::query()
-                ->with('organization:id,token')
-                ->orderBy('name')
-                ->get(['token', 'name', 'organization_id'])
-                ->map(fn (OrganizationRole $role) => [
-                    'value' => $role->token,
-                    'label' => $role->name,
-                    'organization' => $role->organization->token,
-                ])
-                ->all(),
-            'users' => User::query()
-                ->orderBy('name')
-                ->get(['token', 'name'])
-                ->map(fn (User $user) => ['value' => $user->token, 'label' => $user->name])
-                ->all(),
-        ];
-    }
-
-    /**
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function organizationOptions(): array
-    {
-        return Organization::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
-            ->all();
     }
 
     /**

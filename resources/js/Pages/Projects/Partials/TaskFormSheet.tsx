@@ -1,18 +1,12 @@
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
+import AsyncMultiSelect from '@/Components/AsyncMultiSelect';
+import AsyncSelect from '@/Components/AsyncSelect';
 import InputError from '@/Components/InputError';
-import MultiSelect from '@/Components/MultiSelect';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
 import {
     Sheet,
     SheetContent,
@@ -22,16 +16,7 @@ import {
 } from '@/Components/ui/sheet';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
-import {
-    type AdminMilestone,
-    type AdminTask,
-    type DataTagOption,
-    type SelectOption,
-} from '@/types';
-
-// Radix Select forbids an empty-string item value, so an unset user/reference
-// uses this sentinel that maps back to '' (→ null on the server) on change.
-const NONE = '__none';
+import { type AdminMilestone, type AdminTask } from '@/types';
 
 type UserField = 'assigned_to' | 'approver' | 'observer';
 
@@ -43,10 +28,8 @@ interface Props {
     columns: AdminMilestone[];
     task?: AdminTask | null;
     defaultMilestone?: string;
-    userOptions: SelectOption[];
-    referenceFileOptions: SelectOption[];
-    /** Already filtered to the asset's organization by the board. */
-    dataTags: DataTagOption[];
+    /** The bound asset's organization token — scopes the reference-file + tag pickers. */
+    assetOrganization: string | null;
     onSuccess: () => void;
 }
 
@@ -58,9 +41,7 @@ export default function TaskFormSheet({
     columns,
     task,
     defaultMilestone,
-    userOptions,
-    referenceFileOptions,
-    dataTags,
+    assetOrganization,
     onSuccess,
 }: Props) {
     const editing = Boolean(task);
@@ -112,22 +93,19 @@ export default function TaskFormSheet({
     const userSelect = (field: UserField, label: string) => (
         <div>
             <Label htmlFor={field}>{label}</Label>
-            <Select
-                value={data[field] || NONE}
-                onValueChange={(v) => setData(field, v === NONE ? '' : v)}
-            >
-                <SelectTrigger id={field} className="mt-1">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value={NONE}>Unassigned</SelectItem>
-                    {userOptions.map((u) => (
-                        <SelectItem key={u.value} value={String(u.value)}>
-                            {u.label}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <AsyncSelect
+                id={field}
+                className="mt-1"
+                value={data[field] || undefined}
+                onChange={(v) => setData(field, v ?? '')}
+                routeName="users.options"
+                allowClear
+                allLabel="Unassigned"
+                placeholder="Unassigned"
+                dialogTitle="Select user"
+                searchPlaceholder="Search users…"
+                emptyText="No users found."
+            />
             <InputError message={errors[field]} className="mt-1" />
         </div>
     );
@@ -179,24 +157,21 @@ export default function TaskFormSheet({
 
                     <div>
                         <Label htmlFor="task-milestone">Milestone</Label>
-                        <Select
-                            value={data.milestone}
-                            onValueChange={(v) => setData('milestone', v)}
-                        >
-                            <SelectTrigger id="task-milestone" className="mt-1">
-                                <SelectValue placeholder="Select a milestone" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {columns.map((column) => (
-                                    <SelectItem
-                                        key={column.token}
-                                        value={column.token}
-                                    >
-                                        {column.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <AsyncSelect
+                            id="task-milestone"
+                            className="mt-1"
+                            value={data.milestone || undefined}
+                            onChange={(v) => setData('milestone', v ?? '')}
+                            staticOptions={columns.map((column) => ({
+                                value: column.token,
+                                label: column.name,
+                            }))}
+                            placeholder="Select a milestone"
+                            dialogTitle="Select milestone"
+                            searchPlaceholder="Search milestones…"
+                            emptyText="No milestones."
+                            invalid={Boolean(errors.milestone)}
+                        />
                         <InputError
                             message={errors.milestone}
                             className="mt-1"
@@ -226,27 +201,22 @@ export default function TaskFormSheet({
 
                     <div>
                         <Label htmlFor="task-reference">Reference file</Label>
-                        <Select
-                            value={data.reference_file || NONE}
-                            onValueChange={(v) =>
-                                setData('reference_file', v === NONE ? '' : v)
-                            }
-                        >
-                            <SelectTrigger id="task-reference" className="mt-1">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={NONE}>None</SelectItem>
-                                {referenceFileOptions.map((r) => (
-                                    <SelectItem
-                                        key={r.value}
-                                        value={String(r.value)}
-                                    >
-                                        {r.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <AsyncSelect
+                            id="task-reference"
+                            className="mt-1"
+                            value={data.reference_file || undefined}
+                            onChange={(v) => setData('reference_file', v ?? '')}
+                            routeName="reference-files.options"
+                            params={{
+                                organization: assetOrganization || undefined,
+                            }}
+                            allowClear
+                            allLabel="None"
+                            placeholder="None"
+                            dialogTitle="Select reference file"
+                            searchPlaceholder="Search reference files…"
+                            emptyText="No reference files for this organization."
+                        />
                         <InputError
                             message={errors.reference_file}
                             className="mt-1"
@@ -255,15 +225,21 @@ export default function TaskFormSheet({
 
                     <div>
                         <Label htmlFor="task-tags">Tags</Label>
-                        <MultiSelect
+                        <AsyncMultiSelect
                             id="task-tags"
                             className="mt-1"
-                            options={dataTags}
-                            selected={data.tags}
+                            values={data.tags}
                             onChange={(values) => setData('tags', values)}
+                            routeName="data-tags.options"
+                            params={{
+                                organization: assetOrganization || undefined,
+                            }}
+                            disabled={!assetOrganization}
+                            disabledHint="No organization"
                             placeholder="Select tags"
                             title="Select tags"
                             emptyText="No tags for this organization."
+                            searchPlaceholder="Search tags…"
                         />
                         <InputError message={errors.tags} className="mt-1" />
                     </div>

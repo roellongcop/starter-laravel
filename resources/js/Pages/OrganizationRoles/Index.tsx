@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -23,16 +24,15 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminOrganizationRole, type SelectOption } from '@/types';
+import { type AdminOrganizationRole } from '@/types';
 import OrganizationRoleForm from './Partials/OrganizationRoleForm';
 
 interface Props {
     roles: { data: AdminOrganizationRole[] };
     filters: { search: string; organization: string; inactive: boolean };
-    organizations: SelectOption[];
 }
 
-export default function Index({ roles, filters, organizations }: Props) {
+export default function Index({ roles, filters }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'organization-roles.index',
         reset: ['roles'],
@@ -87,11 +87,10 @@ export default function Index({ roles, filters, organizations }: Props) {
                         onChange={(v) => f.set('search', v)}
                         placeholder="Search roles…"
                     />
-                    <FilterBar.Select
-                        value={f.values.organization}
+                    <OrganizationSelect
+                        value={f.values.organization || undefined}
                         onChange={(v) => f.apply({ organization: v })}
-                        options={organizations}
-                        placeholder="All organizations"
+                        allowClear
                         allLabel="All organizations"
                         className="w-56"
                     />
@@ -116,7 +115,7 @@ export default function Index({ roles, filters, organizations }: Props) {
                     {roles.data.map((role) => (
                         <Card
                             key={role.token}
-                            className="relative flex h-full flex-col transition-shadow hover:shadow-md"
+                            className="relative flex h-full flex-col transition-all hover:border-ring hover:shadow-md"
                         >
                             <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
                                 <div className="min-w-0 space-y-1">
@@ -206,7 +205,6 @@ export default function Index({ roles, filters, organizations }: Props) {
                         <OrganizationRoleForm
                             key={formRole?.token ?? 'new'}
                             role={formRole ?? undefined}
-                            organizations={organizations}
                             onSuccess={() => setFormOpen(false)}
                         />
                     </div>

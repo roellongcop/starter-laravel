@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Filters\OrganizationFilters;
+use App\Http\Controllers\Concerns\ProvidesOptions;
 use App\Http\Requests\StoreOrganizationRequest;
 use App\Http\Requests\UpdateOrganizationRequest;
 use App\Models\Organization;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,6 +16,8 @@ use Inertia\Response;
 
 class OrganizationController extends Controller
 {
+    use ProvidesOptions;
+
     public function index(Request $request, OrganizationFilters $filters): Response
     {
         $this->authorize('viewAny', Organization::class);
@@ -30,8 +34,28 @@ class OrganizationController extends Controller
             // metadata is derived from the CursorPaginator automatically.
             'organizations' => Inertia::scroll($organizations),
             'filters' => $filters->echoBack(),
-            'users' => $this->userOptions(),
         ]);
+    }
+
+    /**
+     * Search-as-you-type options for the async organization picker (filters +
+     * forms across modules). Cursor-paginated `keen.options_limit` rows at a time
+     * (ordered by name) so the picker loads more on scroll and the payload never
+     * grows with the table — `?q=` narrows by name, `?cursor=` fetches the next
+     * page, while `?tokens[]=` rehydrates already-selected values by their public
+     * token. Org names are already exposed via every module's filter, so any
+     * authenticated user may resolve them.
+     */
+    public function options(Request $request): JsonResponse
+    {
+        return $this->optionsResponse(
+            $request,
+            Organization::class,
+            fn (Organization $organization): array => [
+                'value' => $organization->token,
+                'label' => $organization->name,
+            ],
+        );
     }
 
     public function store(StoreOrganizationRequest $request): RedirectResponse
@@ -51,7 +75,6 @@ class OrganizationController extends Controller
         // pages (pre-filtered by ?organization=), so this view stays lightweight.
         return Inertia::render('Organizations/Show', [
             'organization' => $this->row($organization->load('pointOfContact')),
-            'users' => $this->userOptions(),
         ]);
     }
 
@@ -87,20 +110,6 @@ class OrganizationController extends Controller
         unset($data['point_of_contact']);
 
         return $data;
-    }
-
-    /**
-     * Selectable users for the point-of-contact picker, keyed by token.
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function userOptions(): array
-    {
-        return User::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (User $user) => ['value' => $user->token, 'label' => $user->name])
-            ->all();
     }
 
     /**

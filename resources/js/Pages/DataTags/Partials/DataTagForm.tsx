@@ -3,43 +3,30 @@ import { Check } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/Components/InputError';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { type AdminDataTag, type SelectOption } from '@/types';
+import { type AdminDataTag } from '@/types';
 
 interface Props {
     dataTag?: Pick<
         AdminDataTag,
         'token' | 'name' | 'description' | 'color' | 'organization'
     >;
-    organizations: SelectOption[];
     colors: string[];
     onSuccess?: () => void;
 }
 
-export default function DataTagForm({
-    dataTag,
-    organizations,
-    colors,
-    onSuccess,
-}: Props) {
+export default function DataTagForm({ dataTag, colors, onSuccess }: Props) {
     const editing = Boolean(dataTag);
 
     const { data, setData, post, patch, processing, errors } = useForm({
         name: dataTag?.name ?? '',
         description: dataTag?.description ?? '',
-        organization:
-            dataTag?.organization ?? String(organizations[0]?.value ?? ''),
+        organization: dataTag?.organization ?? '',
         color: dataTag?.color ?? colors[0] ?? '',
     });
 
@@ -82,21 +69,13 @@ export default function DataTagForm({
 
             <div>
                 <Label htmlFor="organization">Organization</Label>
-                <Select
-                    value={data.organization}
-                    onValueChange={(v) => setData('organization', v)}
-                >
-                    <SelectTrigger id="organization" className="mt-1">
-                        <SelectValue placeholder="Select an organization" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {organizations.map((o) => (
-                            <SelectItem key={o.value} value={String(o.value)}>
-                                {o.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <OrganizationSelect
+                    id="organization"
+                    className="mt-1"
+                    value={data.organization || undefined}
+                    onChange={(v) => setData('organization', v ?? '')}
+                    invalid={Boolean(errors.organization)}
+                />
                 <InputError message={errors.organization} className="mt-1" />
             </div>
 

@@ -24,15 +24,14 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminOrganization, type SelectOption } from '@/types';
+import { type AdminOrganization } from '@/types';
 import OrganizationForm from './Partials/OrganizationForm';
 
 interface Props {
     organization: AdminOrganization;
-    users: SelectOption[];
 }
 
-export default function Show({ organization, users }: Props) {
+export default function Show({ organization }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -96,7 +95,7 @@ export default function Show({ organization, users }: Props) {
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <Can ability="projects.index">
-                    <Card className="relative transition-shadow hover:shadow-md">
+                    <Card className="relative transition-all hover:border-ring hover:shadow-md">
                         <CardContent className="flex items-center gap-4 pt-6">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                                 <FolderKanban className="h-5 w-5" />
@@ -122,7 +121,7 @@ export default function Show({ organization, users }: Props) {
                 </Can>
 
                 <Can ability="assets.index">
-                    <Card className="relative transition-shadow hover:shadow-md">
+                    <Card className="relative transition-all hover:border-ring hover:shadow-md">
                         <CardContent className="flex items-center gap-4 pt-6">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                                 <Boxes className="h-5 w-5" />
@@ -146,7 +145,7 @@ export default function Show({ organization, users }: Props) {
                 </Can>
 
                 <Can ability="forms.index">
-                    <Card className="relative transition-shadow hover:shadow-md">
+                    <Card className="relative transition-all hover:border-ring hover:shadow-md">
                         <CardContent className="flex items-center gap-4 pt-6">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                                 <ClipboardList className="h-5 w-5" />
@@ -170,7 +169,7 @@ export default function Show({ organization, users }: Props) {
                 </Can>
 
                 <Can ability="organization-roles.index">
-                    <Card className="relative transition-shadow hover:shadow-md">
+                    <Card className="relative transition-all hover:border-ring hover:shadow-md">
                         <CardContent className="flex items-center gap-4 pt-6">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                                 <BadgeCheck className="h-5 w-5" />
@@ -194,7 +193,7 @@ export default function Show({ organization, users }: Props) {
                 </Can>
 
                 <Can ability="teams.index">
-                    <Card className="relative transition-shadow hover:shadow-md">
+                    <Card className="relative transition-all hover:border-ring hover:shadow-md">
                         <CardContent className="flex items-center gap-4 pt-6">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                                 <UsersRound className="h-5 w-5" />
@@ -218,7 +217,7 @@ export default function Show({ organization, users }: Props) {
                 </Can>
 
                 <Can ability="reference-files.index">
-                    <Card className="relative transition-shadow hover:shadow-md">
+                    <Card className="relative transition-all hover:border-ring hover:shadow-md">
                         <CardContent className="flex items-center gap-4 pt-6">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                                 <FileText className="h-5 w-5" />
@@ -242,7 +241,7 @@ export default function Show({ organization, users }: Props) {
                 </Can>
 
                 <Can ability="data-tags.index">
-                    <Card className="relative transition-shadow hover:shadow-md">
+                    <Card className="relative transition-all hover:border-ring hover:shadow-md">
                         <CardContent className="flex items-center gap-4 pt-6">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                                 <Tags className="h-5 w-5" />
@@ -280,7 +279,6 @@ export default function Show({ organization, users }: Props) {
                     <div className="mt-6">
                         <OrganizationForm
                             organization={organization}
-                            users={users}
                             onSuccess={() => setEditOpen(false)}
                         />
                     </div>

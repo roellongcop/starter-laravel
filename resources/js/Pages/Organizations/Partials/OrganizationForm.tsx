@@ -1,33 +1,20 @@
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
+import AsyncSelect from '@/Components/AsyncSelect';
 import InputError from '@/Components/InputError';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { type AdminOrganization, type SelectOption } from '@/types';
+import { type AdminOrganization } from '@/types';
 
 interface Props {
     organization?: AdminOrganization;
-    users: SelectOption[];
     onSuccess?: () => void;
 }
 
-const NONE = 'none';
-
-export default function OrganizationForm({
-    organization,
-    users,
-    onSuccess,
-}: Props) {
+export default function OrganizationForm({ organization, onSuccess }: Props) {
     const editing = Boolean(organization);
 
     const { data, setData, post, patch, processing, errors } = useForm({
@@ -74,24 +61,20 @@ export default function OrganizationForm({
 
             <div>
                 <Label htmlFor="point_of_contact">Point of contact</Label>
-                <Select
-                    value={data.point_of_contact || NONE}
-                    onValueChange={(v) =>
-                        setData('point_of_contact', v === NONE ? '' : v)
-                    }
-                >
-                    <SelectTrigger id="point_of_contact" className="mt-1">
-                        <SelectValue placeholder="— None —" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value={NONE}>— None —</SelectItem>
-                        {users.map((o) => (
-                            <SelectItem key={o.value} value={String(o.value)}>
-                                {o.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <AsyncSelect
+                    id="point_of_contact"
+                    className="mt-1"
+                    value={data.point_of_contact || undefined}
+                    onChange={(v) => setData('point_of_contact', v ?? '')}
+                    routeName="users.options"
+                    allowClear
+                    allLabel="— None —"
+                    placeholder="— None —"
+                    dialogTitle="Select user"
+                    searchPlaceholder="Search users…"
+                    emptyText="No users found."
+                    invalid={Boolean(errors.point_of_contact)}
+                />
                 <InputError
                     message={errors.point_of_contact}
                     className="mt-1"

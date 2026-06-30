@@ -12,27 +12,6 @@ use Illuminate\Database\Eloquent\Collection;
 trait ResolvesDataTags
 {
     /**
-     * Selectable tags for the picker, each carrying its organization token so the
-     * frontend can show only the tags belonging to the chosen organization.
-     *
-     * @return array<int, array{value: string, label: string, organization: string, color: string}>
-     */
-    protected function dataTagOptions(): array
-    {
-        return DataTag::query()
-            ->with('organization')
-            ->orderBy('name')
-            ->get()
-            ->map(fn (DataTag $tag): array => [
-                'value' => $tag->token,
-                'label' => $tag->name,
-                'organization' => $tag->organization->token,
-                'color' => $tag->color,
-            ])
-            ->all();
-    }
-
-    /**
      * Serialize an attached-tags collection into frontend chips (token/name/color).
      *
      * @param  Collection<int, DataTag>  $tags

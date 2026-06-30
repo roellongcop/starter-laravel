@@ -15,21 +15,14 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    type AdminAsset,
-    type Crumb,
-    type DataTagOption,
-    type SelectOption,
-} from '@/types';
+import { type AdminAsset, type Crumb } from '@/types';
 import AssetForm from './Partials/AssetForm';
 
 interface Props {
     asset: AdminAsset;
-    organizations: SelectOption[];
-    dataTags: DataTagOption[];
 }
 
-export default function Show({ asset, organizations, dataTags }: Props) {
+export default function Show({ asset }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -122,8 +115,6 @@ export default function Show({ asset, organizations, dataTags }: Props) {
                     <div className="mt-6">
                         <AssetForm
                             asset={asset}
-                            organizations={organizations}
-                            dataTags={dataTags}
                             onSuccess={() => setEditOpen(false)}
                         />
                     </div>

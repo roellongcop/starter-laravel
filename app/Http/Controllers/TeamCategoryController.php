@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Filters\TeamCategoryFilters;
+use App\Http\Controllers\Concerns\ProvidesOptions;
 use App\Http\Requests\StoreTeamCategoryRequest;
 use App\Http\Requests\UpdateTeamCategoryRequest;
 use App\Models\Organization;
 use App\Models\TeamCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,6 +16,8 @@ use Inertia\Response;
 
 class TeamCategoryController extends Controller
 {
+    use ProvidesOptions;
+
     public function index(Request $request, TeamCategoryFilters $filters): Response
     {
         $this->authorize('viewAny', TeamCategory::class);
@@ -27,8 +31,17 @@ class TeamCategoryController extends Controller
         return Inertia::render('TeamCategories/Index', [
             'categories' => Inertia::scroll($categories),
             'filters' => $filters->echoBack(),
-            'organizations' => $this->organizationOptions(),
         ]);
+    }
+
+    public function options(Request $request): JsonResponse
+    {
+        return $this->optionsResponse(
+            $request,
+            TeamCategory::class,
+            fn (TeamCategory $category): array => ['value' => $category->token, 'label' => $category->name],
+            organizationScoped: true,
+        );
     }
 
     public function store(StoreTeamCategoryRequest $request): RedirectResponse
@@ -46,7 +59,6 @@ class TeamCategoryController extends Controller
 
         return Inertia::render('TeamCategories/Show', [
             'category' => $this->row($teamCategory->load('organization')),
-            'organizations' => $this->organizationOptions(),
         ]);
     }
 
@@ -87,20 +99,6 @@ class TeamCategoryController extends Controller
         unset($data['organization']);
 
         return $data;
-    }
-
-    /**
-     * Selectable organizations for the picker, keyed by token.
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function organizationOptions(): array
-    {
-        return Organization::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
-            ->all();
     }
 
     /**

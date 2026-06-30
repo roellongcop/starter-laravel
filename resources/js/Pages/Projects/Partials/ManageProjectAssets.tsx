@@ -1,11 +1,11 @@
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
+import AsyncMultiSelect from '@/Components/AsyncMultiSelect';
 import InputError from '@/Components/InputError';
-import MultiSelect from '@/Components/MultiSelect';
 import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
-import { type AdminProject, type SelectOption } from '@/types';
+import { type AdminProject } from '@/types';
 
 /**
  * Set-membership editor for a project's bound assets. Submits the full token
@@ -14,12 +14,10 @@ import { type AdminProject, type SelectOption } from '@/types';
 export default function ManageProjectAssets({
     project,
     selected,
-    assetOptions,
     onSuccess,
 }: {
     project: AdminProject;
     selected: string[];
-    assetOptions: SelectOption[];
     onSuccess: () => void;
 }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -38,16 +36,18 @@ export default function ManageProjectAssets({
         <form onSubmit={submit} className="space-y-6">
             <div>
                 <Label htmlFor="assets">Assets</Label>
-                <MultiSelect
+                <AsyncMultiSelect
                     id="assets"
                     className="mt-1"
-                    options={assetOptions}
-                    selected={data.assets}
+                    values={data.assets}
                     onChange={(values) => setData('assets', values)}
+                    routeName="assets.options"
+                    params={{ organization: project.organization || undefined }}
                     placeholder="Select assets"
                     title="Select assets"
                     description="Only assets from this project's organization are shown."
                     emptyText="No assets in this organization."
+                    searchPlaceholder="Search assets…"
                 />
                 <InputError message={errors.assets} className="mt-1" />
             </div>

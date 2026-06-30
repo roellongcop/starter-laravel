@@ -14,15 +14,14 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminTeamCategory, type Crumb, type SelectOption } from '@/types';
+import { type AdminTeamCategory, type Crumb } from '@/types';
 import TeamCategoryForm from './Partials/TeamCategoryForm';
 
 interface Props {
     category: AdminTeamCategory;
-    organizations: SelectOption[];
 }
 
-export default function Show({ category, organizations }: Props) {
+export default function Show({ category }: Props) {
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -97,7 +96,6 @@ export default function Show({ category, organizations }: Props) {
                     <div className="mt-6">
                         <TeamCategoryForm
                             category={category}
-                            organizations={organizations}
                             onSuccess={() => setEditOpen(false)}
                         />
                     </div>

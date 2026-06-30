@@ -9,9 +9,7 @@ use App\Http\Controllers\Concerns\SerializesBoard;
 use App\Models\Asset;
 use App\Models\Milestone;
 use App\Models\Project;
-use App\Models\ReferenceFile;
 use App\Models\Task;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -74,11 +72,6 @@ class ProjectAssetBoardController extends Controller
             'canManage' => $canManage,
             // Workflow statuses for the inline per-project-asset status dropdown.
             'statusOptions' => ProjectStatus::options(),
-            // The task form's pickers — only handed to managers (avoid leaking the
-            // user/reference-file lists to view-only roles).
-            'userOptions' => $canManage ? $this->userOptions() : [],
-            'referenceFileOptions' => $canManage ? $this->referenceFileOptions($asset->organization_id) : [],
-            'dataTags' => $canManage ? $this->dataTagOptions() : [],
         ]);
     }
 
@@ -143,35 +136,5 @@ class ProjectAssetBoardController extends Controller
         }
 
         return back();
-    }
-
-    /**
-     * Selectable users for the assignee/approver/observer pickers, keyed by token
-     * (the global active scope already excludes inactive users).
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function userOptions(): array
-    {
-        return User::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (User $user): array => ['value' => $user->token, 'label' => $user->name])
-            ->all();
-    }
-
-    /**
-     * Selectable reference files for the picker, scoped to the asset's organization.
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function referenceFileOptions(int $organizationId): array
-    {
-        return ReferenceFile::query()
-            ->where('organization_id', $organizationId)
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (ReferenceFile $reference): array => ['value' => $reference->token, 'label' => $reference->name])
-            ->all();
     }
 }

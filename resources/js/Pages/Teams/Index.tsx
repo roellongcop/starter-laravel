@@ -12,6 +12,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
 import TeamsPeopleTabs from '@/Components/TeamsPeopleTabs';
 import { Button } from '@/Components/ui/button';
@@ -31,30 +32,15 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    type AdminTeam,
-    type OrgScopedOption,
-    type SelectOption,
-} from '@/types';
+import { type AdminTeam } from '@/types';
 import TeamForm from './Partials/TeamForm';
 
 interface Props {
     teams: { data: AdminTeam[] };
     filters: { search: string; organization: string; inactive: boolean };
-    organizations: SelectOption[];
-    categories: OrgScopedOption[];
-    organizationRoles: OrgScopedOption[];
-    users: SelectOption[];
 }
 
-export default function Index({
-    teams,
-    filters,
-    organizations,
-    categories,
-    organizationRoles,
-    users,
-}: Props) {
+export default function Index({ teams, filters }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'teams.index',
         reset: ['teams'],
@@ -107,11 +93,10 @@ export default function Index({
                         onChange={(v) => f.set('search', v)}
                         placeholder="Search name or description…"
                     />
-                    <FilterBar.Select
-                        value={f.values.organization}
+                    <OrganizationSelect
+                        value={f.values.organization || undefined}
                         onChange={(v) => f.apply({ organization: v })}
-                        options={organizations}
-                        placeholder="All organizations"
+                        allowClear
                         allLabel="All organizations"
                         className="w-56"
                     />
@@ -136,7 +121,7 @@ export default function Index({
                     {teams.data.map((team) => (
                         <Card
                             key={team.token}
-                            className="relative flex h-full flex-col transition-shadow hover:shadow-md"
+                            className="relative flex h-full flex-col transition-all hover:border-ring hover:shadow-md"
                         >
                             <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
                                 <div className="min-w-0 space-y-1">
@@ -229,10 +214,6 @@ export default function Index({
                         <TeamForm
                             key={formTeam?.token ?? 'new'}
                             team={formTeam ?? undefined}
-                            organizations={organizations}
-                            categories={categories}
-                            organizationRoles={organizationRoles}
-                            users={users}
                             onSuccess={() => setFormOpen(false)}
                         />
                     </div>

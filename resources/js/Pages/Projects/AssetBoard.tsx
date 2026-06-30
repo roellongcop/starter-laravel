@@ -11,7 +11,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     type AdminMilestone,
     type Crumb,
-    type DataTagOption,
     type ProjectAsset,
     type SelectOption,
 } from '@/types';
@@ -22,9 +21,6 @@ interface Props {
     asset: ProjectAsset;
     milestones: AdminMilestone[];
     canManage: boolean;
-    userOptions: SelectOption[];
-    referenceFileOptions: SelectOption[];
-    dataTags: DataTagOption[];
     statusOptions: SelectOption[];
 }
 
@@ -33,9 +29,6 @@ export default function AssetBoard({
     asset,
     milestones,
     canManage,
-    userOptions,
-    referenceFileOptions,
-    dataTags,
     statusOptions,
 }: Props) {
     const breadcrumbs: Crumb[] = [
@@ -122,9 +115,6 @@ export default function AssetBoard({
                     assetOrganization={asset.organization}
                     milestones={milestones}
                     canManage={canManage}
-                    userOptions={userOptions}
-                    referenceFileOptions={referenceFileOptions}
-                    dataTags={dataTags}
                 />
             </div>
         </AuthenticatedLayout>

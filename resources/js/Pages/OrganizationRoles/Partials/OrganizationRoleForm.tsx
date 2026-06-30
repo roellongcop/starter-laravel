@@ -2,40 +2,28 @@ import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/Components/InputError';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import { type AdminOrganizationRole, type SelectOption } from '@/types';
+import { type AdminOrganizationRole } from '@/types';
 
 interface Props {
     role?: Pick<
         AdminOrganizationRole,
         'token' | 'name' | 'description' | 'organization'
     >;
-    organizations: SelectOption[];
     onSuccess?: () => void;
 }
 
-export default function OrganizationRoleForm({
-    role,
-    organizations,
-    onSuccess,
-}: Props) {
+export default function OrganizationRoleForm({ role, onSuccess }: Props) {
     const editing = Boolean(role);
 
     const { data, setData, post, patch, processing, errors } = useForm({
         name: role?.name ?? '',
         description: role?.description ?? '',
-        organization:
-            role?.organization ?? String(organizations[0]?.value ?? ''),
+        organization: role?.organization ?? '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -77,21 +65,13 @@ export default function OrganizationRoleForm({
 
             <div>
                 <Label htmlFor="organization">Organization</Label>
-                <Select
-                    value={data.organization}
-                    onValueChange={(v) => setData('organization', v)}
-                >
-                    <SelectTrigger id="organization" className="mt-1">
-                        <SelectValue placeholder="Select an organization" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {organizations.map((o) => (
-                            <SelectItem key={o.value} value={String(o.value)}>
-                                {o.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <OrganizationSelect
+                    id="organization"
+                    className="mt-1"
+                    value={data.organization || undefined}
+                    onChange={(v) => setData('organization', v ?? '')}
+                    invalid={Boolean(errors.organization)}
+                />
                 <InputError message={errors.organization} className="mt-1" />
             </div>
 

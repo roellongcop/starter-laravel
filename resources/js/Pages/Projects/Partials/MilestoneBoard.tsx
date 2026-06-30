@@ -19,18 +19,13 @@ import {
 import { router } from '@inertiajs/react';
 import axios from 'axios';
 import { ChevronsDownUp, ChevronsUpDown, Plus } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import { Button } from '@/Components/ui/button';
 import { toast } from '@/hooks/use-toast';
-import {
-    type AdminMilestone,
-    type AdminTask,
-    type DataTagOption,
-    type SelectOption,
-} from '@/types';
+import { type AdminMilestone, type AdminTask } from '@/types';
 import MilestoneColumn from './MilestoneColumn';
 import MilestoneFormSheet from './MilestoneFormSheet';
 import TaskCard from './TaskCard';
@@ -42,9 +37,6 @@ interface Props {
     assetOrganization: string | null;
     milestones: AdminMilestone[];
     canManage: boolean;
-    userOptions: SelectOption[];
-    referenceFileOptions: SelectOption[];
-    dataTags: DataTagOption[];
 }
 
 const columnOf = (taskToken: string, cols: AdminMilestone[]): string | null =>
@@ -56,9 +48,6 @@ export default function MilestoneBoard({
     assetOrganization,
     milestones,
     canManage,
-    userOptions,
-    referenceFileOptions,
-    dataTags,
 }: Props) {
     const [columns, setColumns] = useState<AdminMilestone[]>(milestones);
     const [activeId, setActiveId] = useState<string | null>(null);
@@ -85,11 +74,6 @@ export default function MilestoneBoard({
     const [milestoneToDelete, setMilestoneToDelete] =
         useState<AdminMilestone | null>(null);
     const [taskToDelete, setTaskToDelete] = useState<AdminTask | null>(null);
-
-    const availableTags = useMemo(
-        () => dataTags.filter((t) => t.organization === assetOrganization),
-        [dataTags, assetOrganization],
-    );
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -405,9 +389,7 @@ export default function MilestoneBoard({
                 columns={columns}
                 task={taskEditing}
                 defaultMilestone={taskDefaultMilestone}
-                userOptions={userOptions}
-                referenceFileOptions={referenceFileOptions}
-                dataTags={availableTags}
+                assetOrganization={assetOrganization}
                 onSuccess={() => setTaskSheetOpen(false)}
             />
 

@@ -26,7 +26,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
     type AdminProject,
     type Crumb,
-    type DataTagOption,
     type ProjectAsset,
     type SelectOption,
 } from '@/types';
@@ -35,25 +34,19 @@ import ProjectForm from './Partials/ProjectForm';
 
 interface Props {
     project: AdminProject;
-    organizations: SelectOption[];
-    dataTags: DataTagOption[];
     // Inertia::scroll() cursor paginator; <InfiniteScroll> appends pages into `data`.
     projectAssets: { data: ProjectAsset[] };
     assetsTotal: number;
     filters: { search: string };
-    assetOptions: SelectOption[];
     selectedAssetTokens: string[];
     statusOptions: SelectOption[];
 }
 
 export default function Show({
     project,
-    organizations,
-    dataTags,
     projectAssets,
     assetsTotal,
     filters,
-    assetOptions,
     selectedAssetTokens,
     statusOptions,
 }: Props) {
@@ -234,7 +227,7 @@ export default function Show({
                                         {projectAssets.data.map((asset) => (
                                             <Card
                                                 key={asset.token}
-                                                className="relative flex min-h-[4.75rem] items-stretch overflow-hidden transition-shadow hover:shadow-md"
+                                                className="relative flex min-h-[4.75rem] items-stretch overflow-hidden transition-all hover:border-ring hover:shadow-md"
                                             >
                                                 {/* Status as a leading, fully-clickable "addon" cell */}
                                                 <div className="flex items-stretch border-r bg-muted/30">
@@ -325,8 +318,6 @@ export default function Show({
                     <div className="mt-6">
                         <ProjectForm
                             project={project}
-                            organizations={organizations}
-                            dataTags={dataTags}
                             onSuccess={() => setEditOpen(false)}
                         />
                     </div>
@@ -350,7 +341,6 @@ export default function Show({
                         <ManageProjectAssets
                             project={project}
                             selected={selectedAssetTokens}
-                            assetOptions={assetOptions}
                             onSuccess={() => setManageOpen(false)}
                         />
                     </div>

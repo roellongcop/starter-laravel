@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Filters\DataTagFilters;
+use App\Http\Controllers\Concerns\ProvidesOptions;
 use App\Http\Requests\StoreDataTagRequest;
 use App\Http\Requests\UpdateDataTagRequest;
 use App\Models\DataTag;
 use App\Models\Organization;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,6 +16,8 @@ use Inertia\Response;
 
 class DataTagController extends Controller
 {
+    use ProvidesOptions;
+
     public function index(Request $request, DataTagFilters $filters): Response
     {
         $this->authorize('viewAny', DataTag::class);
@@ -27,9 +31,18 @@ class DataTagController extends Controller
         return Inertia::render('DataTags/Index', [
             'dataTags' => Inertia::scroll($tags),
             'filters' => $filters->echoBack(),
-            'organizations' => $this->organizationOptions(),
             'colors' => DataTag::COLORS,
         ]);
+    }
+
+    public function options(Request $request): JsonResponse
+    {
+        return $this->optionsResponse(
+            $request,
+            DataTag::class,
+            fn (DataTag $tag): array => ['value' => $tag->token, 'label' => $tag->name],
+            organizationScoped: true,
+        );
     }
 
     public function store(StoreDataTagRequest $request): RedirectResponse
@@ -47,7 +60,6 @@ class DataTagController extends Controller
 
         return Inertia::render('DataTags/Show', [
             'dataTag' => $this->row($dataTag->load('organization')),
-            'organizations' => $this->organizationOptions(),
             'colors' => DataTag::COLORS,
         ]);
     }
@@ -82,18 +94,6 @@ class DataTagController extends Controller
         unset($data['organization']);
 
         return $data;
-    }
-
-    /**
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function organizationOptions(): array
-    {
-        return Organization::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
-            ->all();
     }
 
     /**

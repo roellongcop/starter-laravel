@@ -3,22 +3,15 @@ import { Head } from '@inertiajs/react';
 import PageHeader from '@/Components/PageHeader';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { type AdminForm, type DataTagOption, type SelectOption } from '@/types';
+import { type AdminForm, type SelectOption } from '@/types';
 import FormBuilder from './Partials/FormBuilder';
 
 interface Props {
     form: AdminForm;
-    organizations: SelectOption[];
     fieldTypes: SelectOption[];
-    dataTags: DataTagOption[];
 }
 
-export default function Edit({
-    form,
-    organizations,
-    fieldTypes,
-    dataTags,
-}: Props) {
+export default function Edit({ form, fieldTypes }: Props) {
     return (
         <AuthenticatedLayout>
             <Head title={`Edit ${form.title}`} />
@@ -35,12 +28,7 @@ export default function Edit({
             />
             <Card>
                 <CardContent className="pt-6">
-                    <FormBuilder
-                        form={form}
-                        organizations={organizations}
-                        fieldTypes={fieldTypes}
-                        dataTags={dataTags}
-                    />
+                    <FormBuilder form={form} fieldTypes={fieldTypes} />
                 </CardContent>
             </Card>
         </AuthenticatedLayout>

@@ -1,68 +1,41 @@
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useMemo } from 'react';
+import { FormEventHandler } from 'react';
 
+import AsyncMultiSelect from '@/Components/AsyncMultiSelect';
 import InputError from '@/Components/InputError';
-import MultiSelect from '@/Components/MultiSelect';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
-import {
-    type AdminProject,
-    type DataTagOption,
-    type SelectOption,
-} from '@/types';
+import { type AdminProject } from '@/types';
 
 interface Props {
     project?: Pick<
         AdminProject,
         'token' | 'name' | 'description' | 'private' | 'organization' | 'tags'
     >;
-    organizations: SelectOption[];
-    dataTags: DataTagOption[];
     onSuccess?: () => void;
 }
 
-export default function ProjectForm({
-    project,
-    organizations,
-    dataTags,
-    onSuccess,
-}: Props) {
+export default function ProjectForm({ project, onSuccess }: Props) {
     const editing = Boolean(project);
 
     const { data, setData, post, patch, processing, errors } = useForm({
         name: project?.name ?? '',
         description: project?.description ?? '',
         private: project?.private ?? false,
-        organization:
-            project?.organization ?? String(organizations[0]?.value ?? ''),
+        organization: project?.organization ?? '',
         tags: project?.tags?.map((t) => t.token) ?? [],
     });
 
-    // Tags are per-organization: only offer those belonging to the chosen org.
-    const availableTags = useMemo(
-        () => dataTags.filter((t) => t.organization === data.organization),
-        [dataTags, data.organization],
-    );
-
-    const changeOrganization = (value: string) => {
-        // Drop tags that no longer belong to the chosen organization.
-        const validTags = data.tags.filter((token) =>
-            dataTags.some((t) => t.organization === value && t.value === token),
-        );
+    const changeOrganization = (value: string | undefined) => {
+        // Tags belong to one organization, so an org change clears them.
         setData((current) => ({
             ...current,
-            organization: value,
-            tags: validTags,
+            organization: value ?? '',
+            tags: [],
         }));
     };
 
@@ -104,36 +77,32 @@ export default function ProjectForm({
 
             <div>
                 <Label htmlFor="organization">Organization</Label>
-                <Select
-                    value={data.organization}
-                    onValueChange={changeOrganization}
-                >
-                    <SelectTrigger id="organization" className="mt-1">
-                        <SelectValue placeholder="Select an organization" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {organizations.map((o) => (
-                            <SelectItem key={o.value} value={String(o.value)}>
-                                {o.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <OrganizationSelect
+                    id="organization"
+                    className="mt-1"
+                    value={data.organization || undefined}
+                    onChange={changeOrganization}
+                    invalid={Boolean(errors.organization)}
+                />
                 <InputError message={errors.organization} className="mt-1" />
             </div>
 
             <div>
                 <Label htmlFor="tags">Tags</Label>
-                <MultiSelect
+                <AsyncMultiSelect
                     id="tags"
                     className="mt-1"
-                    options={availableTags}
-                    selected={data.tags}
+                    values={data.tags}
                     onChange={(values) => setData('tags', values)}
+                    routeName="data-tags.options"
+                    params={{ organization: data.organization || undefined }}
+                    disabled={!data.organization}
+                    disabledHint="Select an organization first"
                     placeholder="Select tags"
                     title="Select tags"
                     description="Only tags from the chosen organization are shown."
                     emptyText="No tags for this organization."
+                    searchPlaceholder="Search tags…"
                 />
                 <InputError message={errors.tags} className="mt-1" />
             </div>

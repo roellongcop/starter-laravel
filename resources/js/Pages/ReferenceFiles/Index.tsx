@@ -12,6 +12,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
 import TagBadgesRow from '@/Components/TagBadgesRow';
 import { Button } from '@/Components/ui/button';
@@ -31,26 +32,15 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import {
-    type AdminReferenceFile,
-    type DataTagOption,
-    type SelectOption,
-} from '@/types';
+import { type AdminReferenceFile } from '@/types';
 import ReferenceFileForm from './Partials/ReferenceFileForm';
 
 interface Props {
     references: { data: AdminReferenceFile[] };
     filters: { search: string; organization: string; inactive: boolean };
-    organizations: SelectOption[];
-    dataTags: DataTagOption[];
 }
 
-export default function Index({
-    references,
-    filters,
-    organizations,
-    dataTags,
-}: Props) {
+export default function Index({ references, filters }: Props) {
     const f = useFilters<Props['filters']>({
         route: 'reference-files.index',
         reset: ['references'],
@@ -102,11 +92,10 @@ export default function Index({
                         onChange={(v) => f.set('search', v)}
                         placeholder="Search name or description…"
                     />
-                    <FilterBar.Select
-                        value={f.values.organization}
+                    <OrganizationSelect
+                        value={f.values.organization || undefined}
                         onChange={(v) => f.apply({ organization: v })}
-                        options={organizations}
-                        placeholder="All organizations"
+                        allowClear
                         allLabel="All organizations"
                         className="w-56"
                     />
@@ -131,7 +120,7 @@ export default function Index({
                     {references.data.map((reference) => (
                         <Card
                             key={reference.token}
-                            className="relative flex h-full flex-col transition-shadow hover:shadow-md"
+                            className="relative flex h-full flex-col transition-all hover:border-ring hover:shadow-md"
                         >
                             <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
                                 <div className="min-w-0 space-y-1">
@@ -238,8 +227,6 @@ export default function Index({
                         <ReferenceFileForm
                             key={formReference?.token ?? 'new'}
                             reference={formReference ?? undefined}
-                            organizations={organizations}
-                            dataTags={dataTags}
                             onSuccess={() => setFormOpen(false)}
                         />
                     </div>

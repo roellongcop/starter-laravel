@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Filters\AssetFilters;
+use App\Http\Controllers\Concerns\ProvidesOptions;
 use App\Http\Controllers\Concerns\SerializesAssets;
 use App\Http\Requests\StoreAssetRequest;
 use App\Http\Requests\UpdateAssetRequest;
 use App\Models\Asset;
 use App\Models\Organization;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,6 +17,7 @@ use Inertia\Response;
 
 class AssetController extends Controller
 {
+    use ProvidesOptions;
     use SerializesAssets;
 
     public function index(Request $request, AssetFilters $filters): Response
@@ -33,9 +36,17 @@ class AssetController extends Controller
             // metadata is derived from the CursorPaginator automatically.
             'assets' => Inertia::scroll($assets),
             'filters' => $filters->echoBack(),
-            'organizations' => $this->organizationOptions(),
-            'dataTags' => $this->dataTagOptions(),
         ]);
+    }
+
+    public function options(Request $request): JsonResponse
+    {
+        return $this->optionsResponse(
+            $request,
+            Asset::class,
+            fn (Asset $asset): array => ['value' => $asset->token, 'label' => $asset->name],
+            organizationScoped: true,
+        );
     }
 
     public function store(StoreAssetRequest $request): RedirectResponse
@@ -58,8 +69,6 @@ class AssetController extends Controller
 
         return Inertia::render('Assets/Show', [
             'asset' => $this->assetRow($asset->load(['organization', 'tags'])),
-            'organizations' => $this->organizationOptions(),
-            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -99,19 +108,5 @@ class AssetController extends Controller
         unset($data['organization']);
 
         return $data;
-    }
-
-    /**
-     * Selectable organizations for the picker, keyed by token.
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function organizationOptions(): array
-    {
-        return Organization::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
-            ->all();
     }
 }

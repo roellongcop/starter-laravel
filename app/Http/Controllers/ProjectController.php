@@ -40,8 +40,6 @@ class ProjectController extends Controller
             // metadata is derived from the CursorPaginator automatically.
             'projects' => Inertia::scroll($projects),
             'filters' => $filters->echoBack(),
-            'organizations' => $this->organizationOptions(),
-            'dataTags' => $this->dataTagOptions(),
             'statusOptions' => ProjectStatus::options(),
         ]);
     }
@@ -95,16 +93,12 @@ class ProjectController extends Controller
 
         return Inertia::render('Projects/Show', [
             'project' => $this->row($project),
-            'organizations' => $this->organizationOptions(),
-            'dataTags' => $this->dataTagOptions(),
             'statusOptions' => ProjectStatus::options(),
             'projectAssets' => Inertia::scroll($assets),
             'assetsTotal' => $project->assets()->count(),
             'filters' => $filters->echoBack(),
-            // Manager-only: the org's attachable assets for the picker, plus the
-            // full set of currently-bound tokens to seed it (the paginated list
-            // above only carries the first page).
-            'assetOptions' => $canManage ? $this->assetOptions($project->organization_id) : [],
+            // Manager-only: the currently-bound asset tokens that seed the async
+            // attach picker (its options are fetched on demand from assets.options).
             'selectedAssetTokens' => $canManage ? $project->assets()->pluck('assets.token')->all() : [],
         ]);
     }
@@ -164,20 +158,6 @@ class ProjectController extends Controller
         unset($data['organization']);
 
         return $data;
-    }
-
-    /**
-     * Selectable organizations for the picker, keyed by token.
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function organizationOptions(): array
-    {
-        return Organization::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
-            ->all();
     }
 
     /**

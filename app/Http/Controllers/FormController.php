@@ -31,7 +31,6 @@ class FormController extends Controller
         return Inertia::render('Forms/Index', [
             'forms' => Inertia::scroll($forms),
             'filters' => $filters->echoBack(),
-            'organizations' => $this->organizationOptions(),
         ]);
     }
 
@@ -40,9 +39,7 @@ class FormController extends Controller
         $this->authorize('create', Form::class);
 
         return Inertia::render('Forms/Create', [
-            'organizations' => $this->organizationOptions(),
             'fieldTypes' => FieldType::options(),
-            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -75,9 +72,7 @@ class FormController extends Controller
 
         return Inertia::render('Forms/Edit', [
             'form' => $this->row($form->load(['organization', 'tags'])),
-            'organizations' => $this->organizationOptions(),
             'fieldTypes' => FieldType::options(),
-            'dataTags' => $this->dataTagOptions(),
         ]);
     }
 
@@ -117,20 +112,6 @@ class FormController extends Controller
         unset($data['organization']);
 
         return $data;
-    }
-
-    /**
-     * Selectable organizations for the picker, keyed by token.
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function organizationOptions(): array
-    {
-        return Organization::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
-            ->all();
     }
 
     /**

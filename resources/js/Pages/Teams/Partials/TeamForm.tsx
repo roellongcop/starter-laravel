@@ -1,24 +1,15 @@
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useMemo } from 'react';
+import { FormEventHandler } from 'react';
 
+import AsyncMultiSelect from '@/Components/AsyncMultiSelect';
+import AsyncSelect from '@/Components/AsyncSelect';
 import InputError from '@/Components/InputError';
-import MultiSelect from '@/Components/MultiSelect';
+import OrganizationSelect from '@/Components/OrganizationSelect';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import {
-    type AdminTeam,
-    type OrgScopedOption,
-    type SelectOption,
-} from '@/types';
+import { type AdminTeam } from '@/types';
 
 interface Props {
     team?: Pick<
@@ -31,61 +22,29 @@ interface Props {
         | 'organization_role'
         | 'members'
     >;
-    organizations: SelectOption[];
-    categories: OrgScopedOption[];
-    organizationRoles: OrgScopedOption[];
-    users: SelectOption[];
     onSuccess?: () => void;
 }
 
-export default function TeamForm({
-    team,
-    organizations,
-    categories,
-    organizationRoles,
-    users,
-    onSuccess,
-}: Props) {
+export default function TeamForm({ team, onSuccess }: Props) {
     const editing = Boolean(team);
 
     const { data, setData, post, patch, processing, errors } = useForm({
         name: team?.name ?? '',
         description: team?.description ?? '',
-        organization:
-            team?.organization ?? String(organizations[0]?.value ?? ''),
+        organization: team?.organization ?? '',
         team_category: team?.team_category ?? '',
         organization_role: team?.organization_role ?? '',
         members: team?.members ?? ([] as string[]),
     });
 
-    // Categories and roles are per-organization: only show those belonging to
-    // the chosen org.
-    const availableCategories = useMemo(
-        () => categories.filter((c) => c.organization === data.organization),
-        [categories, data.organization],
-    );
-    const availableRoles = useMemo(
-        () =>
-            organizationRoles.filter(
-                (r) => r.organization === data.organization,
-            ),
-        [organizationRoles, data.organization],
-    );
-
-    const changeOrganization = (value: string) => {
-        // Drop the category/role when they no longer belong to the chosen org.
-        const categoryValid = categories.some(
-            (c) => c.organization === value && c.value === data.team_category,
-        );
-        const roleValid = organizationRoles.some(
-            (r) =>
-                r.organization === value && r.value === data.organization_role,
-        );
+    const changeOrganization = (value: string | undefined) => {
+        // A category/role belongs to exactly one org, so changing the org always
+        // invalidates the current selections — reset them.
         setData((current) => ({
             ...current,
-            organization: value,
-            team_category: categoryValid ? current.team_category : '',
-            organization_role: roleValid ? current.organization_role : '',
+            organization: value ?? '',
+            team_category: '',
+            organization_role: '',
         }));
     };
 
@@ -128,75 +87,53 @@ export default function TeamForm({
 
             <div>
                 <Label htmlFor="organization">Organization</Label>
-                <Select
-                    value={data.organization}
-                    onValueChange={changeOrganization}
-                >
-                    <SelectTrigger id="organization" className="mt-1">
-                        <SelectValue placeholder="Select an organization" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {organizations.map((o) => (
-                            <SelectItem key={o.value} value={String(o.value)}>
-                                {o.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <OrganizationSelect
+                    id="organization"
+                    className="mt-1"
+                    value={data.organization || undefined}
+                    onChange={changeOrganization}
+                    invalid={Boolean(errors.organization)}
+                />
                 <InputError message={errors.organization} className="mt-1" />
             </div>
 
             <div>
                 <Label htmlFor="team_category">Category</Label>
-                <Select
-                    value={data.team_category}
-                    onValueChange={(v) => setData('team_category', v)}
-                    disabled={availableCategories.length === 0}
-                >
-                    <SelectTrigger id="team_category" className="mt-1">
-                        <SelectValue
-                            placeholder={
-                                availableCategories.length === 0
-                                    ? 'No categories for this organization'
-                                    : 'Select a category'
-                            }
-                        />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {availableCategories.map((c) => (
-                            <SelectItem key={c.value} value={String(c.value)}>
-                                {c.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <AsyncSelect
+                    id="team_category"
+                    className="mt-1"
+                    value={data.team_category || undefined}
+                    onChange={(v) => setData('team_category', v ?? '')}
+                    routeName="team-categories.options"
+                    params={{ organization: data.organization || undefined }}
+                    disabled={!data.organization}
+                    disabledHint="Select an organization first"
+                    placeholder="Select a category"
+                    dialogTitle="Select category"
+                    searchPlaceholder="Search categories…"
+                    emptyText="No categories for this organization."
+                    invalid={Boolean(errors.team_category)}
+                />
                 <InputError message={errors.team_category} className="mt-1" />
             </div>
 
             <div>
                 <Label htmlFor="organization_role">Role</Label>
-                <Select
-                    value={data.organization_role}
-                    onValueChange={(v) => setData('organization_role', v)}
-                    disabled={availableRoles.length === 0}
-                >
-                    <SelectTrigger id="organization_role" className="mt-1">
-                        <SelectValue
-                            placeholder={
-                                availableRoles.length === 0
-                                    ? 'No roles for this organization'
-                                    : 'Select a role'
-                            }
-                        />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {availableRoles.map((r) => (
-                            <SelectItem key={r.value} value={String(r.value)}>
-                                {r.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <AsyncSelect
+                    id="organization_role"
+                    className="mt-1"
+                    value={data.organization_role || undefined}
+                    onChange={(v) => setData('organization_role', v ?? '')}
+                    routeName="organization-roles.options"
+                    params={{ organization: data.organization || undefined }}
+                    disabled={!data.organization}
+                    disabledHint="Select an organization first"
+                    placeholder="Select a role"
+                    dialogTitle="Select role"
+                    searchPlaceholder="Search roles…"
+                    emptyText="No roles for this organization."
+                    invalid={Boolean(errors.organization_role)}
+                />
                 <InputError
                     message={errors.organization_role}
                     className="mt-1"
@@ -205,16 +142,17 @@ export default function TeamForm({
 
             <div>
                 <Label htmlFor="members">Members</Label>
-                <MultiSelect
+                <AsyncMultiSelect
                     id="members"
                     className="mt-1"
-                    options={users}
-                    selected={data.members}
+                    values={data.members}
                     onChange={(values) => setData('members', values)}
+                    routeName="users.options"
                     placeholder="Select members"
                     title="Select members"
                     description="Members inherit the team's role within the organization."
                     emptyText="No users found."
+                    searchPlaceholder="Search users…"
                 />
                 <InputError message={errors.members} className="mt-1" />
             </div>

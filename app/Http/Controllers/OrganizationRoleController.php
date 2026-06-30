@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Filters\OrganizationRoleFilters;
+use App\Http\Controllers\Concerns\ProvidesOptions;
 use App\Http\Requests\StoreOrganizationRoleRequest;
 use App\Http\Requests\UpdateOrganizationRoleRequest;
 use App\Models\Organization;
 use App\Models\OrganizationRole;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,6 +16,8 @@ use Inertia\Response;
 
 class OrganizationRoleController extends Controller
 {
+    use ProvidesOptions;
+
     public function index(Request $request, OrganizationRoleFilters $filters): Response
     {
         $this->authorize('viewAny', OrganizationRole::class);
@@ -27,8 +31,17 @@ class OrganizationRoleController extends Controller
         return Inertia::render('OrganizationRoles/Index', [
             'roles' => Inertia::scroll($roles),
             'filters' => $filters->echoBack(),
-            'organizations' => $this->organizationOptions(),
         ]);
+    }
+
+    public function options(Request $request): JsonResponse
+    {
+        return $this->optionsResponse(
+            $request,
+            OrganizationRole::class,
+            fn (OrganizationRole $role): array => ['value' => $role->token, 'label' => $role->name],
+            organizationScoped: true,
+        );
     }
 
     public function store(StoreOrganizationRoleRequest $request): RedirectResponse
@@ -46,7 +59,6 @@ class OrganizationRoleController extends Controller
 
         return Inertia::render('OrganizationRoles/Show', [
             'role' => $this->row($organizationRole->load('organization')),
-            'organizations' => $this->organizationOptions(),
         ]);
     }
 
@@ -86,20 +98,6 @@ class OrganizationRoleController extends Controller
         unset($data['organization']);
 
         return $data;
-    }
-
-    /**
-     * Selectable organizations for the picker, keyed by token.
-     *
-     * @return array<int, array{value: string, label: string}>
-     */
-    protected function organizationOptions(): array
-    {
-        return Organization::query()
-            ->orderBy('name')
-            ->get(['token', 'name'])
-            ->map(fn (Organization $organization) => ['value' => $organization->token, 'label' => $organization->name])
-            ->all();
     }
 
     /**
