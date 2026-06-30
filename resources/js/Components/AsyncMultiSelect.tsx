@@ -219,6 +219,7 @@ export default function AsyncMultiSelect({
             >
                 <span
                     className={cn(
+                        'min-w-0 flex-1 truncate text-left',
                         values.length === 0 && 'text-muted-foreground',
                     )}
                 >
@@ -234,12 +235,16 @@ export default function AsyncMultiSelect({
             {values.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                     {values.map((v) => (
-                        <Badge key={v} variant="secondary" className="gap-1">
-                            {known[v] ?? v}
+                        <Badge
+                            key={v}
+                            variant="secondary"
+                            className="max-w-full gap-1"
+                        >
+                            <span className="truncate">{known[v] ?? v}</span>
                             <button
                                 type="button"
                                 onClick={() => remove(v)}
-                                className="rounded-full outline-none ring-offset-background hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                                className="shrink-0 rounded-full outline-none ring-offset-background hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                                 aria-label={`Remove ${known[v] ?? v}`}
                             >
                                 <X className="h-3 w-3" />
@@ -292,12 +297,13 @@ export default function AsyncMultiSelect({
                                             className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted"
                                         >
                                             <Checkbox
+                                                className="shrink-0"
                                                 checked={values.includes(v)}
                                                 onCheckedChange={() =>
                                                     toggle(option)
                                                 }
                                             />
-                                            <span className="flex-1">
+                                            <span className="min-w-0 flex-1 break-words">
                                                 {option.label}
                                             </span>
                                         </label>

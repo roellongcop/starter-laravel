@@ -61,7 +61,7 @@ class ReferenceFileController extends Controller
         $reference = ReferenceFile::create($data);
         $reference->syncDataTags($tags);
 
-        return redirect()->route('reference-files.index')->with('success', 'Reference created.');
+        return back(fallback: route('reference-files.index'))->with('success', 'Reference created.');
     }
 
     public function show(ReferenceFile $referenceFile): Response
@@ -105,7 +105,7 @@ class ReferenceFileController extends Controller
             File::find($fileId)?->delete();
         }
 
-        return redirect()->route('reference-files.index')->with('success', 'Reference deleted.');
+        return back(fallback: route('reference-files.index'))->with('success', 'Reference deleted.');
     }
 
     /**

@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\Milestone;
+use App\Models\Person;
 use App\Models\Task;
-use App\Models\User;
+use App\Models\Team;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Serializes a milestone/task board into the frontend row shapes. Only tokens and
  * enum values cross the wire (never ids). Relations (assignee/approver/observer/
  * referenceFile/tags) must be eager-loaded by the caller — accessing them here on
- * an unloaded model would trip preventLazyLoading.
+ * an unloaded model would trip preventLazyLoading. Assignees are polymorphic, so
+ * the morph target (and, for a Person, its user) must be eager-loaded too.
  */
 trait SerializesBoard
 {
@@ -45,9 +48,10 @@ trait SerializesBoard
             'name' => $task->name,
             'description' => $task->description,
             'milestone' => $milestoneToken,
-            'assigned_to' => $this->userChip($task->assignee),
-            'approver' => $this->userChip($task->approver),
-            'observer' => $this->userChip($task->observer),
+            'status' => $task->status->value,
+            'assigned_to' => $this->assigneeChip($task->assignee),
+            'approver' => $this->assigneeChip($task->approver),
+            'observer' => $this->assigneeChip($task->observer),
             'private' => $task->private,
             'due_date' => $task->due_date?->toDateString(),
             'reference_file' => $task->referenceFile
@@ -61,10 +65,21 @@ trait SerializesBoard
     }
 
     /**
-     * @return array{token: string, name: string}|null
+     * Serialize a polymorphic assignee (Team or Person) into a type-tagged chip.
+     * A Person's name comes from its linked user (no name column of its own).
+     *
+     * @return array{type: string, token: string, name: string}|null
      */
-    protected function userChip(?User $user): ?array
+    protected function assigneeChip(?Model $entity): ?array
     {
-        return $user ? ['token' => $user->token, 'name' => $user->name] : null;
+        if ($entity instanceof Team) {
+            return ['type' => 'team', 'token' => $entity->token, 'name' => $entity->name];
+        }
+
+        if ($entity instanceof Person) {
+            return ['type' => 'person', 'token' => $entity->token, 'name' => $entity->user->name];
+        }
+
+        return null;
     }
 }

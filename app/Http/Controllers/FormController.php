@@ -96,7 +96,7 @@ class FormController extends Controller
 
         $form->delete();
 
-        return redirect()->route('forms.index')->with('success', 'Form deleted.');
+        return back(fallback: route('forms.index'))->with('success', 'Form deleted.');
     }
 
     /**

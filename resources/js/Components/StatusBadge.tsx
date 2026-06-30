@@ -11,11 +11,13 @@ const VARIANT: Record<
     Failed: 'destructive',
     RestoreFailed: 'destructive',
     Cancelled: 'destructive',
+    Rejected: 'destructive',
     Pending: 'secondary',
     Generating: 'secondary',
     Restoring: 'secondary',
     Running: 'secondary',
     'In Progress': 'secondary',
+    Submitted: 'secondary',
 };
 
 /** Maps a lifecycle status enum value to a coloured badge. */

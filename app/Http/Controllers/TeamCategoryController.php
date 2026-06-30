@@ -50,7 +50,7 @@ class TeamCategoryController extends Controller
 
         TeamCategory::create($this->resolveOrganization($request->validated()));
 
-        return redirect()->route('team-categories.index')->with('success', 'Team category created.');
+        return back(fallback: route('team-categories.index'))->with('success', 'Team category created.');
     }
 
     public function show(TeamCategory $teamCategory): Response
@@ -83,7 +83,7 @@ class TeamCategoryController extends Controller
 
         $teamCategory->delete();
 
-        return redirect()->route('team-categories.index')->with('success', 'Team category deleted.');
+        return back(fallback: route('team-categories.index'))->with('success', 'Team category deleted.');
     }
 
     /**

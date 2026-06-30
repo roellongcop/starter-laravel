@@ -64,7 +64,7 @@ class OrganizationController extends Controller
 
         Organization::create($this->resolveContact($request->validated()));
 
-        return redirect()->route('organizations.index')->with('success', 'Organization created.');
+        return back(fallback: route('organizations.index'))->with('success', 'Organization created.');
     }
 
     public function show(Organization $organization): Response
@@ -93,7 +93,7 @@ class OrganizationController extends Controller
 
         $organization->delete();
 
-        return redirect()->route('organizations.index')->with('success', 'Organization deleted.');
+        return back(fallback: route('organizations.index'))->with('success', 'Organization deleted.');
     }
 
     /**

@@ -44,7 +44,7 @@ class TeamController extends Controller
             $this->syncMembers($team, $request->array('members'));
         });
 
-        return redirect()->route('teams.index')->with('success', 'Team created.');
+        return back(fallback: route('teams.index'))->with('success', 'Team created.');
     }
 
     public function show(Team $team): Response
@@ -77,7 +77,7 @@ class TeamController extends Controller
         // People rows cascade with the team at the database level.
         $team->delete();
 
-        return redirect()->route('teams.index')->with('success', 'Team deleted.');
+        return back(fallback: route('teams.index'))->with('success', 'Team deleted.');
     }
 
     /**

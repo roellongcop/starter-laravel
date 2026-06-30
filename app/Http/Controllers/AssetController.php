@@ -60,7 +60,7 @@ class AssetController extends Controller
         $asset = Asset::create($data);
         $asset->syncDataTags($tags);
 
-        return redirect()->route('assets.index')->with('success', 'Asset created.');
+        return back(fallback: route('assets.index'))->with('success', 'Asset created.');
     }
 
     public function show(Asset $asset): Response
@@ -92,7 +92,7 @@ class AssetController extends Controller
 
         $asset->delete();
 
-        return redirect()->route('assets.index')->with('success', 'Asset deleted.');
+        return back(fallback: route('assets.index'))->with('success', 'Asset deleted.');
     }
 
     /**

@@ -6,12 +6,15 @@ use App\Enums\AuthEvent;
 use App\Enums\RecordStatus;
 use App\Enums\SystemRole;
 use App\Models\LoginHistory;
+use App\Models\Person;
+use App\Models\Team;
 use App\Models\User;
 use App\Settings\EmailSettings;
 use App\Settings\SystemSettings;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -43,6 +46,13 @@ class AppServiceProvider extends ServiceProvider
         // Surface N+1s as exceptions outside production so a missing with()/load()
         // fails a test or dev request instead of silently shipping. No-op in prod.
         Model::preventLazyLoading(! $this->app->isProduction());
+
+        // Stable, readable polymorphic type aliases (e.g. tasks.assignee_type),
+        // so the DB stores 'team'/'person' rather than fully-qualified class names.
+        Relation::morphMap([
+            'team' => Team::class,
+            'person' => Person::class,
+        ]);
 
         // Behind an HTTPS proxy/tunnel nginx is reached over plain HTTP,
         // so generated asset/route URLs would be http:// and the browser blocks them as mixed content.

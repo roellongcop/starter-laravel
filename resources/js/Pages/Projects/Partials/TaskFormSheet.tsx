@@ -16,9 +16,13 @@ import {
 } from '@/Components/ui/sheet';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
-import { type AdminMilestone, type AdminTask } from '@/types';
+import {
+    type AdminMilestone,
+    type AdminTask,
+    type SelectOption,
+} from '@/types';
 
-type UserField = 'assigned_to' | 'approver' | 'observer';
+type AssigneeField = 'assigned_to' | 'approver' | 'observer';
 
 interface Props {
     open: boolean;
@@ -30,6 +34,7 @@ interface Props {
     defaultMilestone?: string;
     /** The bound asset's organization token — scopes the reference-file + tag pickers. */
     assetOrganization: string | null;
+    taskStatusOptions: SelectOption[];
     onSuccess: () => void;
 }
 
@@ -42,6 +47,7 @@ export default function TaskFormSheet({
     task,
     defaultMilestone,
     assetOrganization,
+    taskStatusOptions,
     onSuccess,
 }: Props) {
     const editing = Boolean(task);
@@ -51,6 +57,7 @@ export default function TaskFormSheet({
         description: task?.description ?? '',
         milestone:
             task?.milestone ?? defaultMilestone ?? columns[0]?.token ?? '',
+        status: task?.status ?? 'Pending',
         assigned_to: task?.assigned_to?.token ?? '',
         approver: task?.approver?.token ?? '',
         observer: task?.observer?.token ?? '',
@@ -90,7 +97,8 @@ export default function TaskFormSheet({
         }
     };
 
-    const userSelect = (field: UserField, label: string) => (
+    // Assignee/approver/observer are a Team or Person inside the asset's org.
+    const assigneeSelect = (field: AssigneeField, label: string) => (
         <div>
             <Label htmlFor={field}>{label}</Label>
             <AsyncSelect
@@ -98,13 +106,16 @@ export default function TaskFormSheet({
                 className="mt-1"
                 value={data[field] || undefined}
                 onChange={(v) => setData(field, v ?? '')}
-                routeName="users.options"
+                routeName="task-assignees.options"
+                params={{ organization: assetOrganization || undefined }}
+                disabled={!assetOrganization}
+                disabledHint="No organization"
                 allowClear
                 allLabel="Unassigned"
                 placeholder="Unassigned"
-                dialogTitle="Select user"
-                searchPlaceholder="Search users…"
-                emptyText="No users found."
+                dialogTitle="Select team or person"
+                searchPlaceholder="Search teams & people…"
+                emptyText="No teams or people in this organization."
             />
             <InputError message={errors[field]} className="mt-1" />
         </div>
@@ -178,9 +189,26 @@ export default function TaskFormSheet({
                         />
                     </div>
 
-                    {userSelect('assigned_to', 'Assigned to')}
-                    {userSelect('approver', 'Approver')}
-                    {userSelect('observer', 'Observer')}
+                    <div>
+                        <Label htmlFor="task-status">Status</Label>
+                        <AsyncSelect
+                            id="task-status"
+                            className="mt-1"
+                            value={data.status || undefined}
+                            onChange={(v) => setData('status', v ?? 'Pending')}
+                            staticOptions={taskStatusOptions}
+                            placeholder="Select a status"
+                            dialogTitle="Select status"
+                            searchPlaceholder="Search statuses…"
+                            emptyText="No statuses."
+                            invalid={Boolean(errors.status)}
+                        />
+                        <InputError message={errors.status} className="mt-1" />
+                    </div>
+
+                    {assigneeSelect('assigned_to', 'Assigned to')}
+                    {assigneeSelect('approver', 'Approver')}
+                    {assigneeSelect('observer', 'Observer')}
 
                     <div>
                         <Label htmlFor="task-due">Due date</Label>

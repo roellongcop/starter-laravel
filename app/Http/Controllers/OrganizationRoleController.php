@@ -50,7 +50,7 @@ class OrganizationRoleController extends Controller
 
         OrganizationRole::create($this->resolveOrganization($request->validated()));
 
-        return redirect()->route('organization-roles.index')->with('success', 'Organization role created.');
+        return back(fallback: route('organization-roles.index'))->with('success', 'Organization role created.');
     }
 
     public function show(OrganizationRole $organizationRole): Response
@@ -82,7 +82,7 @@ class OrganizationRoleController extends Controller
 
         $organizationRole->delete();
 
-        return redirect()->route('organization-roles.index')->with('success', 'Organization role deleted.');
+        return back(fallback: route('organization-roles.index'))->with('success', 'Organization role deleted.');
     }
 
     /**

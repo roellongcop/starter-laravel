@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\TaskStatus;
 use App\Models\Milestone;
 use App\Models\Organization;
 use App\Models\Task;
@@ -24,6 +25,7 @@ class TaskFactory extends Factory
             'description' => fake()->optional()->paragraph(),
             'milestone_id' => Milestone::factory(),
             'organization_id' => Organization::factory(),
+            'status' => TaskStatus::Pending,
             'private' => false,
             'position' => 0,
         ];

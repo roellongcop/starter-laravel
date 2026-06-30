@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TaskStatus;
 use App\Http\Controllers\Concerns\ResolvesBoard;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Asset;
 use App\Models\Milestone;
+use App\Models\Person;
 use App\Models\Project;
 use App\Models\ReferenceFile;
 use App\Models\Task;
-use App\Models\User;
+use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
 
 class TaskController extends Controller
@@ -84,30 +86,60 @@ class TaskController extends Controller
     }
 
     /**
-     * Translate the wire-only tokens (users, reference file) into ids — the
-     * reference file is re-scoped to the project's organization — and assemble the
-     * persistable attributes (milestone_id/organization_id/position set by caller).
+     * Translate the wire-only tokens (assignee/approver/observer, reference file)
+     * into persistable attributes, all re-scoped to the project's organization —
+     * each assignee is a Team or Person within the org. (milestone_id/
+     * organization_id/position are set by the caller.)
      *
      * @param  array<string, mixed>  $validated
      * @return array<string, mixed>
      */
     protected function resolveTaskData(Project $project, array $validated): array
     {
+        $org = $project->organization_id;
+        $assignee = $this->resolveAssignee($validated['assigned_to'] ?? null, $org);
+        $approver = $this->resolveAssignee($validated['approver'] ?? null, $org);
+        $observer = $this->resolveAssignee($validated['observer'] ?? null, $org);
+
         return [
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
+            'status' => $validated['status'] ?? TaskStatus::Pending->value,
             'private' => $validated['private'] ?? false,
             'due_date' => $validated['due_date'] ?? null,
-            'assigned_to_id' => $this->userId($validated['assigned_to'] ?? null),
-            'approver_id' => $this->userId($validated['approver'] ?? null),
-            'observer_id' => $this->userId($validated['observer'] ?? null),
+            'assignee_type' => $assignee['type'],
+            'assignee_id' => $assignee['id'],
+            'approver_type' => $approver['type'],
+            'approver_id' => $approver['id'],
+            'observer_type' => $observer['type'],
+            'observer_id' => $observer['id'],
             'reference_file_id' => $this->referenceFileId($project, $validated['reference_file'] ?? null),
         ];
     }
 
-    protected function userId(?string $token): ?int
+    /**
+     * Resolve a Team-or-Person token to its morph (type, id) within the org. An
+     * absent or foreign/unknown token resolves to no assignment.
+     *
+     * @return array{type: string|null, id: int|null}
+     */
+    protected function resolveAssignee(?string $token, int $organizationId): array
     {
-        return $token ? User::where('token', $token)->value('id') : null;
+        if (! $token) {
+            return ['type' => null, 'id' => null];
+        }
+
+        $team = Team::query()->where('organization_id', $organizationId)->where('token', $token)->first();
+        if ($team !== null) {
+            return ['type' => $team->getMorphClass(), 'id' => $team->getKey()];
+        }
+
+        $person = Person::query()->where('organization_id', $organizationId)->where('token', $token)->first();
+        if ($person !== null) {
+            return ['type' => $person->getMorphClass(), 'id' => $person->getKey()];
+        }
+
+        return ['type' => null, 'id' => null];
     }
 
     protected function referenceFileId(Project $project, ?string $token): ?int

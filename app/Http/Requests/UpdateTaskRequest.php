@@ -2,12 +2,16 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\TaskStatus;
+use Illuminate\Validation\Rule;
+
 class UpdateTaskRequest extends BaseFormRequest
 {
     /**
      * Tokens cross the wire (never ids); the controller resolves them and re-scopes
-     * the milestone/users/reference-file to this project + asset's organization. A
-     * task may move milestones on update, so `milestone` stays required.
+     * the milestone/reference-file and the assignee/approver/observer (each a Team
+     * or Person token) to this project + asset's organization. A task may move
+     * milestones on update, so `milestone` stays required.
      *
      * @return array<string, mixed>
      */
@@ -17,9 +21,10 @@ class UpdateTaskRequest extends BaseFormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:10000'],
             'milestone' => ['required', 'string', 'exists:milestones,token'],
-            'assigned_to' => ['nullable', 'string', 'exists:users,token'],
-            'approver' => ['nullable', 'string', 'exists:users,token'],
-            'observer' => ['nullable', 'string', 'exists:users,token'],
+            'status' => ['sometimes', Rule::enum(TaskStatus::class)],
+            'assigned_to' => ['nullable', 'string', 'max:255'],
+            'approver' => ['nullable', 'string', 'max:255'],
+            'observer' => ['nullable', 'string', 'max:255'],
             'private' => ['boolean'],
             'due_date' => ['nullable', 'date'],
             'reference_file' => ['nullable', 'string', 'exists:reference_files,token'],

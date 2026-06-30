@@ -9,9 +9,11 @@ import {
     Pencil,
     Trash2,
     User as UserIcon,
+    Users as UsersIcon,
 } from 'lucide-react';
 
 import Can from '@/Components/Can';
+import StatusBadge from '@/Components/StatusBadge';
 import TagBadgesRow from '@/Components/TagBadgesRow';
 import { Button } from '@/Components/ui/button';
 import {
@@ -104,9 +106,14 @@ export default function TaskCard({ task, canManage, onEdit, onDelete }: Props) {
             )}
 
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <StatusBadge status={task.status} />
                 {task.assigned_to && (
                     <span className="flex items-center gap-1">
-                        <UserIcon className="h-3.5 w-3.5" />
+                        {task.assigned_to.type === 'team' ? (
+                            <UsersIcon className="h-3.5 w-3.5" />
+                        ) : (
+                            <UserIcon className="h-3.5 w-3.5" />
+                        )}
                         {task.assigned_to.name}
                     </span>
                 )}

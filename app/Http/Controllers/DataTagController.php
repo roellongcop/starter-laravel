@@ -51,7 +51,7 @@ class DataTagController extends Controller
 
         DataTag::create($this->resolveOrganization($request->validated()));
 
-        return redirect()->route('data-tags.index')->with('success', 'Tag created.');
+        return back(fallback: route('data-tags.index'))->with('success', 'Tag created.');
     }
 
     public function show(DataTag $dataTag): Response
@@ -79,7 +79,7 @@ class DataTagController extends Controller
 
         $dataTag->delete();
 
-        return redirect()->route('data-tags.index')->with('success', 'Tag deleted.');
+        return back(fallback: route('data-tags.index'))->with('success', 'Tag deleted.');
     }
 
     /**

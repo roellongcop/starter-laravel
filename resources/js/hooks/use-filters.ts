@@ -68,6 +68,19 @@ export function useFilters<T extends FilterValues>({
     // `event` a page doesn't expose) survive a search submit untouched.
     const [values, setValues] = useState<T>(initial);
 
+    // Reset the inputs when the *applied* filters change via a path that bypasses
+    // this hook — e.g. a controller redirect that drops the query string after a
+    // create. (Inertia reuses the page component across same-component visits, so
+    // the useState seed would otherwise go stale and show a filter that's no
+    // longer applied.) React's "adjust state during render" pattern, keyed by
+    // value so a pending, un-submitted text edit is never clobbered.
+    const initialKey = JSON.stringify(initial);
+    const [committedKey, setCommittedKey] = useState(initialKey);
+    if (initialKey !== committedKey) {
+        setCommittedKey(initialKey);
+        setValues(initial);
+    }
+
     const toParams = useCallback(
         (vals: T): FilterParams => {
             const out: FilterParams = {};

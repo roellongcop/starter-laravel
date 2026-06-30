@@ -33,6 +33,7 @@ use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SessionHeartbeatController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\TaskAssigneeController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamCategoryController;
 use App\Http\Controllers\TeamController;
@@ -189,6 +190,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('projects.assets.tasks.update');
     Route::delete('projects/{project}/assets/{asset}/tasks/{task}', [TaskController::class, 'destroy'])
         ->name('projects.assets.tasks.destroy');
+
+    // Org-scoped Team/Person options for a task's assignee/approver/observer pickers.
+    Route::get('task-assignees/options', [TaskAssigneeController::class, 'options'])->name('task-assignees.options');
 
     Route::get('assets/options', [AssetController::class, 'options'])->name('assets.options');
     Route::resource('assets', AssetController::class)->except(['create', 'edit']);

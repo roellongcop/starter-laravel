@@ -3,16 +3,20 @@
 namespace App\Models;
 
 use App\Enums\RecordStatus;
+use App\Enums\TaskStatus;
 use App\Models\Concerns\HasDataTags;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
 /**
- * A card inside a milestone — optionally assigned to users, tagged, and linked to
- * a reference file. organization_id is denormalized from the project so tagging
+ * A card inside a milestone. The assignee/approver/observer are polymorphic —
+ * each is a Team or a Person inside the task's organization (never a top-level
+ * user). organization_id is denormalized from the project so tagging
  * (HasDataTags::syncDataTags) can scope tags without joining up to the asset.
  *
  * @property string $token
@@ -20,8 +24,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $description
  * @property int $milestone_id
  * @property int $organization_id
- * @property int|null $assigned_to_id
+ * @property TaskStatus $status
+ * @property string|null $assignee_type
+ * @property int|null $assignee_id
+ * @property string|null $approver_type
  * @property int|null $approver_id
+ * @property string|null $observer_type
  * @property int|null $observer_id
  * @property bool $private
  * @property Carbon|null $due_date
@@ -32,9 +40,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Milestone $milestone
  * @property-read Organization $organization
- * @property-read User|null $assignee
- * @property-read User|null $approver
- * @property-read User|null $observer
+ * @property-read Model|null $assignee
+ * @property-read Model|null $approver
+ * @property-read Model|null $observer
  * @property-read ReferenceFile|null $referenceFile
  * @property-read Collection<int, DataTag> $tags
  */
@@ -50,8 +58,12 @@ class Task extends BaseModel
         'description',
         'milestone_id',
         'organization_id',
-        'assigned_to_id',
+        'status',
+        'assignee_type',
+        'assignee_id',
+        'approver_type',
         'approver_id',
+        'observer_type',
         'observer_id',
         'private',
         'due_date',
@@ -66,6 +78,7 @@ class Task extends BaseModel
     {
         return [
             ...parent::casts(),
+            'status' => TaskStatus::class,
             'private' => 'boolean',
             'due_date' => 'date',
         ];
@@ -88,27 +101,29 @@ class Task extends BaseModel
     }
 
     /**
-     * @return BelongsTo<User, $this>
+     * The assigned Team or Person (org-scoped).
+     *
+     * @return MorphTo<Model, $this>
      */
-    public function assignee(): BelongsTo
+    public function assignee(): MorphTo
     {
-        return $this->belongsTo(User::class, 'assigned_to_id');
+        return $this->morphTo();
     }
 
     /**
-     * @return BelongsTo<User, $this>
+     * @return MorphTo<Model, $this>
      */
-    public function approver(): BelongsTo
+    public function approver(): MorphTo
     {
-        return $this->belongsTo(User::class, 'approver_id');
+        return $this->morphTo();
     }
 
     /**
-     * @return BelongsTo<User, $this>
+     * @return MorphTo<Model, $this>
      */
-    public function observer(): BelongsTo
+    public function observer(): MorphTo
     {
-        return $this->belongsTo(User::class, 'observer_id');
+        return $this->morphTo();
     }
 
     /**

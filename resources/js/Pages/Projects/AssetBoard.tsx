@@ -22,6 +22,7 @@ interface Props {
     milestones: AdminMilestone[];
     canManage: boolean;
     statusOptions: SelectOption[];
+    taskStatusOptions: SelectOption[];
 }
 
 export default function AssetBoard({
@@ -30,6 +31,7 @@ export default function AssetBoard({
     milestones,
     canManage,
     statusOptions,
+    taskStatusOptions,
 }: Props) {
     const breadcrumbs: Crumb[] = [
         { label: 'Projects', href: route('projects.index') },
@@ -115,6 +117,7 @@ export default function AssetBoard({
                     assetOrganization={asset.organization}
                     milestones={milestones}
                     canManage={canManage}
+                    taskStatusOptions={taskStatusOptions}
                 />
             </div>
         </AuthenticatedLayout>

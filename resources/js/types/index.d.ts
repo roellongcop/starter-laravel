@@ -173,8 +173,9 @@ export interface ProjectAsset extends AdminAsset {
     status: string; // ProjectStatus value
 }
 
-/** A user reference on a board task (assignee / approver / observer). */
-export interface BoardUser {
+/** A Team or Person reference on a board task (assignee / approver / observer). */
+export interface BoardAssignee {
+    type: 'team' | 'person';
     token: string;
     name: string;
 }
@@ -185,9 +186,10 @@ export interface AdminTask {
     name: string;
     description: string | null;
     milestone: string; // owning milestone token
-    assigned_to: BoardUser | null;
-    approver: BoardUser | null;
-    observer: BoardUser | null;
+    status: string; // TaskStatus value
+    assigned_to: BoardAssignee | null;
+    approver: BoardAssignee | null;
+    observer: BoardAssignee | null;
     private: boolean;
     due_date: string | null; // YYYY-MM-DD
     reference_file: { token: string; name: string } | null;

@@ -121,7 +121,7 @@ class RoleController extends Controller
 
         $role->delete();
 
-        return redirect()->route('roles.index')->with('success', 'Role deleted.');
+        return back(fallback: route('roles.index'))->with('success', 'Role deleted.');
     }
 
     /**

@@ -25,7 +25,11 @@ import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import { Button } from '@/Components/ui/button';
 import { toast } from '@/hooks/use-toast';
-import { type AdminMilestone, type AdminTask } from '@/types';
+import {
+    type AdminMilestone,
+    type AdminTask,
+    type SelectOption,
+} from '@/types';
 import MilestoneColumn from './MilestoneColumn';
 import MilestoneFormSheet from './MilestoneFormSheet';
 import TaskCard from './TaskCard';
@@ -37,6 +41,7 @@ interface Props {
     assetOrganization: string | null;
     milestones: AdminMilestone[];
     canManage: boolean;
+    taskStatusOptions: SelectOption[];
 }
 
 const columnOf = (taskToken: string, cols: AdminMilestone[]): string | null =>
@@ -48,6 +53,7 @@ export default function MilestoneBoard({
     assetOrganization,
     milestones,
     canManage,
+    taskStatusOptions,
 }: Props) {
     const [columns, setColumns] = useState<AdminMilestone[]>(milestones);
     const [activeId, setActiveId] = useState<string | null>(null);
@@ -390,6 +396,7 @@ export default function MilestoneBoard({
                 task={taskEditing}
                 defaultMilestone={taskDefaultMilestone}
                 assetOrganization={assetOrganization}
+                taskStatusOptions={taskStatusOptions}
                 onSuccess={() => setTaskSheetOpen(false)}
             />
 

@@ -55,7 +55,7 @@ class ProjectController extends Controller
         $project = Project::create($data);
         $project->syncDataTags($tags);
 
-        return redirect()->route('projects.index')->with('success', 'Project created.');
+        return back(fallback: route('projects.index'))->with('success', 'Project created.');
     }
 
     public function show(Request $request, ProjectAssetFilters $filters, Project $project): Response
@@ -142,7 +142,7 @@ class ProjectController extends Controller
 
         $project->delete();
 
-        return redirect()->route('projects.index')->with('success', 'Project deleted.');
+        return back(fallback: route('projects.index'))->with('success', 'Project deleted.');
     }
 
     /**

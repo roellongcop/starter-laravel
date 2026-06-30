@@ -257,7 +257,7 @@ export default function AsyncSelect({
             >
                 <span
                     className={cn(
-                        'truncate',
+                        'min-w-0 flex-1 truncate text-left',
                         !selectedOption && 'text-muted-foreground',
                     )}
                 >
@@ -293,10 +293,12 @@ export default function AsyncSelect({
                                 onClick={clear}
                                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
                             >
-                                <span className="flex-1 text-muted-foreground">
+                                <span className="min-w-0 flex-1 break-words text-muted-foreground">
                                     {allLabel}
                                 </span>
-                                {!value && <Check className="h-4 w-4" />}
+                                {!value && (
+                                    <Check className="h-4 w-4 shrink-0" />
+                                )}
                             </button>
                         )}
 
@@ -320,11 +322,11 @@ export default function AsyncSelect({
                                             onClick={() => choose(option)}
                                             className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
                                         >
-                                            <span className="flex-1">
+                                            <span className="min-w-0 flex-1 break-words">
                                                 {option.label}
                                             </span>
                                             {v === value && (
-                                                <Check className="h-4 w-4" />
+                                                <Check className="h-4 w-4 shrink-0" />
                                             )}
                                         </button>
                                     );

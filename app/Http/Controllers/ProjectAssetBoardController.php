@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ProjectStatus;
+use App\Enums\TaskStatus;
 use App\Http\Controllers\Concerns\ResolvesBoard;
 use App\Http\Controllers\Concerns\SerializesAssets;
 use App\Http\Controllers\Concerns\SerializesBoard;
 use App\Models\Asset;
 use App\Models\Milestone;
+use App\Models\Person;
 use App\Models\Project;
 use App\Models\Task;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,13 +45,21 @@ class ProjectAssetBoardController extends Controller
             ->first();
         abort_if($binding === null, 404);
 
+        // Assignees are polymorphic (Team|Person); a Person's display name lives on
+        // its user, so eager-load that nested relation for the Person morph.
+        $loadAssignee = function (Relation $relation): void {
+            if ($relation instanceof MorphTo) {
+                $relation->morphWith([Person::class => ['user']]);
+            }
+        };
+
         $milestones = Milestone::query()
             ->where('project_id', $project->getKey())
             ->where('asset_id', $asset->getKey())
             ->with([
-                'tasks.assignee',
-                'tasks.approver',
-                'tasks.observer',
+                'tasks.assignee' => $loadAssignee,
+                'tasks.approver' => $loadAssignee,
+                'tasks.observer' => $loadAssignee,
                 'tasks.referenceFile',
                 'tasks.tags',
             ])
@@ -72,6 +84,8 @@ class ProjectAssetBoardController extends Controller
             'canManage' => $canManage,
             // Workflow statuses for the inline per-project-asset status dropdown.
             'statusOptions' => ProjectStatus::options(),
+            // Task workflow statuses for the task form's status picker.
+            'taskStatusOptions' => TaskStatus::options(),
         ]);
     }
 

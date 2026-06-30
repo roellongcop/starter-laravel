@@ -8,6 +8,7 @@ use App\Enums\IpListType;
 use App\Enums\NotificationType;
 use App\Enums\ProjectStatus;
 use App\Enums\RecordStatus;
+use App\Enums\TaskStatus;
 use App\Enums\UserExportStatus;
 use App\Enums\UserImportStatus;
 use App\Enums\UserStatus;
@@ -137,7 +138,7 @@ class DemoSeeder extends Seeder
             ], $out);
 
             $bindings = $this->seedProjectAssets($projectsByOrg, $assetsByOrg, $out);
-            $this->seedBoards($scale, $bindings, $tagsByOrg, $refsByOrg, $activeUserIds, $out);
+            $this->seedBoards($scale, $bindings, $tagsByOrg, $refsByOrg, $out);
 
             $teams = $this->seedTeams($scale, $richOrgs, $catsByOrg, $rolesByOrg, $out);
             $this->seedPeople($scale, $teams, $activeUserIds, $out);
@@ -754,32 +755,31 @@ class DemoSeeder extends Seeder
      * Milestone (column) + task (card) boards. EVERY project-asset binding gets its
      * default "Misc" milestone; a bounded subset additionally gets extra columns
      * and cards. Bindings live in active orgs (richOrgs is active-scoped), so the
-     * board's org-scoped FKs — assignees (active users), tags and reference files —
-     * stay loadable. The detailed tasks exercise every field: assignment trio,
-     * private flag, due dates, an optional reference file and attached tags.
+     * board's org-scoped FKs — tags and reference files — stay loadable. The
+     * detailed tasks exercise the private flag, due dates, an optional reference
+     * file and attached tags. (Assignees are Team/Person and set via the UI, not
+     * seeded here.)
      *
      * @param  array<int, array{project: int, asset: int, org: int}>  $bindings
      * @param  array<int, array<int, int>>  $tagsByOrg
      * @param  array<int, array<int, int>>  $refsByOrg
-     * @param  array<int, int>  $activeUserIds
      */
-    private function seedBoards(int $scale, array $bindings, array $tagsByOrg, array $refsByOrg, array $activeUserIds, Output $out): void
+    private function seedBoards(int $scale, array $bindings, array $tagsByOrg, array $refsByOrg, Output $out): void
     {
         if ($bindings === []) {
             return;
         }
 
         // Every binding gets its default "Misc" milestone (mirrors the production
-        // Milestone::ensureDefaultFor on project-asset creation). A bounded,
-        // user-backed subset also gets extra columns + cards so the board UI has
-        // rich data to exercise.
-        $detailedCount = $activeUserIds === [] ? 0 : min(count($bindings), max(20, intdiv($scale, 5)));
+        // Milestone::ensureDefaultFor on project-asset creation). A bounded subset
+        // also gets extra columns + cards so the board UI has rich data to exercise.
+        $detailedCount = min(count($bindings), max(20, intdiv($scale, 5)));
         $milestoneTotal = 0;
         $taskTotal = 0;
         $m = 0;
         $t = 0;
 
-        DB::transaction(function () use ($bindings, $tagsByOrg, $refsByOrg, $activeUserIds, $detailedCount, &$milestoneTotal, &$taskTotal, &$m, &$t): void {
+        DB::transaction(function () use ($bindings, $tagsByOrg, $refsByOrg, $detailedCount, &$milestoneTotal, &$taskTotal, &$m, &$t): void {
             foreach ($bindings as $b => $binding) {
                 $org = $binding['org'];
                 $tags = $tagsByOrg[$org] ?? [];
@@ -806,7 +806,7 @@ class DemoSeeder extends Seeder
                     $milestoneTotal++;
 
                     if (! $detailed) {
-                        continue; // Misc-only board (no users to assign).
+                        continue; // Misc-only board.
                     }
 
                     $cards = $p % 6; // 0–5 cards per column (Misc stays empty).
@@ -817,9 +817,7 @@ class DemoSeeder extends Seeder
                             'description' => $this->desc($t),
                             'milestone_id' => $milestone->id,
                             'organization_id' => $org,
-                            'assigned_to_id' => $t % 3 === 0 ? null : $activeUserIds[$t % count($activeUserIds)],
-                            'approver_id' => $t % 4 === 0 ? $activeUserIds[($t + 1) % count($activeUserIds)] : null,
-                            'observer_id' => $t % 5 === 0 ? $activeUserIds[($t + 2) % count($activeUserIds)] : null,
+                            'status' => TaskStatus::cases()[$t % count(TaskStatus::cases())]->value,
                             'private' => $t % 2 === 0,
                             'due_date' => $t % 3 === 0 ? null : now()->addDays($t % 30)->toDateString(),
                             'reference_file_id' => ($refs === [] || $t % 4 === 0) ? null : $refs[$t % count($refs)],
