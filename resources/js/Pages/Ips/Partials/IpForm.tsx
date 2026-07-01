@@ -42,7 +42,9 @@ export default function IpForm({ ip, listTypes, onSuccess }: Props) {
     return (
         <form onSubmit={submit} className="max-w-xl space-y-4">
             <div>
-                <Label htmlFor="ip_address">IP address</Label>
+                <Label htmlFor="ip_address" required>
+                    IP address
+                </Label>
                 <Input
                     id="ip_address"
                     value={data.ip_address}
@@ -54,7 +56,9 @@ export default function IpForm({ ip, listTypes, onSuccess }: Props) {
             </div>
 
             <div>
-                <Label htmlFor="list_type">List type</Label>
+                <Label htmlFor="list_type" required>
+                    List type
+                </Label>
                 <Select
                     value={data.list_type}
                     onValueChange={(v) => setData('list_type', v)}

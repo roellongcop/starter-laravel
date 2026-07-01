@@ -51,7 +51,9 @@ export default function ForgotPassword({ status }: { status?: string }) {
 
             <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" required>
+                        Email
+                    </Label>
                     <Input
                         id="email"
                         type="email"

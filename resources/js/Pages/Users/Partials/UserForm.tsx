@@ -147,7 +147,9 @@ export default function UserForm({
 
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name" required>
+                            Name
+                        </Label>
                         <Input
                             id="name"
                             value={data.name}
@@ -157,7 +159,9 @@ export default function UserForm({
                         <InputError message={errors.name} className="mt-1" />
                     </div>
                     <div>
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email" required>
+                            Email
+                        </Label>
                         <Input
                             id="email"
                             type="email"
@@ -183,7 +187,9 @@ export default function UserForm({
                         />
                     </div>
                     <div>
-                        <Label htmlFor="user_status">Status</Label>
+                        <Label htmlFor="user_status" required>
+                            Status
+                        </Label>
                         <Select
                             value={data.user_status}
                             onValueChange={(v) => setData('user_status', v)}
@@ -208,7 +214,7 @@ export default function UserForm({
                         />
                     </div>
                     <div>
-                        <Label htmlFor="password">
+                        <Label htmlFor="password" required>
                             Password {editing && '(leave blank to keep)'}
                         </Label>
                         <Input

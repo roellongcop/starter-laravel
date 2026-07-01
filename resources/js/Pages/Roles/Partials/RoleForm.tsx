@@ -90,7 +90,9 @@ export default function RoleForm({
         <form onSubmit={submit} className="space-y-6">
             <div className="grid max-w-2xl gap-4 sm:grid-cols-2">
                 <div>
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name" required>
+                        Name
+                    </Label>
                     <Input
                         id="name"
                         value={data.name}

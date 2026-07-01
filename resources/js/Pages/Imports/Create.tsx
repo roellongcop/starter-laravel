@@ -45,7 +45,7 @@ export default function Create({ resources }: { resources: string[] }) {
                 <CardContent className="pt-6">
                     <form onSubmit={submit} className="max-w-md space-y-4">
                         <div>
-                            <Label>Resource</Label>
+                            <Label required>Resource</Label>
                             <Select
                                 value={data.resource}
                                 onValueChange={(v) => setData('resource', v)}
@@ -63,7 +63,9 @@ export default function Create({ resources }: { resources: string[] }) {
                             </Select>
                         </div>
                         <div>
-                            <Label htmlFor="file">File</Label>
+                            <Label htmlFor="file" required>
+                                File
+                            </Label>
                             <Input
                                 id="file"
                                 type="file"
