@@ -325,6 +325,7 @@ export default function Show({
                                                         canEdit={can(
                                                             'assets.update',
                                                         )}
+                                                        singleRow
                                                     />
                                                 </div>
                                             </Card>
