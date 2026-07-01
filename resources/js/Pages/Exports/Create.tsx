@@ -51,7 +51,7 @@ export default function Create({ formats, resources }: Props) {
                 <CardContent className="pt-6">
                     <form onSubmit={submit} className="max-w-md space-y-4">
                         <div>
-                            <Label>Resource</Label>
+                            <Label required>Resource</Label>
                             <Select
                                 value={data.resource}
                                 onValueChange={(v) => setData('resource', v)}
@@ -73,7 +73,7 @@ export default function Create({ formats, resources }: Props) {
                             />
                         </div>
                         <div>
-                            <Label>Format</Label>
+                            <Label required>Format</Label>
                             <Select
                                 value={data.format}
                                 onValueChange={(v) => setData('format', v)}

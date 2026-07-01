@@ -48,14 +48,19 @@ export default function Index({ ips, filters, listTypes }: Props) {
     const [deleting, setDeleting] = useState<AdminIp | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [formIp, setFormIp] = useState<AdminIp | null>(null);
+    // Bumped on every open so the form's key changes and it remounts with the
+    // fresh record — re-editing the same row otherwise reuses a stale instance.
+    const [formNonce, setFormNonce] = useState(0);
 
     const openCreate = () => {
         setFormIp(null);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
     const openEdit = (ip: AdminIp) => {
         setFormIp(ip);
+        setFormNonce((n) => n + 1);
         setFormOpen(true);
     };
 
@@ -262,7 +267,7 @@ export default function Index({ ips, filters, listTypes }: Props) {
                     </SheetHeader>
                     <div className="mt-6">
                         <IpForm
-                            key={formIp?.token ?? 'new'}
+                            key={`${formIp?.token ?? 'new'}-${formNonce}`}
                             ip={formIp ?? undefined}
                             listTypes={listTypes}
                             onSuccess={() => setFormOpen(false)}
