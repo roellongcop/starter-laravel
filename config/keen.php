@@ -16,6 +16,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Async option-picker page size
+    |--------------------------------------------------------------------------
+    |
+    | Max rows returned by search-as-you-type option endpoints (e.g. the
+    | organization picker's /organizations/options). Bounds the payload so a
+    | filter/form never loads the entire table when there are millions of rows.
+    |
+    */
+
+    'options_limit' => (int) env('OPTIONS_LIMIT', 20),
+
+    /*
+    |--------------------------------------------------------------------------
     | Export sync threshold
     |--------------------------------------------------------------------------
     |

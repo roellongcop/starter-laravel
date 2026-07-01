@@ -113,6 +113,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/avatar/{user}', [AvatarController::class, 'show'])->name('profile.avatar');
 
     Route::post('users/bulk', [UserController::class, 'bulk'])->name('users.bulk');
+    // Async user picker: registered before the resource so /users/options isn't captured as a {user} show.
+    Route::get('users/options', [UserController::class, 'options'])->name('users.options');
     Route::resource('users', UserController::class);
 
     Route::resource('roles', RoleController::class);
