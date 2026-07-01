@@ -8,6 +8,7 @@ import ThemeStyle from '@/Components/ThemeStyle';
 import ThemeToggle from '@/Components/ThemeToggle';
 import YinYang from '@/Components/YinYang';
 import { useIdleLogout } from '@/hooks/use-idle-logout';
+import { usePersistentScroll } from '@/hooks/use-persistent-scroll';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useEffect, useState } from 'react';
 
@@ -21,6 +22,10 @@ export default function Authenticated({
     const brand = props.brand;
 
     useIdleLogout();
+
+    // The layout remounts on every Inertia visit, so persist the sidebar's
+    // scroll position instead of letting it snap back to the top each time.
+    const sidebarRef = usePersistentScroll<HTMLElement>('sidebar');
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -196,7 +201,10 @@ export default function Authenticated({
             )}
 
             <div className="flex w-full gap-6 px-4 sm:px-6 lg:px-8">
-                <aside className="scrollbar-hover sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 self-start overflow-y-auto py-6 md:block">
+                <aside
+                    ref={sidebarRef}
+                    className="scrollbar-hover sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 self-start overflow-y-auto py-6 md:block"
+                >
                     <Sidebar />
                 </aside>
 
