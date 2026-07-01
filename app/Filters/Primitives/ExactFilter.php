@@ -14,7 +14,7 @@ class ExactFilter extends AbstractFilter
     protected string $key;
 
     /**
-     * @param  array<int, string>|null  $allowed  when set, the filter is inactive unless the value is in this list
+     * @param  array<int, int|string>|null  $allowed  when set, the filter is inactive unless the value is in this list
      */
     public function __construct(
         protected string $column,

@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserStatus;
 use App\Filters\UserFilters;
+use App\Http\Controllers\Concerns\ProvidesOptions;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\File;
 use App\Models\Role;
 use App\Models\User;
 use App\Policies\BasePolicy;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +22,8 @@ use OwenIt\Auditing\Events\AuditCustom;
 
 class UserController extends Controller
 {
+    use ProvidesOptions;
+
     public function index(Request $request, UserFilters $filters): Response
     {
         $this->authorize('viewAny', User::class);
@@ -46,6 +50,15 @@ class UserController extends Controller
             ],
             'exportFormats' => ['csv', 'xls', 'xlsx', 'pdf'],
         ]);
+    }
+
+    public function options(Request $request): JsonResponse
+    {
+        return $this->optionsResponse(
+            $request,
+            User::class,
+            fn (User $user): array => ['value' => $user->token, 'label' => $user->name],
+        );
     }
 
     public function create(): Response
