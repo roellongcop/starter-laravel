@@ -16,6 +16,14 @@ export type FilterParams = Record<string, string | number | undefined>;
 interface UseFiltersOptions<T extends FilterValues> {
     /** Route name, e.g. 'users.index'. */
     route: string;
+    /** Route params for a parametrized route, e.g. an `organizations.show` token. */
+    params?: Parameters<typeof route>[1];
+    /**
+     * Inertia merge/scroll prop names to reset on every filter change. Required
+     * for <InfiniteScroll> pages: without it a re-filter APPENDS the new first
+     * page to the accumulated rows (duplicates) instead of replacing them.
+     */
+    reset?: string[];
     /** The `filters` prop echoed by the controller — seeds initial state. */
     initial: T;
     /**
@@ -51,12 +59,27 @@ const defaultSerialize = (value: unknown): string | number | undefined => {
  */
 export function useFilters<T extends FilterValues>({
     route: routeName,
+    params,
+    reset: resetProps,
     initial,
     serialize,
 }: UseFiltersOptions<T>) {
     // Seed from the FULL filters prop so echoed-but-unedited keys (e.g. an
     // `event` a page doesn't expose) survive a search submit untouched.
     const [values, setValues] = useState<T>(initial);
+
+    // Reset the inputs when the *applied* filters change via a path that bypasses
+    // this hook — e.g. a controller redirect that drops the query string after a
+    // create. (Inertia reuses the page component across same-component visits, so
+    // the useState seed would otherwise go stale and show a filter that's no
+    // longer applied.) React's "adjust state during render" pattern, keyed by
+    // value so a pending, un-submitted text edit is never clobbered.
+    const initialKey = JSON.stringify(initial);
+    const [committedKey, setCommittedKey] = useState(initialKey);
+    if (initialKey !== committedKey) {
+        setCommittedKey(initialKey);
+        setValues(initial);
+    }
 
     const toParams = useCallback(
         (vals: T): FilterParams => {
@@ -75,12 +98,13 @@ export function useFilters<T extends FilterValues>({
 
     const visit = useCallback(
         (vals: T) =>
-            router.get(route(routeName), toParams(vals), {
+            router.get(route(routeName, params), toParams(vals), {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                ...(resetProps ? { reset: resetProps } : {}),
             }),
-        [routeName, toParams],
+        [routeName, params, resetProps, toParams],
     );
 
     /** Update one pending value locally WITHOUT navigating (text inputs). */
