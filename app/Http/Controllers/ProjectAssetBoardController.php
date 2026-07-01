@@ -57,6 +57,9 @@ class ProjectAssetBoardController extends Controller
             ->where('project_id', $project->getKey())
             ->where('asset_id', $asset->getKey())
             ->with([
+                'tasks' => function (Relation $query): void {
+                    $query->withCount('requirements');
+                },
                 'tasks.assignee' => $loadAssignee,
                 'tasks.approver' => $loadAssignee,
                 'tasks.observer' => $loadAssignee,

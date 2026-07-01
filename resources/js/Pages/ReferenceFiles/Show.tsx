@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import PageHeader from '@/Components/PageHeader';
-import TagBadges from '@/Components/TagBadges';
+import TagEditor from '@/Components/TagEditor';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import {
@@ -16,6 +16,7 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { usePermissions } from '@/lib/permissions';
 import { type AdminReferenceFile, type Crumb } from '@/types';
 import ReferenceFileForm from './Partials/ReferenceFileForm';
 
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function Show({ reference }: Props) {
+    const { can } = usePermissions();
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -105,13 +107,14 @@ export default function Show({ reference }: Props) {
                         <span className="text-xs uppercase tracking-wide text-muted-foreground">
                             Tags
                         </span>
-                        {reference.tags.length > 0 ? (
-                            <TagBadges tags={reference.tags} className="mt-1" />
-                        ) : (
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                No tags.
-                            </p>
-                        )}
+                        <TagEditor
+                            className="mt-1"
+                            tags={reference.tags}
+                            organization={reference.organization}
+                            type="reference-files"
+                            token={reference.token}
+                            canEdit={can('reference-files.update')}
+                        />
                     </div>
                 </CardContent>
             </Card>

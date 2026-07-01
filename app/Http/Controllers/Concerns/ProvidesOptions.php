@@ -26,8 +26,9 @@ trait ProvidesOptions
      *
      * @param  class-string<TModel>  $model
      * @param  callable(TModel): array{value: string, label: string}  $toOption
-     * @param  array<int, string>  $columns  selected columns (must cover token, name + anything $toOption reads)
+     * @param  array<int, string>  $columns  selected columns (must cover token, the search column + anything $toOption reads)
      * @param  bool  $organizationScoped  cascade pickers: constrain to `?organization=`'s rows (no/unknown org → none)
+     * @param  string  $searchColumn  the label column to search + order by (e.g. 'title' for Forms)
      */
     protected function optionsResponse(
         Request $request,
@@ -35,6 +36,7 @@ trait ProvidesOptions
         callable $toOption,
         array $columns = ['token', 'name'],
         bool $organizationScoped = false,
+        string $searchColumn = 'name',
     ): JsonResponse {
         // Rehydrating specific selected values: a small, fixed set, queried
         // unscoped (tokens are unique) so an edited record's chips resolve even
@@ -45,7 +47,7 @@ trait ProvidesOptions
             return response()->json([
                 'data' => $model::query()
                     ->whereIn('token', $tokens)
-                    ->orderBy('name')
+                    ->orderBy($searchColumn)
                     ->get($columns)
                     ->map($toOption)
                     ->all(),
@@ -72,12 +74,12 @@ trait ProvidesOptions
         $term = trim((string) $request->string('q'));
 
         if ($term !== '') {
-            $this->applyNameSearch($query, $term);
+            $this->applyNameSearch($query, $term, $searchColumn);
         }
 
-        // Name tiebreaks on the (unique) token so the keyset cursor is stable.
+        // The label column tiebreaks on the (unique) token so the keyset cursor is stable.
         $paginator = $query
-            ->orderBy('name')
+            ->orderBy($searchColumn)
             ->orderBy('token')
             ->cursorPaginate((int) config('keen.options_limit'), $columns);
 
@@ -85,14 +87,15 @@ trait ProvidesOptions
     }
 
     /**
-     * Case-insensitive, wildcard-escaped name match, cross-db (Postgres ILIKE /
+     * Case-insensitive, wildcard-escaped label match, cross-db (Postgres ILIKE /
      * SQLite LIKE) — mirrors App\Filters\Primitives\AbstractFilter so the picker
-     * search behaves like the list-page search filters.
+     * search behaves like the list-page search filters. The column is a fixed
+     * caller-supplied identifier (never user input), so it's safe to interpolate.
      *
      * @param  Builder<Model>  $query
      */
-    protected function applyNameSearch(Builder $query, string $term): void
+    protected function applyNameSearch(Builder $query, string $term, string $column = 'name'): void
     {
-        $query->whereRaw('name '.like_operator()." ? escape '\\'", ['%'.escape_like($term).'%']);
+        $query->whereRaw($column.' '.like_operator()." ? escape '\\'", ['%'.escape_like($term).'%']);
     }
 }

@@ -7,7 +7,7 @@ import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
-import TagBadgesRow from '@/Components/TagBadgesRow';
+import TagEditor from '@/Components/TagEditor';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -18,6 +18,7 @@ import {
 } from '@/Components/ui/dropdown-menu';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { usePermissions } from '@/lib/permissions';
 import { type AdminForm } from '@/types';
 
 interface Props {
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function Index({ forms, filters }: Props) {
+    const { can } = usePermissions();
     const f = useFilters<Props['filters']>({
         route: 'forms.index',
         reset: ['forms'],
@@ -166,7 +168,14 @@ export default function Index({ forms, filters }: Props) {
                                         ` · ${form.responses_count} response${form.responses_count === 1 ? '' : 's'}`}
                                 </p>
                                 <div className="mt-auto pt-2">
-                                    <TagBadgesRow tags={form.tags} />
+                                    <TagEditor
+                                        tags={form.tags}
+                                        organization={form.organization}
+                                        type="forms"
+                                        token={form.token}
+                                        canEdit={can('forms.update')}
+                                        singleRow
+                                    />
                                 </div>
                             </CardContent>
                         </Card>

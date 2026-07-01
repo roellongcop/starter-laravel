@@ -32,9 +32,13 @@ import TaskCard from './TaskCard';
 interface Props {
     milestone: AdminMilestone;
     canManage: boolean;
+    /** Suppresses drag (grips + sortable) — e.g. while a filter is active. */
+    dragDisabled?: boolean;
     collapsed: boolean;
     projectToken: string;
     assetToken: string;
+    /** The board's organization token — scopes each task card's tag editor. */
+    assetOrganization: string | null;
     taskStatusOptions: SelectOption[];
     onToggleCollapse: () => void;
     onAddTask: () => void;
@@ -47,9 +51,11 @@ interface Props {
 export default function MilestoneColumn({
     milestone,
     canManage,
+    dragDisabled = false,
     collapsed,
     projectToken,
     assetToken,
+    assetOrganization,
     taskStatusOptions,
     onToggleCollapse,
     onAddTask,
@@ -58,6 +64,7 @@ export default function MilestoneColumn({
     onEditTask,
     onDeleteTask,
 }: Props) {
+    const canDrag = canManage && !dragDisabled;
     const {
         attributes,
         listeners,
@@ -67,7 +74,7 @@ export default function MilestoneColumn({
         isDragging,
     } = useSortable({
         id: milestone.token,
-        disabled: !canManage,
+        disabled: !canDrag,
         data: { type: 'column' },
     });
 
@@ -80,7 +87,7 @@ export default function MilestoneColumn({
             }`}
         >
             <div className="flex items-start gap-1.5 border-b p-2.5">
-                {canManage && (
+                {canDrag && (
                     <button
                         type="button"
                         className="mt-0.5 cursor-grab text-muted-foreground"
@@ -165,11 +172,13 @@ export default function MilestoneColumn({
                                         key={task.token}
                                         task={task}
                                         canManage={canManage}
+                                        dragDisabled={dragDisabled}
                                         projectToken={projectToken}
                                         assetToken={assetToken}
+                                        assetOrganization={assetOrganization}
                                         taskStatusOptions={taskStatusOptions}
-                                        onEdit={() => onEditTask(task)}
-                                        onDelete={() => onDeleteTask(task)}
+                                        onEdit={onEditTask}
+                                        onDelete={onDeleteTask}
                                     />
                                 ))
                             )}

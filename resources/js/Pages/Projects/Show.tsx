@@ -9,8 +9,7 @@ import FilterBar from '@/Components/FilterBar';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
 import StatusDropdown from '@/Components/StatusDropdown';
-import TagBadges from '@/Components/TagBadges';
-import TagBadgesRow from '@/Components/TagBadgesRow';
+import TagEditor from '@/Components/TagEditor';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -23,6 +22,7 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { usePermissions } from '@/lib/permissions';
 import {
     type AdminProject,
     type Crumb,
@@ -50,6 +50,7 @@ export default function Show({
     selectedAssetTokens,
     statusOptions,
 }: Props) {
+    const { can } = usePermissions();
     const [editOpen, setEditOpen] = useState(false);
     const [manageOpen, setManageOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -160,13 +161,13 @@ export default function Show({
                                 Tags
                             </dt>
                             <dd>
-                                {project.tags.length > 0 ? (
-                                    <TagBadges tags={project.tags} />
-                                ) : (
-                                    <span className="text-muted-foreground">
-                                        —
-                                    </span>
-                                )}
+                                <TagEditor
+                                    tags={project.tags}
+                                    organization={project.organization}
+                                    type="projects"
+                                    token={project.token}
+                                    canEdit={can('projects.update')}
+                                />
                             </dd>
                         </dl>
                     </CardContent>
@@ -314,8 +315,16 @@ export default function Show({
                                                             ? ` · ${asset.address}`
                                                             : ''}
                                                     </p>
-                                                    <TagBadgesRow
+                                                    <TagEditor
                                                         tags={asset.tags}
+                                                        organization={
+                                                            asset.organization
+                                                        }
+                                                        type="assets"
+                                                        token={asset.token}
+                                                        canEdit={can(
+                                                            'assets.update',
+                                                        )}
                                                     />
                                                 </div>
                                             </Card>

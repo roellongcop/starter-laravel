@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\FieldType;
 use App\Filters\FormFilters;
+use App\Http\Controllers\Concerns\ProvidesOptions;
 use App\Http\Controllers\Concerns\ResolvesDataTags;
 use App\Http\Requests\StoreFormRequest;
 use App\Http\Requests\UpdateFormRequest;
 use App\Models\Form;
 use App\Models\Organization;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,6 +18,7 @@ use Inertia\Response;
 
 class FormController extends Controller
 {
+    use ProvidesOptions;
     use ResolvesDataTags;
 
     public function index(Request $request, FormFilters $filters): Response
@@ -32,6 +35,22 @@ class FormController extends Controller
             'forms' => Inertia::scroll($forms),
             'filters' => $filters->echoBack(),
         ]);
+    }
+
+    /**
+     * Org-scoped form picker options (the requirement form's Form select). Forms
+     * label on `title`, not `name`, so search + ordering use that column.
+     */
+    public function options(Request $request): JsonResponse
+    {
+        return $this->optionsResponse(
+            $request,
+            Form::class,
+            fn (Form $form): array => ['value' => $form->token, 'label' => $form->title],
+            columns: ['token', 'title'],
+            organizationScoped: true,
+            searchColumn: 'title',
+        );
     }
 
     public function create(): Response

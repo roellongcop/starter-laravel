@@ -4,10 +4,11 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import PageHeader from '@/Components/PageHeader';
-import TagBadges from '@/Components/TagBadges';
+import TagEditor from '@/Components/TagEditor';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { usePermissions } from '@/lib/permissions';
 import { type AdminForm, type Crumb } from '@/types';
 import FieldInput from './Partials/FieldInput';
 
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function Show({ form }: Props) {
+    const { can } = usePermissions();
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
     const destroy = () =>
@@ -87,14 +89,19 @@ export default function Show({ form }: Props) {
                             {form.organization_name || '—'}
                         </p>
                     </div>
-                    {form.tags.length > 0 && (
-                        <div>
-                            <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                                Tags
-                            </span>
-                            <TagBadges tags={form.tags} className="mt-1" />
-                        </div>
-                    )}
+                    <div>
+                        <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                            Tags
+                        </span>
+                        <TagEditor
+                            className="mt-1"
+                            tags={form.tags}
+                            organization={form.organization}
+                            type="forms"
+                            token={form.token}
+                            canEdit={can('forms.update')}
+                        />
+                    </div>
                     {form.description && (
                         <p className="text-sm text-muted-foreground">
                             {form.description}

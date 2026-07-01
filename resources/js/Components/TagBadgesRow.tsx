@@ -1,9 +1,10 @@
 import {
+    type CSSProperties,
+    type ReactNode,
     useEffect,
     useLayoutEffect,
     useRef,
     useState,
-    type CSSProperties,
 } from 'react';
 
 import { Badge } from '@/Components/ui/badge';
@@ -37,18 +38,23 @@ function Chip({ tag }: { tag: TagChip }) {
  * A SINGLE-ROW tag list with overflow handling: shows as many whole chips as fit
  * (each truncated with … if a name is long) and a "+N" chip for the remainder.
  * Always reserves one chip-row of height — even with zero tags — so cards keep a
- * consistent height. Recomputes on container resize. Compare to <TagBadges>,
- * which wraps to multiple lines.
+ * consistent height. Recomputes on container resize. An optional `action`
+ * (e.g. an edit button) renders immediately after the chips and is reserved in
+ * the fit calc, so it hugs the tags instead of being pushed to the far edge.
+ * Compare to <TagBadges>, which wraps to multiple lines.
  */
 export default function TagBadgesRow({
     tags,
     className,
+    action,
 }: {
     tags: TagChip[];
     className?: string;
+    action?: ReactNode;
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const measureRef = useRef<HTMLDivElement>(null);
+    const actionRef = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = useState(tags.length);
 
     useIsoLayoutEffect(() => {
@@ -59,7 +65,10 @@ export default function TagBadgesRow({
         }
 
         const recalc = () => {
-            const max = container.clientWidth;
+            // Reserve room for the trailing action so chips never overlap it.
+            const actionWidth = actionRef.current?.offsetWidth ?? 0;
+            const max =
+                container.clientWidth - (actionWidth ? actionWidth + GAP : 0);
             const items = Array.from(measure.children) as HTMLElement[];
             const count = items.length;
             if (count === 0) {
@@ -111,7 +120,7 @@ export default function TagBadgesRow({
         <div
             ref={containerRef}
             className={cn(
-                'relative flex h-6 items-center overflow-hidden',
+                'relative flex h-6 items-center gap-1.5 overflow-hidden',
                 className,
             )}
         >
@@ -144,6 +153,12 @@ export default function TagBadgesRow({
                     </Badge>
                 )}
             </div>
+
+            {action && (
+                <div ref={actionRef} className="shrink-0">
+                    {action}
+                </div>
+            )}
         </div>
     );
 }

@@ -26,6 +26,7 @@ use App\Models\OrganizationRole;
 use App\Models\Person;
 use App\Models\Project;
 use App\Models\ReferenceFile;
+use App\Models\Requirement;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\TeamCategory;
@@ -130,15 +131,17 @@ class DemoSeeder extends Seeder
             $forms = $this->seedForms($scale, $richOrgs, $out);
             $refsByOrg = $this->seedReferenceFiles($scale, $richOrgs, $fileIds, $out);
 
+            $formsByOrg = $this->groupBy($forms, 'org', 'id');
+
             $this->seedTaggables($tagsByOrg, [
                 (new Project)->getMorphClass() => $projectsByOrg,
                 (new Asset)->getMorphClass() => $assetsByOrg,
                 (new ReferenceFile)->getMorphClass() => $refsByOrg,
-                (new Form)->getMorphClass() => $this->groupBy($forms, 'org', 'id'),
+                (new Form)->getMorphClass() => $formsByOrg,
             ], $out);
 
             $bindings = $this->seedProjectAssets($projectsByOrg, $assetsByOrg, $out);
-            $this->seedBoards($scale, $bindings, $tagsByOrg, $refsByOrg, $out);
+            $this->seedBoards($scale, $bindings, $tagsByOrg, $refsByOrg, $formsByOrg, $out);
 
             $teams = $this->seedTeams($scale, $richOrgs, $catsByOrg, $rolesByOrg, $out);
             $this->seedPeople($scale, $teams, $activeUserIds, $out);
@@ -752,19 +755,22 @@ class DemoSeeder extends Seeder
     }
 
     /**
-     * Milestone (column) + task (card) boards. EVERY project-asset binding gets its
-     * default "Misc" milestone; a bounded subset additionally gets extra columns
-     * and cards. Bindings live in active orgs (richOrgs is active-scoped), so the
-     * board's org-scoped FKs — tags and reference files — stay loadable. The
-     * detailed tasks exercise the private flag, due dates, an optional reference
-     * file and attached tags. (Assignees are Team/Person and set via the UI, not
-     * seeded here.)
+     * Milestone (column) + task (card) + requirement (deliverable) boards. EVERY
+     * project-asset binding gets its default "Misc" milestone; a bounded subset
+     * additionally gets extra columns and cards. Bindings live in active orgs
+     * (richOrgs is active-scoped), so the board's org-scoped FKs — tags, reference
+     * files and forms — stay loadable. The detailed tasks exercise the private
+     * flag, due dates, an optional reference file and attached tags, and each
+     * carries 0–4 requirements spanning every status, all file-bound shapes
+     * (none / min-only / max-only / both), an optional reference file + form, and
+     * tags. (Assignees are Team/Person and set via the UI, not seeded here.)
      *
      * @param  array<int, array{project: int, asset: int, org: int}>  $bindings
      * @param  array<int, array<int, int>>  $tagsByOrg
      * @param  array<int, array<int, int>>  $refsByOrg
+     * @param  array<int, array<int, int>>  $formsByOrg
      */
-    private function seedBoards(int $scale, array $bindings, array $tagsByOrg, array $refsByOrg, Output $out): void
+    private function seedBoards(int $scale, array $bindings, array $tagsByOrg, array $refsByOrg, array $formsByOrg, Output $out): void
     {
         if ($bindings === []) {
             return;
@@ -776,15 +782,25 @@ class DemoSeeder extends Seeder
         $detailedCount = min(count($bindings), max(20, intdiv($scale, 5)));
         $milestoneTotal = 0;
         $taskTotal = 0;
+        $requirementTotal = 0;
         $m = 0;
         $t = 0;
+        $r = 0;
+        // Project-asset bindings that got tasks + requirements, so we can print a
+        // few navigable board URLs at the end (no guessing which boards have data).
+        $detailedBoards = [];
 
-        DB::transaction(function () use ($bindings, $tagsByOrg, $refsByOrg, $detailedCount, &$milestoneTotal, &$taskTotal, &$m, &$t): void {
+        DB::transaction(function () use ($bindings, $tagsByOrg, $refsByOrg, $formsByOrg, $detailedCount, &$milestoneTotal, &$taskTotal, &$requirementTotal, &$m, &$t, &$r, &$detailedBoards): void {
             foreach ($bindings as $b => $binding) {
                 $org = $binding['org'];
                 $tags = $tagsByOrg[$org] ?? [];
                 $refs = $refsByOrg[$org] ?? [];
+                $forms = $formsByOrg[$org] ?? [];
                 $detailed = $b < $detailedCount;
+
+                if ($detailed) {
+                    $detailedBoards[] = ['project' => $binding['project'], 'asset' => $binding['asset']];
+                }
 
                 // Column 0 is always the default Misc; detailed boards add 1–4 more.
                 $columns = $detailed ? 2 + ($b % 4) : 1;
@@ -831,6 +847,43 @@ class DemoSeeder extends Seeder
                         if ($tags !== []) {
                             $task->tags()->attach($this->pickSome($tags, $k % 3));
                         }
+
+                        // 0–4 requirements per task, spanning every status, all
+                        // file-bound shapes, an optional reference file + form, and tags.
+                        $requirements = $t % 5;
+                        for ($q = 0; $q < $requirements; $q++) {
+                            $r++;
+                            // Vary the file bounds: none / min-only / max-only /
+                            // both (max always >= min so validation would pass).
+                            [$min, $max] = match ($r % 4) {
+                                0 => [null, null],
+                                1 => [$r % 3, null],
+                                2 => [null, 1 + ($r % 5)],
+                                default => [$r % 3, 3 + ($r % 5)],
+                            };
+                            $requirement = Requirement::create([
+                                'name' => $this->label('Requirement', $r),
+                                'description' => $this->desc($r),
+                                'organization_id' => $org,
+                                'project_id' => $binding['project'],
+                                'milestone_id' => $milestone->id,
+                                'task_id' => $task->id,
+                                'minimum_files' => $min,
+                                'maximum_files' => $max,
+                                'reference_file_id' => ($refs === [] || $r % 3 === 0) ? null : $refs[$r % count($refs)],
+                                'form_id' => ($forms === [] || $r % 2 === 0) ? null : $forms[$r % count($forms)],
+                                'status' => TaskStatus::cases()[$r % count(TaskStatus::cases())]->value,
+                                'position' => $q,
+                                'record_status' => $this->rstatus($r),
+                                'created_at' => $this->madeAt($r),
+                                'updated_at' => $this->madeAt($r),
+                            ]);
+                            $requirementTotal++;
+
+                            if ($tags !== []) {
+                                $requirement->tags()->attach($this->pickSome($tags, $q % 3));
+                            }
+                        }
                     }
                 }
             }
@@ -838,6 +891,26 @@ class DemoSeeder extends Seeder
 
         $out->writeln("  milestones      +{$milestoneTotal}");
         $out->writeln("  tasks           +{$taskTotal}");
+        $out->writeln("  requirements    +{$requirementTotal}");
+
+        // Print a few board URLs that actually have tasks + requirements, so the
+        // demo user can jump straight to populated boards instead of guessing.
+        $sample = array_slice($detailedBoards, 0, 5);
+        if ($sample !== []) {
+            $projectTokens = Project::query()->withInactive()
+                ->whereIn('id', array_column($sample, 'project'))->pluck('token', 'id');
+            $assetTokens = Asset::query()->withInactive()
+                ->whereIn('id', array_column($sample, 'asset'))->pluck('token', 'id');
+
+            $out->writeln('  <info>boards with tasks + requirements (open any):</info>');
+            foreach ($sample as $board) {
+                $projectToken = $projectTokens[$board['project']] ?? null;
+                $assetToken = $assetTokens[$board['asset']] ?? null;
+                if ($projectToken !== null && $assetToken !== null) {
+                    $out->writeln('    '.route('projects.assets.show', [$projectToken, $assetToken]));
+                }
+            }
+        }
     }
 
     // ── Teams / people / responses ─────────────────────────────────────────────

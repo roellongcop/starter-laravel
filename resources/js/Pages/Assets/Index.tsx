@@ -7,7 +7,7 @@ import ConfirmDialog from '@/Components/ConfirmDialog';
 import FilterBar from '@/Components/FilterBar';
 import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
-import TagBadgesRow from '@/Components/TagBadgesRow';
+import TagEditor from '@/Components/TagEditor';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
@@ -25,6 +25,7 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { usePermissions } from '@/lib/permissions';
 import { type AdminAsset } from '@/types';
 import AssetForm from './Partials/AssetForm';
 
@@ -36,6 +37,7 @@ interface Props {
 }
 
 export default function Index({ assets, filters }: Props) {
+    const { can } = usePermissions();
     const f = useFilters<Props['filters']>({
         route: 'assets.index',
         reset: ['assets'],
@@ -189,7 +191,14 @@ export default function Index({ assets, filters }: Props) {
                                     {asset.address || '—'}
                                 </p>
                                 <div className="mt-auto pt-2">
-                                    <TagBadgesRow tags={asset.tags} />
+                                    <TagEditor
+                                        tags={asset.tags}
+                                        organization={asset.organization}
+                                        type="assets"
+                                        token={asset.token}
+                                        canEdit={can('assets.update')}
+                                        singleRow
+                                    />
                                 </div>
                             </CardContent>
                         </Card>

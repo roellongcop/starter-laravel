@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\TaskStatus;
 use App\Http\Controllers\Concerns\ResolvesBoard;
+use App\Http\Controllers\Concerns\SerializesBoard;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Requests\UpdateTaskStatusRequest;
@@ -12,14 +13,71 @@ use App\Models\Milestone;
 use App\Models\Person;
 use App\Models\Project;
 use App\Models\ReferenceFile;
+use App\Models\Requirement;
 use App\Models\Task;
 use App\Models\Team;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class TaskController extends Controller
 {
     use ResolvesBoard;
+    use SerializesBoard;
+
+    /**
+     * The dedicated task detail page: the task's details plus its full list of
+     * requirements. Reached by clicking a task card on the board. Scoped to the
+     * {project}+{asset} pair, and the task must belong to that board.
+     */
+    public function show(Project $project, Asset $asset, Task $task): Response
+    {
+        $this->authorize('view', $project);
+        $this->assertAssetBound($project, $asset);
+        $this->assertTaskInBoard($project, $asset, $task);
+
+        // A Person's display name lives on its user, so eager-load that nested
+        // relation for the polymorphic assignee/approver/observer morphs.
+        $loadAssignee = function (Relation $relation): void {
+            if ($relation instanceof MorphTo) {
+                $relation->morphWith([Person::class => ['user']]);
+            }
+        };
+
+        $task->load([
+            'milestone',
+            'assignee' => $loadAssignee,
+            'approver' => $loadAssignee,
+            'observer' => $loadAssignee,
+            'referenceFile',
+            'tags',
+            'requirements.referenceFile',
+            'requirements.form',
+            'requirements.tags',
+        ])->loadCount('requirements');
+
+        $asset->loadMissing('organization');
+
+        return Inertia::render('Projects/TaskShow', [
+            'project' => ['token' => $project->token, 'name' => $project->name],
+            'asset' => [
+                'token' => $asset->token,
+                'name' => $asset->name,
+                'organization' => $asset->organization->token,
+            ],
+            'milestone' => ['token' => $task->milestone->token, 'name' => $task->milestone->name],
+            'task' => [
+                ...$this->taskRow($task, $task->milestone->token),
+                'requirements' => $task->requirements
+                    ->map(fn (Requirement $requirement): array => $this->requirementRow($requirement))
+                    ->all(),
+            ],
+            'taskStatusOptions' => TaskStatus::options(),
+        ]);
+    }
 
     public function store(StoreTaskRequest $request, Project $project, Asset $asset): RedirectResponse
     {

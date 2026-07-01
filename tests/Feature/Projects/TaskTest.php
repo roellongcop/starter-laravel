@@ -7,11 +7,13 @@ use App\Models\Milestone;
 use App\Models\Organization;
 use App\Models\Person;
 use App\Models\ReferenceFile;
+use App\Models\Requirement;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function (): void {
     $this->seed(PermissionSeeder::class);
@@ -218,6 +220,30 @@ it('404s changing the status of a task from another board', function (): void {
     ])->assertNotFound();
 });
 
+it('syncs task tags inline via the generic taggables endpoint, org-scoped', function (): void {
+    actingAsRole(SystemRole::Developer);
+    $organization = Organization::factory()->create();
+    $task = Task::factory()->create(['organization_id' => $organization->id]);
+    $tag = DataTag::factory()->create(['organization_id' => $organization->id]);
+    $foreignTag = DataTag::factory()->create([
+        'organization_id' => Organization::factory()->create()->id,
+    ]);
+
+    $this->patchJson(route('taggables.sync', ['tasks', $task->token]), [
+        'tags' => [$tag->token, $foreignTag->token],
+    ])->assertOk()->assertJsonCount(1, 'tags'); // returns the fresh chips
+
+    // Only the same-organization tag is attached (the foreign one is dropped).
+    expect($task->tags()->pluck('data_tags.id')->all())->toBe([$tag->id]);
+});
+
+it('404s syncing tags for an unknown taggable type', function (): void {
+    actingAsRole(SystemRole::Developer);
+
+    $this->patchJson(route('taggables.sync', ['widgets', 'nope']), ['tags' => []])
+        ->assertNotFound();
+});
+
 it('deletes a task', function (): void {
     actingAsRole(SystemRole::Developer);
     [$organization, $project, $asset] = makeBoard();
@@ -278,6 +304,54 @@ it('404s updating a task from another board', function (): void {
         'name' => 'Hijack',
         'milestone' => $here->token,
     ])->assertNotFound();
+});
+
+it('renders the task detail page with its requirements', function (): void {
+    actingAsRole(SystemRole::Developer);
+    [$organization, $project, $asset] = makeBoard();
+    $milestone = Milestone::factory()->create([
+        'project_id' => $project->id,
+        'asset_id' => $asset->id,
+        'organization_id' => $organization->id,
+    ]);
+    $task = Task::factory()->create([
+        'milestone_id' => $milestone->id,
+        'organization_id' => $organization->id,
+    ]);
+    Requirement::factory()->create([
+        'task_id' => $task->id,
+        'milestone_id' => $milestone->id,
+        'project_id' => $project->id,
+        'organization_id' => $organization->id,
+        'name' => 'Signed contract',
+    ]);
+
+    $this->get(route('projects.assets.tasks.show', [$project, $asset, $task]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Projects/TaskShow')
+            ->where('task.name', $task->name)
+            ->has('task.requirements', 1)
+            ->where('task.requirements.0.name', 'Signed contract')
+        );
+});
+
+it('404s viewing a task from another board', function (): void {
+    actingAsRole(SystemRole::Developer);
+    [, $project, $asset] = makeBoard();
+    [$otherOrg, $otherProject, $otherAsset] = makeBoard();
+    $foreignMilestone = Milestone::factory()->create([
+        'project_id' => $otherProject->id,
+        'asset_id' => $otherAsset->id,
+        'organization_id' => $otherOrg->id,
+    ]);
+    $foreignTask = Task::factory()->create([
+        'milestone_id' => $foreignMilestone->id,
+        'organization_id' => $otherOrg->id,
+    ]);
+
+    $this->get(route('projects.assets.tasks.show', [$project, $asset, $foreignTask]))
+        ->assertNotFound();
 });
 
 it('forbids creating a task without permission', function (): void {

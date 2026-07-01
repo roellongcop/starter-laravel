@@ -28,11 +28,13 @@ use App\Http\Controllers\ProjectAssetController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\ReferenceFileController;
+use App\Http\Controllers\RequirementController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SessionHeartbeatController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\TaggableController;
 use App\Http\Controllers\TaskAssigneeController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamCategoryController;
@@ -184,6 +186,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('projects.assets.milestones.update');
     Route::delete('projects/{project}/assets/{asset}/milestones/{milestone}', [MilestoneController::class, 'destroy'])
         ->name('projects.assets.milestones.destroy');
+    // Dedicated task detail page (task details + its requirements), reached by
+    // clicking a task card. Binds by token.
+    Route::get('projects/{project}/assets/{asset}/tasks/{task}', [TaskController::class, 'show'])
+        ->name('projects.assets.tasks.show');
     Route::post('projects/{project}/assets/{asset}/tasks', [TaskController::class, 'store'])
         ->name('projects.assets.tasks.store');
     Route::patch('projects/{project}/assets/{asset}/tasks/{task}', [TaskController::class, 'update'])
@@ -192,6 +198,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('projects.assets.tasks.status');
     Route::delete('projects/{project}/assets/{asset}/tasks/{task}', [TaskController::class, 'destroy'])
         ->name('projects.assets.tasks.destroy');
+
+    // Requirements: deliverables nested under a board task (managed from the task
+    // detail panel). Parent FKs are derived from the task server-side; params bind
+    // by token. Inline status mirrors the task's.
+    Route::post('projects/{project}/assets/{asset}/tasks/{task}/requirements', [RequirementController::class, 'store'])
+        ->name('projects.assets.tasks.requirements.store');
+    Route::patch('projects/{project}/assets/{asset}/tasks/{task}/requirements/{requirement}', [RequirementController::class, 'update'])
+        ->name('projects.assets.tasks.requirements.update');
+    Route::patch('projects/{project}/assets/{asset}/tasks/{task}/requirements/{requirement}/status', [RequirementController::class, 'updateStatus'])
+        ->name('projects.assets.tasks.requirements.status');
+    Route::delete('projects/{project}/assets/{asset}/tasks/{task}/requirements/{requirement}', [RequirementController::class, 'destroy'])
+        ->name('projects.assets.tasks.requirements.destroy');
 
     // Org-scoped Team/Person options for a task's assignee/approver/observer pickers.
     Route::get('task-assignees/options', [TaskAssigneeController::class, 'options'])->name('task-assignees.options');
@@ -221,7 +239,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('data-tags/options', [DataTagController::class, 'options'])->name('data-tags.options');
     Route::resource('data-tags', DataTagController::class)->except(['create', 'edit']);
 
+    // Generic inline data-tag sync for any taggable resource (the <TagEditor> chip).
+    Route::patch('taggables/{type}/{token}', [TaggableController::class, 'sync'])->name('taggables.sync');
+
     // Forms have full create/edit pages (the field builder is too rich for a sheet).
+    // Async form picker (the requirement form's Form select); registered before the
+    // resource so /forms/options isn't captured as a {form} show.
+    Route::get('forms/options', [FormController::class, 'options'])->name('forms.options');
     Route::resource('forms', FormController::class);
     // Filling a form + viewing its submissions.
     Route::get('forms/{form}/respond', [FormResponseController::class, 'create'])->name('forms.respond');

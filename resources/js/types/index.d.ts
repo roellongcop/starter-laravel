@@ -197,6 +197,27 @@ export interface AdminTask {
     position: number;
     record_status: number;
     created_at: string | null;
+    requirements_count: number;
+}
+
+/** A task with its full requirements, as serialized by TaskController@show for the detail page. */
+export interface TaskDetail extends AdminTask {
+    requirements: AdminRequirement[];
+}
+
+/** A requirement (task deliverable) as serialized by TaskController@show. */
+export interface AdminRequirement {
+    token: string;
+    name: string;
+    description: string | null;
+    status: string; // TaskStatus value (shares the task's enum)
+    minimum_files: number | null;
+    maximum_files: number | null;
+    reference_file: { token: string; name: string } | null;
+    form: { token: string; title: string } | null;
+    tags: TagChip[];
+    record_status: number;
+    created_at: string | null;
 }
 
 /** A milestone column with its ordered tasks, as serialized by ProjectAssetBoardController. */

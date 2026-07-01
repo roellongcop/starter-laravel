@@ -19,10 +19,11 @@ import {
 import { router } from '@inertiajs/react';
 import axios from 'axios';
 import { ChevronsDownUp, ChevronsUpDown, Plus } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
+import FilterBar from '@/Components/FilterBar';
 import { Button } from '@/Components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -47,6 +48,10 @@ interface Props {
 const columnOf = (taskToken: string, cols: AdminMilestone[]): string | null =>
     cols.find((c) => c.tasks.some((t) => t.token === taskToken))?.token ?? null;
 
+// Above this many total cards, columns start collapsed so a huge board (e.g. a
+// month/day layout) doesn't mount every card up front — the user expands what they need.
+const COLLAPSE_THRESHOLD = 60;
+
 export default function MilestoneBoard({
     projectToken,
     assetToken,
@@ -58,7 +63,16 @@ export default function MilestoneBoard({
     const [columns, setColumns] = useState<AdminMilestone[]>(milestones);
     const [activeId, setActiveId] = useState<string | null>(null);
     // Tokens of collapsed milestones (view-only; not persisted server-side).
-    const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+    // Large boards start fully collapsed so their cards aren't all mounted at once.
+    const [collapsed, setCollapsed] = useState<Set<string>>(() =>
+        milestones.reduce((sum, m) => sum + m.tasks.length, 0) >
+        COLLAPSE_THRESHOLD
+            ? new Set(milestones.map((m) => m.token))
+            : new Set(),
+    );
+    // Client-side task filters (the board loads every task, so filtering is local).
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
 
     // Mirror the latest committed board so drag-end can persist the post-drag
     // state without a stale closure (the over/end events span renders).
@@ -244,12 +258,13 @@ export default function MilestoneBoard({
         setTaskFormNonce((n) => n + 1);
         setTaskSheetOpen(true);
     };
-    const openEditTask = (t: AdminTask) => {
+    // Stable reference so memoized TaskCards don't re-render when the board does.
+    const openEditTask = useCallback((t: AdminTask) => {
         setTaskEditing(t);
         setTaskDefaultMilestone(undefined);
         setTaskFormNonce((n) => n + 1);
         setTaskSheetOpen(true);
-    };
+    }, []);
 
     const deleteMilestone = () => {
         if (!milestoneToDelete) {
@@ -301,10 +316,50 @@ export default function MilestoneBoard({
             allCollapsed ? new Set() : new Set(columns.map((c) => c.token)),
         );
 
+    // When a filter is active, drag/reorder is disabled (persistence must operate
+    // on the full board, not a filtered subset) and empty columns are hidden.
+    const isFiltering = search.trim() !== '' || statusFilter !== '';
+    const displayColumns = useMemo(() => {
+        if (!isFiltering) {
+            return columns;
+        }
+        const q = search.trim().toLowerCase();
+
+        return columns
+            .map((column) => ({
+                ...column,
+                tasks: column.tasks.filter(
+                    (task) =>
+                        (q === '' ||
+                            task.name.toLowerCase().includes(q) ||
+                            (task.description ?? '')
+                                .toLowerCase()
+                                .includes(q)) &&
+                        (statusFilter === '' || task.status === statusFilter),
+                ),
+            }))
+            .filter((column) => column.tasks.length > 0);
+    }, [columns, isFiltering, search, statusFilter]);
+
     return (
         <div>
             {columns.length > 0 && (
-                <div className="mb-3 flex justify-end">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <FilterBar onSubmit={() => undefined}>
+                        <FilterBar.Search
+                            value={search}
+                            onChange={setSearch}
+                            placeholder="Search tasks…"
+                            withButton={false}
+                            className="w-56"
+                        />
+                        <FilterBar.Select
+                            value={statusFilter || undefined}
+                            onChange={(v) => setStatusFilter(v ?? '')}
+                            options={taskStatusOptions}
+                            allLabel="All statuses"
+                        />
+                    </FilterBar>
                     <Button variant="outline" size="sm" onClick={toggleAll}>
                         {allCollapsed ? (
                             <ChevronsUpDown className="h-4 w-4" />
@@ -325,17 +380,19 @@ export default function MilestoneBoard({
                     onDragEnd={onDragEnd}
                 >
                     <SortableContext
-                        items={columns.map((c) => c.token)}
+                        items={displayColumns.map((c) => c.token)}
                         strategy={verticalListSortingStrategy}
                     >
-                        {columns.map((milestone) => (
+                        {displayColumns.map((milestone) => (
                             <MilestoneColumn
                                 key={milestone.token}
                                 milestone={milestone}
                                 canManage={canManage}
+                                dragDisabled={isFiltering}
                                 collapsed={collapsed.has(milestone.token)}
                                 projectToken={projectToken}
                                 assetToken={assetToken}
+                                assetOrganization={assetOrganization}
                                 taskStatusOptions={taskStatusOptions}
                                 onToggleCollapse={() =>
                                     toggleCollapse(milestone.token)
@@ -362,6 +419,7 @@ export default function MilestoneBoard({
                                 canManage={false}
                                 projectToken={projectToken}
                                 assetToken={assetToken}
+                                assetOrganization={assetOrganization}
                                 taskStatusOptions={taskStatusOptions}
                                 onEdit={() => undefined}
                                 onDelete={() => undefined}
@@ -374,20 +432,28 @@ export default function MilestoneBoard({
                     </DragOverlay>
                 </DndContext>
 
-                <Can ability="milestones.create">
-                    <button
-                        type="button"
-                        onClick={openCreateMilestone}
-                        className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed p-3 text-sm text-muted-foreground hover:bg-muted/40"
-                    >
-                        <Plus className="h-4 w-4" /> Add milestone
-                    </button>
-                </Can>
+                {!isFiltering && (
+                    <Can ability="milestones.create">
+                        <button
+                            type="button"
+                            onClick={openCreateMilestone}
+                            className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed p-3 text-sm text-muted-foreground hover:bg-muted/40"
+                        >
+                            <Plus className="h-4 w-4" /> Add milestone
+                        </button>
+                    </Can>
+                )}
             </div>
 
             {columns.length === 0 && !canManage && (
                 <p className="text-sm text-muted-foreground">
                     No milestones yet.
+                </p>
+            )}
+
+            {isFiltering && displayColumns.length === 0 && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                    No tasks match your filters.
                 </p>
             )}
 

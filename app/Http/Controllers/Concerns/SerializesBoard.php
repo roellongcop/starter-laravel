@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Concerns;
 
 use App\Models\Milestone;
 use App\Models\Person;
+use App\Models\Requirement;
 use App\Models\Task;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,9 @@ use Illuminate\Database\Eloquent\Model;
  * enum values cross the wire (never ids). Relations (assignee/approver/observer/
  * referenceFile/tags) must be eager-loaded by the caller — accessing them here on
  * an unloaded model would trip preventLazyLoading. Assignees are polymorphic, so
- * the morph target (and, for a Person, its user) must be eager-loaded too.
+ * the morph target (and, for a Person, its user) must be eager-loaded too. The
+ * board carries only a requirements COUNT per card (withCount); the full
+ * requirement rows (requirementRow) are serialized by the task detail page.
  */
 trait SerializesBoard
 {
@@ -61,6 +64,31 @@ trait SerializesBoard
             'position' => $task->position,
             'record_status' => $task->record_status->value,
             'created_at' => $task->created_at?->toIso8601String(),
+            'requirements_count' => (int) ($task->requirements_count ?? 0),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function requirementRow(Requirement $requirement): array
+    {
+        return [
+            'token' => $requirement->token,
+            'name' => $requirement->name,
+            'description' => $requirement->description,
+            'status' => $requirement->status->value,
+            'minimum_files' => $requirement->minimum_files,
+            'maximum_files' => $requirement->maximum_files,
+            'reference_file' => $requirement->referenceFile
+                ? ['token' => $requirement->referenceFile->token, 'name' => $requirement->referenceFile->name]
+                : null,
+            'form' => $requirement->form
+                ? ['token' => $requirement->form->token, 'title' => $requirement->form->title]
+                : null,
+            'tags' => $this->serializeTags($requirement->tags),
+            'record_status' => $requirement->record_status->value,
+            'created_at' => $requirement->created_at?->toIso8601String(),
         ];
     }
 

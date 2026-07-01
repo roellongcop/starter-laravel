@@ -10,7 +10,7 @@ import OrganizationSelect from '@/Components/OrganizationSelect';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
 import StatusDropdown from '@/Components/StatusDropdown';
-import TagBadgesRow from '@/Components/TagBadgesRow';
+import TagEditor from '@/Components/TagEditor';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Card } from '@/Components/ui/card';
@@ -29,6 +29,7 @@ import {
 } from '@/Components/ui/sheet';
 import { useFilters } from '@/hooks/use-filters';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { usePermissions } from '@/lib/permissions';
 import { type AdminProject, type SelectOption } from '@/types';
 import ProjectForm from './Partials/ProjectForm';
 
@@ -46,6 +47,7 @@ interface Props {
 }
 
 export default function Index({ projects, filters, statusOptions }: Props) {
+    const { can } = usePermissions();
     const f = useFilters<Props['filters']>({
         route: 'projects.index',
         reset: ['projects'],
@@ -199,7 +201,14 @@ export default function Index({ projects, filters, statusOptions }: Props) {
                                             ? ` · ${project.description}`
                                             : ''}
                                     </p>
-                                    <TagBadgesRow tags={project.tags} />
+                                    <TagEditor
+                                        tags={project.tags}
+                                        organization={project.organization}
+                                        type="projects"
+                                        token={project.token}
+                                        canEdit={can('projects.update')}
+                                        singleRow
+                                    />
                                 </div>
                                 <Can
                                     anyOf={[

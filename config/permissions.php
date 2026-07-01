@@ -31,6 +31,7 @@ return [
         'assets',
         'milestones',
         'tasks',
+        'requirements',
         'forms',
         'teams',
         'team-categories',

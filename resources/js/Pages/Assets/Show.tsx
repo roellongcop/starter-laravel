@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Can from '@/Components/Can';
 import ConfirmDialog from '@/Components/ConfirmDialog';
 import PageHeader from '@/Components/PageHeader';
-import TagBadges from '@/Components/TagBadges';
+import TagEditor from '@/Components/TagEditor';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import {
@@ -15,6 +15,7 @@ import {
     SheetTitle,
 } from '@/Components/ui/sheet';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { usePermissions } from '@/lib/permissions';
 import { type AdminAsset, type Crumb } from '@/types';
 import AssetForm from './Partials/AssetForm';
 
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export default function Show({ asset }: Props) {
+    const { can } = usePermissions();
     const [editOpen, setEditOpen] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -90,13 +92,14 @@ export default function Show({ asset }: Props) {
                         <span className="text-xs uppercase tracking-wide text-muted-foreground">
                             Tags
                         </span>
-                        {asset.tags.length > 0 ? (
-                            <TagBadges tags={asset.tags} className="mt-1" />
-                        ) : (
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                No tags.
-                            </p>
-                        )}
+                        <TagEditor
+                            className="mt-1"
+                            tags={asset.tags}
+                            organization={asset.organization}
+                            type="assets"
+                            token={asset.token}
+                            canEdit={can('assets.update')}
+                        />
                     </div>
                 </CardContent>
             </Card>

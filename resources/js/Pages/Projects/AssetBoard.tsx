@@ -5,9 +5,10 @@ import Can from '@/Components/Can';
 import PageHeader from '@/Components/PageHeader';
 import StatusBadge from '@/Components/StatusBadge';
 import StatusDropdown from '@/Components/StatusDropdown';
-import TagBadges from '@/Components/TagBadges';
+import TagEditor from '@/Components/TagEditor';
 import { Card, CardContent } from '@/Components/ui/card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { usePermissions } from '@/lib/permissions';
 import {
     type AdminMilestone,
     type Crumb,
@@ -33,6 +34,7 @@ export default function AssetBoard({
     statusOptions,
     taskStatusOptions,
 }: Props) {
+    const { can } = usePermissions();
     const breadcrumbs: Crumb[] = [
         { label: 'Projects', href: route('projects.index') },
         { label: project.name, href: route('projects.show', project.token) },
@@ -99,13 +101,13 @@ export default function AssetBoard({
                                 Tags
                             </dt>
                             <dd>
-                                {asset.tags.length > 0 ? (
-                                    <TagBadges tags={asset.tags} />
-                                ) : (
-                                    <span className="text-muted-foreground">
-                                        —
-                                    </span>
-                                )}
+                                <TagEditor
+                                    tags={asset.tags}
+                                    organization={asset.organization}
+                                    type="assets"
+                                    token={asset.token}
+                                    canEdit={can('assets.update')}
+                                />
                             </dd>
                         </dl>
                     </CardContent>

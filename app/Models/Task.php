@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
@@ -45,6 +46,7 @@ use Illuminate\Support\Carbon;
  * @property-read Model|null $observer
  * @property-read ReferenceFile|null $referenceFile
  * @property-read Collection<int, DataTag> $tags
+ * @property-read Collection<int, Requirement> $requirements
  */
 class Task extends BaseModel
 {
@@ -132,5 +134,15 @@ class Task extends BaseModel
     public function referenceFile(): BelongsTo
     {
         return $this->belongsTo(ReferenceFile::class);
+    }
+
+    /**
+     * The deliverables attached to this task, in stable creation order.
+     *
+     * @return HasMany<Requirement, $this>
+     */
+    public function requirements(): HasMany
+    {
+        return $this->hasMany(Requirement::class)->orderBy('position')->orderBy('id');
     }
 }

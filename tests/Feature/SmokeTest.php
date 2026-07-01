@@ -7,12 +7,14 @@ use App\Models\File;
 use App\Models\Form;
 use App\Models\FormResponse;
 use App\Models\Ip;
+use App\Models\Milestone;
 use App\Models\Organization;
 use App\Models\OrganizationRole;
 use App\Models\Person;
 use App\Models\Project;
 use App\Models\ReferenceFile;
 use App\Models\Role;
+use App\Models\Task;
 use App\Models\Team;
 use App\Models\TeamCategory;
 use App\Models\Theme;
@@ -55,6 +57,16 @@ it('renders every page route with a 200', function (): void {
     $asset = $organization->assets()->firstOrFail();
     // Bind the asset so the project-asset board route resolves (an unbound asset 404s).
     $project->assets()->attach($asset->id);
+    // A milestone + task so the task detail page route resolves.
+    $milestone = Milestone::factory()->create([
+        'project_id' => $project->id,
+        'asset_id' => $asset->id,
+        'organization_id' => $organization->id,
+    ]);
+    $task = Task::factory()->create([
+        'milestone_id' => $milestone->id,
+        'organization_id' => $organization->id,
+    ]);
     $form = Form::factory()->create(['organization_id' => $organization->id]);
     $response = FormResponse::factory()->forForm($form)->create();
     $role = Role::query()->firstOrFail();
@@ -115,6 +127,7 @@ it('renders every page route with a 200', function (): void {
         ['assets.index', []],
         ['assets.show', [$asset]],
         ['projects.assets.show', [$project, $asset]],
+        ['projects.assets.tasks.show', [$project, $asset, $task]],
         ['teams.index', []],
         ['teams.show', [$team]],
         ['team-categories.index', []],
