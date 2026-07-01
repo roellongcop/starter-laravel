@@ -74,7 +74,7 @@ class FileController extends Controller
         // medialibrary removes the backing media on model delete.
         $file->delete();
 
-        return redirect()->route('files.index')->with('success', 'File deleted.');
+        return back(fallback: route('files.index'))->with('success', 'File deleted.');
     }
 
     /** Gated attachment download from the private disk. */
