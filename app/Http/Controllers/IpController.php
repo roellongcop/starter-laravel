@@ -36,7 +36,7 @@ class IpController extends Controller
 
         Ip::create($request->validated());
 
-        return redirect()->route('ips.index')->with('success', 'IP entry created.');
+        return back(fallback: route('ips.index'))->with('success', 'IP entry created.');
     }
 
     public function show(Ip $ip): Response
@@ -64,7 +64,7 @@ class IpController extends Controller
 
         $ip->delete();
 
-        return redirect()->route('ips.index')->with('success', 'IP entry deleted.');
+        return back(fallback: route('ips.index'))->with('success', 'IP entry deleted.');
     }
 
     public function bulk(Request $request): RedirectResponse

@@ -87,7 +87,7 @@ class ThemeController extends Controller
 
         $theme->delete();
 
-        return redirect()->route('themes.index')->with('success', 'Theme deleted.');
+        return back(fallback: route('themes.index'))->with('success', 'Theme deleted.');
     }
 
     public function bulk(Request $request): RedirectResponse
